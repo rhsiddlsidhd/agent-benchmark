@@ -1,0 +1,152 @@
+# Architecture Document
+
+> 상태: Draft
+> 작성자:
+> 작성일:
+> 최종 수정일:
+> 관련 문서: [00_PRD.md](./00_PRD.md)
+
+---
+
+## 필드 가이드
+
+| 섹션 | 내용 |
+|------|------|
+| 개요 | 시스템이 무엇을 하는가 (한두 문단 요약) |
+| 목표 및 제약 | 아키텍처가 만족해야 할 목표(성능/확장성/보안 등), 제약조건(기술 스택, 인프라, 팀 역량 등) |
+| 시스템 컨텍스트 | 외부 시스템/서비스와의 관계 (C4 Context Level) |
+| 전체 구조 | 주요 컴포넌트 및 책임 (C4 Container Level) |
+| 모듈/서비스 상세 | 각 모듈/서비스의 책임 / 인터페이스 / 의존성 |
+| 데이터 모델 | 주요 엔티티 및 관계 (ERD) |
+| 배포 아키텍처 | 배포 환경, CI/CD 파이프라인 |
+| 보안 고려사항 | 인증/인가, 데이터 보호, 취약점 대응 |
+| 확장성 및 성능 | 병목 지점, 확장 전략 |
+| 리스크 및 트레이드오프 | 주요 아키텍처 결정에 따른 트레이드오프 (상세 근거는 [02_ADR](./02_ADR.md) 참고) |
+
+---
+
+## 1. 개요 (Overview)
+
+TMDB API 기반 영화·TV 탐색 웹앱. 콘텐츠 → 출연진/감독 → 다른 작품으로 이어지는 탐색 흐름을 Next.js App Router 기반 SPA/SSR 하이브리드로 구현한다. 실사용 서비스가 아닌 학습/포트폴리오 목적이며, 인증·개인화·DB 없이 TMDB API를 유일한 데이터 소스로 사용한다.
+
+## 2. 목표 및 제약 (Goals & Constraints)
+
+**목표**
+- TMDB API 키를 클라이언트에 노출하지 않는다 (NFR-2)
+- Lighthouse Performance/Accessibility/Best Practices 90+, SEO 80+ (NFR-1, NFR-4)
+- 모바일·데스크톱 반응형 (NFR-3)
+
+**제약**
+- 1인 개발, 명시적 마감 없음
+- TMDB API 무료 티어 rate limit 준수
+- DB 없음 (로그인/찜/리뷰 Non-Goals이므로 영속 저장소 불필요)
+
+## 3. 시스템 컨텍스트 (System Context)
+
+```
+[사용자 브라우저]
+      │
+      ▼
+[Next.js App (Vercel)]
+      │             │
+      ▼             ▼
+[TMDB REST API]  [TMDB Image CDN: image.tmdb.org]
+```
+
+## 4. 전체 구조 (High-Level Architecture)
+
+```
+Server Components ──▶ tmdb-client (서버 전용, TMDB_API_KEY는 env에서만 접근)
+      │                     │
+      │                     ▼
+      │                 TMDB REST API
+      ▼
+Client Components (검색/무한스크롤)
+      │
+      ▼
+TanStack Query ──▶ /api/* Route Handler ──▶ tmdb-client ──▶ TMDB REST API
+```
+
+- 홈/상세 페이지: Server Component에서 직접 `tmdb-client` 호출, fetch revalidate로 캐싱
+- 검색/무한스크롤: Client Component + TanStack Query가 Route Handler(`/api/*`) 경유 (API 키는 Route Handler 안에서만 사용)
+
+## 5. 모듈/서비스 상세 (Module/Service Details)
+
+### 5.1 tmdb-client
+- 책임: TMDB API 호출 캡슐화, 응답 타입 정의, revalidate 정책 적용
+- 인터페이스: `getTrending()`, `getMovie(id)`, `getTvShow(id)`, `getPerson(id)`, `searchMulti(query)`, `getGenres(type)` 등
+- 의존성: TMDB REST API, `process.env.TMDB_API_KEY`
+
+### 5.2 home
+- 책임: 인기/트렌딩 영화·TV 목록 렌더 (FR-1)
+- 인터페이스: `/` 페이지 (Server Component)
+- 의존성: tmdb-client, ui
+
+### 5.3 search
+- 책임: 통합 검색(영화/TV/인물) + 무한스크롤 (FR-2)
+- 인터페이스: `/search` 페이지, `/api/search` Route Handler
+- 의존성: tmdb-client, TanStack Query, ui
+
+### 5.4 detail
+- 책임: 영화/TV/인물 상세 + 연관 탐색 링크(출연진→인물, 필모그래피→작품) (FR-3, FR-4, FR-5)
+- 인터페이스: `/movie/[id]`, `/tv/[id]`, `/person/[id]` 페이지
+- 의존성: tmdb-client, ui
+
+### 5.5 ui
+- 책임: 공통 컴포넌트(카드, 이미지, 필터/토글, 애니메이션 래퍼) — 디자인 토큰은 [03_DESIGN.md](./03_DESIGN.md) 참조
+- 인터페이스: `<ContentCard>`, `<PosterImage>`, `<AdultToggle>`, `<GenreFilter>` 등
+- 의존성: Tailwind CSS, framer-motion
+
+## 6. 데이터 모델 (Data Model)
+
+DB 없음 — TMDB API 응답 기반 TypeScript 타입으로 대체. 핵심 엔티티 및 관계:
+
+- **Movie** ↔ **Person** (cast/crew, 다대다)
+- **TVShow** ↔ **Season** ↔ **Episode** (1:N, 1:N)
+- **TVShow** ↔ **Person** (cast/crew, 다대다)
+- **Movie/TVShow** ↔ **Genre** (다대다)
+- **Person** ↔ **Movie/TVShow** (필모그래피, 다대다 — cast/crew 관계의 역방향)
+
+## 7. 기술 스택 (Tech Stack)
+
+> Design 토큰(색상/타이포/spacing 등) 및 UI 컴포넌트 라이브러리 선정은 [03_DESIGN.md](./03_DESIGN.md) 담당. 여기선 기술 선택(프레임워크/언어/인프라)만 기록.
+
+| 영역 | 기술 | 선택 이유 |
+|------|------|-----------|
+| Frontend | Next.js (App Router), TypeScript | Server Component로 API 키 서버사이드 은닉, 최신 표준 스택 |
+| 데이터 페칭 | TanStack Query | 검색/무한스크롤 캐싱·상태관리 |
+| 스타일링 | Tailwind CSS | 03_DESIGN 토큰과 config 매핑 용이 |
+| 애니메이션 | framer-motion | 탐색 흐름 전환/인터랙션 애니메이션 |
+| Backend | Next.js Route Handler (`/api/*`) | 별도 서버 없이 API 키 은닉 겸 클라이언트 인터랙션 프록시 |
+| Database | 없음 | 로그인/찜/리뷰 Non-Goals — 영속 저장소 불필요 |
+| Infra | Vercel | Next.js 네이티브 지원, 무료 티어로 충분 |
+
+## 8. 배포 아키텍처 (Deployment)
+
+- Vercel에 Next.js 앱 배포, `TMDB_API_KEY`는 Vercel 환경변수로 관리 (Server Component/Route Handler에서만 `process.env`로 접근, 클라이언트 번들 미포함)
+- 캐싱: 목록류(홈/트렌딩/장르) `revalidate: 3600`(1시간), 상세 페이지(영화/TV/인물) `revalidate: 86400`(1일)
+- 별도 CI/CD 파이프라인 없음 — Vercel Git 연동 자동 배포로 대체
+
+## 9. 보안 고려사항 (Security Considerations)
+
+- TMDB API 키는 Server Component/Route Handler 내부에서만 사용, 클라이언트에 절대 노출 안 함 (NFR-2)
+- 인증/인가 없음 (로그인 기능 자체가 Non-Goal)
+- 성인 콘텐츠 필터(FR-7)는 TMDB `include_adult` 파라미터를 서버사이드에서 적용
+
+## 10. 확장성 및 성능 (Scalability & Performance)
+
+- 이미지: `next/image` + TMDB Image CDN으로 lazy loading (NFR-1)
+- 리스트: TanStack Query `useInfiniteQuery`로 무한스크롤 (NFR-1)
+- API 응답: Next.js fetch cache(revalidate)로 재요청 최소화, TMDB rate limit 리스크 완화 (NFR-1)
+- 별도 수평 확장 불필요 (실사용 트래픽 없음, Vercel 서버리스로 자동 스케일)
+
+## 11. 리스크 및 트레이드오프 (Risks & Trade-offs)
+
+- **TMDB rate limit**: fetch cache로 완화하나 트래픽 급증 시 여전히 취약 — 실사용 서비스 아니므로 수용
+- **DB 없음**: 향후 찜/리뷰 등 개인화 기능 확장 시 아키텍처 재설계 필요 — 현재 스코프에선 Non-Goal이라 수용
+- **App Router 학습 곡선**: Pages Router 대비 러닝커브 있으나, 학습 목적 프로젝트이므로 오히려 목표에 부합
+
+## 12. 참고자료 (References)
+
+- TMDB API 공식 문서: https://developer.themoviedb.org/docs
+
