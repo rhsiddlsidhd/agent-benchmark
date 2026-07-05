@@ -19,6 +19,7 @@
 
 | ID | 제목 | 상태 | 날짜 |
 |----|------|------|------|
+| ADR-0004 | Route Handler 오남용 리스크 수용 (Rate Limiting 미적용) | Accepted | 2026-07-05 |
 | ADR-0003 | TMDB API 키 서버사이드 은닉 전략 | Accepted | 2026-07-03 |
 | ADR-0002 | 영속 데이터베이스 미사용 | Accepted | 2026-07-03 |
 | ADR-0001 | Next.js App Router 채택 | Accepted | 2026-07-03 |
@@ -26,6 +27,27 @@
 ---
 
 ## Log
+
+### ADR-0004: Route Handler 오남용 리스크 수용 (Rate Limiting 미적용)
+
+> 상태: Accepted
+> 날짜: 2026-07-05
+
+**Context**
+
+`/api/*` Route Handler(검색·무한스크롤용)는 공개 엔드포인트라 우리 앱 UI를 거치지 않고도 누구나 직접 호출할 수 있다. 내부적으로 `TMDB_API_KEY`(ADR-0003)를 사용해 TMDB를 대신 호출하므로, 제3자가 이를 "키 없는 TMDB 프록시"로 남용해 우리 키의 rate limit을 소진시킬 수 있다. Next.js 공식 문서(`data-security.mdx`, `backend-for-frontend.mdx`)도 이런 엔드포인트에 rate limiting 적용을 권고한다. 본 프로젝트는 실사용 서비스는 아니지만 배포되어 면접관 등 외부인이 실제로 접근할 수 있다.
+
+**Decision**
+
+Upstash Redis 등 별도 rate limiting 인프라는 도입하지 않는다. 대신 이 리스크를 명시적으로 문서화하고, TMDB의 429 응답을 그대로 패스스루하는 최소한의 처리만 유지한다([01_ARCHITECTURE.md §9, §11] 참고).
+
+**Consequences**
+
+- 별도 인프라(Redis 계정, 카운터 로직) 없이 스코프를 단순하게 유지
+- 오남용 시 TMDB 키의 rate limit이 실제로 소진될 수 있고, 그 경우 정상 사용자도 일시적으로 검색/무한스크롤이 실패할 수 있음 — 학습용 프로젝트 특성상 실제 발생 확률과 파급力은 낮다고 판단해 수용
+- 트래픽이 실제로 늘거나 실서비스로 전환할 경우, Upstash Redis + `@upstash/ratelimit`(IP당 sliding window) 도입을 재검토한다 — 그 시점에 새 ADR로 대체(Superseded)
+
+---
 
 ### ADR-0003: TMDB API 키 서버사이드 은닉 전략
 
