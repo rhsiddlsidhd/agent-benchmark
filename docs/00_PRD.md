@@ -4,7 +4,7 @@
 > 작성자:
 > 작성일:
 > 최종 수정일:
-> 관련 문서: (03_DESIGN.md 작성 후 링크 추가)
+> 관련 문서: [01_ARCHITECTURE.md](./01_ARCHITECTURE.md) · [03_DESIGN.md](./03_DESIGN.md)
 
 > **주의**: 페르소나/유저스토리 원본 문서는 이 문서(00_PRD). [03_DESIGN.md](./03_DESIGN.md)는 이 문서를 참조만 하며, 별도로 재작성하지 않는다.
 
