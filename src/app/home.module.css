@@ -1,0 +1,62 @@
+/*
+ * 홈 캐러셀 가로 스크롤 레일 (03_DESIGN §3.1, §4).
+ *
+ * 모바일은 약 2.2장(다음 카드가 살짝 보여 스크롤 유도), lg 6장, xl 7장이
+ * 보이도록 카드 폭을 구조적 퍼센트로 지정한다. 간격/좌우 여백은 디자인 토큰
+ * (--spacing-card-gap / -lg, --spacing-gutter / -lg)만 사용한다(색/spacing 토큰
+ * 신규 생성 없음 — 카드 폭 퍼센트는 레이아웃 구조값). 카드 hover 상승/그림자가
+ * 잘리지 않도록 세로 여백을 둔다.
+ */
+.rail {
+  display: flex;
+  gap: var(--spacing-card-gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-block: 0.5rem;
+  padding-inline: var(--spacing-gutter);
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.railItem {
+  flex: 0 0 auto;
+  width: 42%;
+  scroll-snap-align: start;
+}
+
+/* sm: 그리드 3열 상당 → 레일 약 3.3장 */
+@media (min-width: 640px) {
+  .railItem {
+    width: 29%;
+  }
+}
+
+/* md: gutter/card-gap 데스크톱값, 약 4.5장 */
+@media (min-width: 768px) {
+  .rail {
+    gap: var(--spacing-card-gap-lg);
+    padding-inline: var(--spacing-gutter-lg);
+  }
+  .railItem {
+    width: 22%;
+  }
+}
+
+/* lg: 6장 */
+@media (min-width: 1024px) {
+  .railItem {
+    width: 15.5%;
+  }
+}
+
+/* xl: 7장 */
+@media (min-width: 1280px) {
+  .railItem {
+    width: 13.2%;
+  }
+}
