@@ -12,3 +12,4 @@ export { Button } from "./button";
 export { ErrorState } from "./error-state";
 export { EmptyState } from "./empty-state";
 export { Pill } from "./pill";
+export { FilterChip } from "./filter-chip";

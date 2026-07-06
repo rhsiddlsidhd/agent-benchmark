@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { QueryProvider } from "@/src/components/providers/query-provider";
+import { AdultContentProvider } from "@/src/features/adult-content/adult-content-context";
+import { AdultToggle } from "@/src/features/adult-content/adult-toggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,6 +22,7 @@ export default function RootLayout({
     <html lang="ko" className="antialiased">
       <body className="flex min-h-screen flex-col bg-base text-content-primary">
         <QueryProvider>
+          <AdultContentProvider>
           <header className="z-header sticky top-0 border-b border-border bg-base/80 backdrop-blur">
           <div className="mx-auto flex h-14 w-full max-w-page items-center justify-between px-gutter md:px-gutter-lg">
             <Link
@@ -40,28 +43,14 @@ export default function RootLayout({
                 검색
               </Link>
 
-              {/*
-                AdultToggle 자리 placeholder — 실제 기능은 T13(FR-7)에서 연결한다.
-                우선순위상 FR-7 이 마지막이라 여기서는 비활성 상태로 자리만 확보.
-              */}
-              <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                aria-label="성인 콘텐츠 필터 (준비 중)"
-                className="flex items-center gap-2 rounded-pill border border-border bg-surface px-3 py-2 text-caption text-content-muted opacity-60"
-              >
-                <span
-                  aria-hidden="true"
-                  className="size-2 rounded-pill bg-success"
-                />
-                성인 콘텐츠 숨김
-              </button>
+              {/* 성인 콘텐츠 토글(FR-7) — 검색 페이지의 토글과 동일 Context 를 공유한다. */}
+              <AdultToggle />
             </nav>
           </div>
         </header>
 
           <main className="flex flex-1 flex-col">{children}</main>
+          </AdultContentProvider>
         </QueryProvider>
       </body>
     </html>

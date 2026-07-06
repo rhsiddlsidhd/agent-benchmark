@@ -21,7 +21,8 @@
  * - 에러: ErrorState(refetch 재시도) — 훅의 retry:1 이후 최종 실패 노출.
  * - 결과 변화(로딩/갱신/무결과/에러)는 sr-only aria-live 영역으로 안내.
  *
- * AdultToggle 자리(§2.4)는 UI 만 배치하고 기능 연결은 T13(FR-7)에서 한다.
+ * AdultToggle(§2.4)은 헤더와 동일 AdultContentContext 를 구독하며, 그 값(include_adult)을
+ * useSearchInfinite 의 queryKey 로 넘겨 토글 전환 시 결과를 즉시 재조회한다(FR-7).
  */
 import { useState, type SubmitEvent } from "react";
 import Link from "next/link";
@@ -33,6 +34,8 @@ import {
   PersonAvatar,
   SkeletonCard,
 } from "@/src/components/ui";
+import { useAdultContent } from "@/src/features/adult-content/adult-content-context";
+import { AdultToggle } from "@/src/features/adult-content/adult-toggle";
 import { useSearchInfinite } from "@/src/features/search/use-search-infinite";
 import { useIntersectionObserver } from "@/src/features/search/use-intersection-observer";
 import type {
@@ -112,6 +115,10 @@ export function SearchExplorer() {
   const [inputValue, setInputValue] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
 
+  // 성인 콘텐츠 토글(FR-7) — 헤더의 토글과 동일 Context. 값이 queryKey 에 들어가므로
+  // 토글 전환 시 TanStack Query 가 새 키로 즉시 재조회한다(결과 즉시 반영).
+  const { includeAdult } = useAdultContent();
+
   const {
     data,
     isLoading,
@@ -120,7 +127,7 @@ export function SearchExplorer() {
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useSearchInfinite({ query: submittedQuery, includeAdult: false });
+  } = useSearchInfinite({ query: submittedQuery, includeAdult });
 
   // sentinel: 다음 페이지가 있고 로딩 중이 아닐 때만 감지(마지막 페이지 조용히 정지 · 중복 요청 방지).
   const sentinelRef = useIntersectionObserver({
@@ -193,20 +200,8 @@ export function SearchExplorer() {
             />
           </div>
 
-          {/*
-            AdultToggle 자리 placeholder — 실제 기능(include_adult 배선)은
-            T13(FR-7)에서 연결한다. 여기서는 비활성 상태로 자리만 확보(§2.4).
-          */}
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            aria-label="성인 콘텐츠 필터 (준비 중)"
-            className="flex shrink-0 items-center gap-2 rounded-pill border border-border bg-surface px-3 py-2 text-caption text-content-muted opacity-60"
-          >
-            <span aria-hidden="true" className="size-2 rounded-pill bg-success" />
-            성인 콘텐츠 숨김
-          </button>
+          {/* 성인 콘텐츠 토글(FR-7) — 헤더 토글과 동일 Context 를 공유(§2.4). */}
+          <AdultToggle className="shrink-0" />
         </div>
       </form>
 
