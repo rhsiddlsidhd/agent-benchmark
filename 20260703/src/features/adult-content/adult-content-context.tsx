@@ -28,15 +28,21 @@
  *   `useSearchParams` 를 쓰면 앱 전체가 CSR bailout(Suspense 요구)돼 정적 페이지가
  *   깨지므로, `history.replaceState` 기반 얕은 갱신을 쓴다(discover-explorer 와 동일 패턴).
  *   서버 라운드트립이 없어 정적 홈/상세 페이지의 프리렌더를 해치지 않는다.
+ * - `usePathname` 으로 경로 변경도 감지해 새 경로의 URL 에도 현재 값을 반영한다
+ *   (toggle 없이 Link 이동만 해도 이전 경로에만 남아있던 `?adult=1` 이 새 경로에서
+ *   사라지는 문제 방지). `usePathname` 은 `useSearchParams` 와 달리 정적 렌더링에
+ *   CSR bailout 을 강제하지 않는다.
  */
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 
 /** URL 에 상태를 표기하는 쿼리 파라미터 키와 "켜짐" 값. */
 const ADULT_PARAM = "adult";
@@ -119,6 +125,14 @@ export function AdultContentProvider({ children }: { children: ReactNode }) {
     getSnapshot,
     getServerSnapshot
   );
+  const pathname = usePathname();
+
+  // 클라이언트 네비게이션으로 경로가 바뀌면 새 경로의 URL 에도 현재 값을 반영한다.
+  // syncAdultToUrl 자체는 값이 바뀔 때만 호출되므로(toggle), 값 변경 없이 경로만
+  // 바뀌는 경우 URL 이 이전 경로 기준으로 남는 문제를 막는다.
+  useEffect(() => {
+    syncAdultToUrl(includeAdult);
+  }, [pathname, includeAdult]);
 
   const setIncludeAdult = useCallback((next: boolean) => {
     setStoreValue(next);

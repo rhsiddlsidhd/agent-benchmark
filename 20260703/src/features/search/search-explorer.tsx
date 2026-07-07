@@ -143,7 +143,14 @@ export function SearchExplorer() {
   }
 
   const hasSubmitted = submittedQuery.length > 0;
-  const results = data?.pages.flatMap((page) => page.results) ?? [];
+  const rawResults = data?.pages.flatMap((page) => page.results) ?? [];
+  // 페이지 경계에서 정렬이 바뀌면 같은 항목이 두 페이지에 걸쳐 중복될 수 있어
+  // media_type+id 복합 키로 dedupe(영화/TV/인물 id 는 타입 간 겹칠 수 있음).
+  const results = [
+    ...new Map(
+      rawResults.map((item) => [`${item.media_type}:${item.id}`, item])
+    ).values(),
+  ];
   const { movies, tv, people } = partitionResults(results);
   const hasResults = results.length > 0;
 

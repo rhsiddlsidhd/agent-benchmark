@@ -65,7 +65,7 @@ export function ImagePlaceholder({
   label: string;
   className?: string;
 }) {
-  const initial = label.trim().charAt(0).toUpperCase() || "?";
+  const initial = [...label.trim()][0]?.toUpperCase() ?? "?";
   return (
     <div
       className={`flex flex-col items-center justify-center gap-2 text-content-muted${

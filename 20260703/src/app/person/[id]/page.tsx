@@ -140,7 +140,7 @@ export default async function PersonDetailPage({
   const crewEntries = normalizeCredits(credits.crew);
   const hasFilmography = castEntries.length > 0 || crewEntries.length > 0;
 
-  const initial = person.name.trim().charAt(0).toUpperCase() || "?";
+  const initial = [...person.name.trim()][0]?.toUpperCase() ?? "?";
   const birthLine = formatBirthLine(person);
 
   return (
@@ -161,6 +161,7 @@ export default async function PersonDetailPage({
                 placeholder="blur"
                 blurDataURL={BLUR_DATA_URL}
                 className="object-cover"
+                preload
               />
             ) : (
               <div

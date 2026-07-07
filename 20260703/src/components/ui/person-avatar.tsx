@@ -33,7 +33,7 @@ export function PersonAvatar({
   size = "w185",
   className,
 }: PersonAvatarProps) {
-  const initial = name.trim().charAt(0).toUpperCase() || "?";
+  const initial = [...name.trim()][0]?.toUpperCase() ?? "?";
 
   return (
     <figure

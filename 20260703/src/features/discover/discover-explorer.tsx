@@ -178,7 +178,9 @@ export function DiscoverExplorer({
   }
 
   const results = data?.pages.flatMap((page) => page.results) ?? [];
-  const cards = results.map(toCardData);
+  // 페이지 경계에서 정렬이 바뀌면 같은 항목이 두 페이지에 걸쳐 중복될 수 있어 id 로 dedupe.
+  const dedupedResults = [...new Map(results.map((item) => [item.id, item])).values()];
+  const cards = dedupedResults.map(toCardData);
   const hasResults = cards.length > 0;
 
   // 결과 변화 안내(aria-live).
