@@ -21,105 +21,16 @@
  *   PersonAvatar 플레이스홀더가 처리한다.
  */
 import { notFound } from "next/navigation";
-import { BackdropImage, ContentCard, Pill, PosterImage, RatingBadge } from "@/src/components/ui";
+import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge } from "@/src/components/ui";
 import {
   getMovie,
   getMovieCredits,
   getMovieRecommendations,
 } from "@/src/lib/tmdb/client";
-import type { CrewMember } from "@/src/lib/tmdb/types";
-import { PersonLink } from "./person-link";
+import { yearOf, formatRuntime } from "@/src/utils";
+import { MAX_CAST } from "./_constants";
+import { selectKeyCrew, crewRoleLabel } from "./_utils";
 import styles from "./detail.module.css";
-
-/** 출연진 레일 최대 노출 인원(§3.3 — 주요 배역 위주). */
-const MAX_CAST = 20;
-
-/** 감독·제작진 섹션에 노출할 주요 직무(TMDB job 원문). */
-const KEY_CREW_JOBS: readonly string[] = [
-  "Director",
-  "Writer",
-  "Screenplay",
-  "Story",
-  "Producer",
-];
-
-/** TMDB job 원문 → 한국어 표기. 매핑에 없으면 원문 유지. */
-const JOB_LABELS: Record<string, string> = {
-  Director: "감독",
-  Writer: "각본",
-  Screenplay: "각본",
-  Story: "원안",
-  Producer: "제작",
-};
-
-/** 주요 제작진을 인물 단위로 묶은 뷰 모델(같은 인물의 여러 직무를 병합). */
-interface KeyCrewPerson {
-  id: number;
-  name: string;
-  profilePath: string | null;
-  jobs: string[];
-}
-
-/** 출시일 문자열에서 연도만 추출. 빈 문자열이면 null(§2.9 결측). */
-function yearOf(date: string): string | null {
-  return date ? date.slice(0, 4) : null;
-}
-
-/** 러닝타임(분) → "N시간 M분" 표기. 없거나 0 이하이면 null(호출부에서 대체 문구). */
-function formatRuntime(runtime: number | null): string | null {
-  if (runtime === null || runtime <= 0) {
-    return null;
-  }
-  const hours = Math.floor(runtime / 60);
-  const minutes = runtime % 60;
-  if (hours > 0 && minutes > 0) {
-    return `${hours}시간 ${minutes}분`;
-  }
-  if (hours > 0) {
-    return `${hours}시간`;
-  }
-  return `${minutes}분`;
-}
-
-/** crew 배열에서 주요 직무만 인물 단위로 병합(감독 우선 정렬). */
-function selectKeyCrew(crew: CrewMember[]): KeyCrewPerson[] {
-  const byPerson = new Map<number, KeyCrewPerson>();
-  for (const member of crew) {
-    if (!KEY_CREW_JOBS.includes(member.job)) {
-      continue;
-    }
-    const existing = byPerson.get(member.id);
-    if (existing) {
-      if (!existing.jobs.includes(member.job)) {
-        existing.jobs.push(member.job);
-      }
-    } else {
-      byPerson.set(member.id, {
-        id: member.id,
-        name: member.name,
-        profilePath: member.profile_path,
-        jobs: [member.job],
-      });
-    }
-  }
-  // 감독을 먼저 노출(Director 포함 인물 우선).
-  return [...byPerson.values()].sort(
-    (a, b) =>
-      Number(b.jobs.includes("Director")) - Number(a.jobs.includes("Director"))
-  );
-}
-
-/** 병합된 직무 목록 → 한국어 역할 라벨("감독 · 각본" 등, 중복 제거). */
-function crewRoleLabel(jobs: string[]): string {
-  const labels: string[] = [];
-  for (const job of jobs) {
-    const label = JOB_LABELS[job] ?? job;
-    if (!labels.includes(label)) {
-      labels.push(label);
-    }
-  }
-  return labels.join(" · ");
-}
 
 export default async function MovieDetailPage({
   params,

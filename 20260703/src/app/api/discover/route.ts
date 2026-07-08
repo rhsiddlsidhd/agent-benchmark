@@ -29,10 +29,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { discoverByGenre } from "@/src/lib/tmdb/client";
 import { isTmdbError } from "@/src/lib/tmdb/errors";
-import type {
-  DiscoverErrorResponse,
-  DiscoverResponse,
-} from "@/src/features/discover/types";
+import type { DiscoverErrorResponse, DiscoverResponse } from "./_types";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;

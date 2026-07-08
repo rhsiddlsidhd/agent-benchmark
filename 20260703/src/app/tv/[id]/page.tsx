@@ -23,52 +23,17 @@
  *   플레이스홀더가 처리한다.
  */
 import { notFound } from "next/navigation";
-import { BackdropImage, ContentCard, Pill, PosterImage, RatingBadge } from "@/src/components/ui";
+import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge } from "@/src/components/ui";
 import {
   getTvCredits,
   getTvRecommendations,
   getTvShow,
 } from "@/src/lib/tmdb/client";
-import { PersonLink } from "./person-link";
-import { SeasonSelector } from "./season-selector";
+import { yearOf, formatRuntime } from "@/src/utils";
+import { MAX_CAST } from "./_constants";
+import { pickEpisodeRuntime } from "./_utils";
+import { SeasonSelector } from "./_components";
 import styles from "./detail.module.css";
-
-/** 출연진 레일 최대 노출 인원(§3.4 — 주요 배역 위주, 영화 상세와 동일). */
-const MAX_CAST = 20;
-
-/** 방영일 문자열에서 연도만 추출. 빈 문자열이면 null(§2.9 결측). */
-function yearOf(date: string): string | null {
-  return date ? date.slice(0, 4) : null;
-}
-
-/** 러닝타임(분) → "N시간 M분" 표기. 없거나 0 이하이면 null(호출부에서 대체 문구). */
-function formatRuntime(runtime: number | null): string | null {
-  if (runtime === null || runtime <= 0) {
-    return null;
-  }
-  const hours = Math.floor(runtime / 60);
-  const minutes = runtime % 60;
-  if (hours > 0 && minutes > 0) {
-    return `${hours}시간 ${minutes}분`;
-  }
-  if (hours > 0) {
-    return `${hours}시간`;
-  }
-  return `${minutes}분`;
-}
-
-/**
- * TV 회차 러닝타임 후보(episode_run_time)에서 대표값을 고른다.
- * TMDB 가 여러 값을 줄 수 있어 첫 양수 값을 사용, 없으면 null(§2.9 결측).
- */
-function pickEpisodeRuntime(runtimes: number[]): number | null {
-  for (const value of runtimes) {
-    if (value > 0) {
-      return value;
-    }
-  }
-  return null;
-}
 
 export default async function TvDetailPage({
   params,

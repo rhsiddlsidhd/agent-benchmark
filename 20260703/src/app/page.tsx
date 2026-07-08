@@ -15,113 +15,14 @@
  * 결측(poster/backdrop null)은 Poster/BackdropImage 플레이스홀더가 처리한다.
  */
 import Link from "next/link";
-import { BackdropImage, ContentCard } from "@/src/components/ui";
+import { BackdropImage } from "@/src/components/ui";
 import {
   getPopularMovies,
   getPopularTv,
   getTrending,
 } from "@/src/lib/tmdb/client";
-import type {
-  Movie,
-  MovieSearchResult,
-  MultiSearchResult,
-  TVShow,
-  TVSearchResult,
-} from "@/src/lib/tmdb/types";
-import styles from "./home.module.css";
-
-/** 캐러셀 카드로 정규화한 뷰 모델(영화/TV 공통). */
-interface CardItem {
-  href: string;
-  title: string;
-  posterPath: string | null;
-  year: string | null;
-  rating: number;
-}
-
-/** 트렌딩(multi) 결과에서 포스터/제목이 있는 영화·TV 만 취한다(인물 제외). */
-function isTitledResult(
-  item: MultiSearchResult
-): item is MovieSearchResult | TVSearchResult {
-  return item.media_type === "movie" || item.media_type === "tv";
-}
-
-/** 출시/방영일 문자열에서 연도만 추출. 빈 문자열이면 null(§2.9 결측). */
-function yearOf(date: string): string | null {
-  return date ? date.slice(0, 4) : null;
-}
-
-/** 트렌딩 영화/TV 결과 → CardItem. media_type 으로 title/name·경로 분기. */
-function trendingToCard(item: MovieSearchResult | TVSearchResult): CardItem {
-  if (item.media_type === "movie") {
-    return {
-      href: `/movie/${item.id}`,
-      title: item.title,
-      posterPath: item.poster_path,
-      year: yearOf(item.release_date),
-      rating: item.vote_average,
-    };
-  }
-  return {
-    href: `/tv/${item.id}`,
-    title: item.name,
-    posterPath: item.poster_path,
-    year: yearOf(item.first_air_date),
-    rating: item.vote_average,
-  };
-}
-
-/** 인기 영화 → CardItem. */
-function movieToCard(movie: Movie): CardItem {
-  return {
-    href: `/movie/${movie.id}`,
-    title: movie.title,
-    posterPath: movie.poster_path,
-    year: yearOf(movie.release_date),
-    rating: movie.vote_average,
-  };
-}
-
-/** 인기 TV → CardItem. */
-function tvToCard(show: TVShow): CardItem {
-  return {
-    href: `/tv/${show.id}`,
-    title: show.name,
-    posterPath: show.poster_path,
-    year: yearOf(show.first_air_date),
-    rating: show.vote_average,
-  };
-}
-
-/** 캐러셀 섹션 — h2 헤더 + 가로 스크롤 ContentCard 레일. */
-function CarouselSection({
-  title,
-  items,
-}: {
-  title: string;
-  items: CardItem[];
-}) {
-  return (
-    <section aria-label={title} className="mx-auto w-full max-w-page">
-      <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
-        {title}
-      </h2>
-      <ul className={`mt-4 ${styles.rail}`}>
-        {items.map((item, index) => (
-          <li key={`${item.href}-${index}`} className={styles.railItem}>
-            <ContentCard
-              href={item.href}
-              title={item.title}
-              posterPath={item.posterPath}
-              year={item.year}
-              rating={item.rating}
-            />
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
+import { isTitledResult, trendingToCard, movieToCard, tvToCard } from "./_utils";
+import { CarouselSection } from "./_components";
 
 export default async function Home() {
   const [trending, popularMovies, popularTv] = await Promise.all([

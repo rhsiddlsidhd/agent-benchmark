@@ -56,3 +56,35 @@ flowchart TD
     C --> D["git branch -d feat/*"]
     D --> E["git pull — dev"]
 ```
+
+# 네이밍 컨벤션
+
+`src/app`/`src/components`/`src/lib` 전체에 동일 적용한다.
+
+## 파일명 (아티팩트 타입별)
+
+| 아티팩트         | 케이스                    | 예                  |
+| ---------------- | ------------------------- | ------------------- |
+| 컴포넌트         | PascalCase                | `PersonLink.tsx`    |
+| 훅               | camelCase, `use` 접두사 필수 | `useSearchInfinite.ts` |
+| 타입/인터페이스  | PascalCase                | `KeyCrewPerson.ts`  |
+| 순수함수/유틸    | camelCase                 | `formatRuntime.ts`  |
+| 상수             | camelCase                 | `keyCrewJobs.ts`     |
+
+- 배럴 파일은 위 표와 무관하게 `index.ts`(컴포넌트 배럴은 `index.tsx`)로 고정한다.
+- 아티팩트 타입에 케이스를 맞추지 않는다(예: 컴포넌트를 kebab-case로 만들지 않는다) — 파일명만 보고 안에 뭐가 있는지 구분되어야 한다.
+
+## Export 식별자 케이스 (상수)
+
+- 원시 리터럴 고정값(매직 넘버/문자열 대체용)은 SCREAMING_SNAKE_CASE로 export한다.
+  예: `export const BLUR_DATA_URL = "..."` (`src/lib/tmdb/images.ts`)
+- 구조화된 설정/프리셋 객체(variants, transition 등 필드 여러 개)는 camelCase로 export한다.
+  예: `export const cardSpring: Transition = {...}` (`src/lib/motion.ts`)
+- 판단 기준: 값 하나로 의미가 끝나면 리터럴(UPPERCASE), 여러 필드를 가진 구조/동작 정의면 프리셋(camelCase).
+
+# 폴더 배치 판단
+
+- 파일을 새로 만들거나 옮길 때 네이밍 케이스만 맞추고 넘어가지 않는다 — 대상 폴더 `CLAUDE.md` 정의 문단과 성격이 맞는지 먼저 확인한다.
+- 성격이 대상 폴더 정의와 안 맞으면 그대로 두지 않는다 — 후보가 될 다른 `src/*` 폴더들의 `CLAUDE.md` 정의와 비교해 가장 맞는 곳으로 옮긴다.
+- 어느 폴더 정의와도 안 맞으면 기존 폴더에 임의로 끼워넣지 않는다 — 새 폴더를 만들거나 사용자에게 확인한다.
+- 후보 폴더 `CLAUDE.md` 비교 시 키워드 grep 매칭 결과만으로 "관련 규정 없음"이라 결론짓지 않는다 — 규칙이 다른 표현(예: provider 대신 "외부 상태관리 라이브러리")으로 적혀 있을 수 있으니 후보 문서는 전체를 통독한다.
