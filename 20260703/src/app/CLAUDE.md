@@ -2,7 +2,7 @@
 
 > Last updated: 2026-07-08
 
-Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Handler(API) 세부 규칙은 `src/app/api/CLAUDE.md`(작성 예정)에서 관리한다.
+Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Handler(API) 세부 규칙은 `src/app/api/CLAUDE.md`에서 관리한다.
 
 ## Structure
 - 라우트 전용 부속물(타입/순수함수/상수/서브 UI)은 Next 공식 private 폴더(`_folder`)로 분리한다. **필요한 것만** 생성 — 빈 폴더 강제 금지. 대표 예(`movie/[id]/`):
@@ -36,7 +36,7 @@ Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Han
 - `error.tsx`는 다음 중 하나에 해당할 때만 라우트별로 만든다 — 아니면 만들지 않고 루트 `error.tsx`에 위임한다. `error.js`는 선언되지 않은 세그먼트의 에러를 가장 가까운 부모 boundary로 자동 버블업한다(`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/error.md`).
   1. 라우트마다 다른 에러 메시지/UI가 필요하다.
   2. 그 라우트 위에 별도 `layout.tsx`가 끼어 있어 재시도 범위를 좁혀야 한다.
-- `page.tsx`에 interface/순수함수/상수/서브 UI 컴포넌트/훅을 인라인으로 쌓지 않는다 — `_components`/`_types`/`_utils`/`_constants`/`_hooks`로 분리한다. 이 분리 규칙은 `page.tsx` 세그먼트 기준이며, `route.ts`(api) 전용 규칙은 `src/app/api/CLAUDE.md`에서 별도 관리한다(작성 예정).
+- `page.tsx`에 interface/순수함수/상수/서브 UI 컴포넌트/훅을 인라인으로 쌓지 않는다 — `_components`/`_types`/`_utils`/`_constants`/`_hooks`로 분리한다. 이 분리 규칙은 `page.tsx` 세그먼트 기준이며, `route.ts`(api) 전용 규칙은 `src/app/api/CLAUDE.md`에서 별도 관리한다.
 - `_components`/`_types`/`_utils`/`_constants`/`_hooks`를 폴더 + `index.ts`(컴포넌트는 `index.tsx`) 배럴 형태 외의 방식으로 만들지 않는다 — 폴더 안 파일이 1개뿐이어도 예외 없이 이 형태를 유지한다.
 - 각 파일은 기본적으로 export 1개다(`_components`/`_utils`/`_types`/`_constants`/`_hooks` 공통). 여러 export를 한 파일에 두는 건 하위 export가 주 export의 함수 body 안에서 직접 호출될 때만 허용한다 — 같은 도메인/섹션에서 쓰인다는 이유만으로 묶지 않는다.
   - 컴포넌트 예: `Skeleton`이 내부에서 `SkeletonCard`를 호출(`src/components/ui/skeleton.tsx`).
