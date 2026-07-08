@@ -10,4 +10,5 @@
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|----------|------|------|
 | 2026-07-05 | 초기 구성 (planner/implementer/qa + dev-orchestrator) | 전체 | 초기 개발 단계, 기능 개발 파이프라인 재사용형으로 구축 |
+| 2026-07-08 | src/app, src/components, src/lib CLAUDE.md에 타임스탬프 추가 | src/*/CLAUDE.md | 하위 CLAUDE.md 최신성 추적 |
 
