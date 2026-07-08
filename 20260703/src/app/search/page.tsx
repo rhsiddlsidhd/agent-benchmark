@@ -8,7 +8,7 @@
  */
 import type { Metadata } from "next";
 
-import { SearchExplorer } from "@/src/features/search/search-explorer";
+import { SearchExplorer } from "./_components";
 
 export const metadata: Metadata = {
   title: "검색",

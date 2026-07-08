@@ -16,10 +16,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { searchMulti } from "@/src/lib/tmdb/client";
 import { isTmdbError } from "@/src/lib/tmdb/errors";
-import type {
-  SearchErrorResponse,
-  SearchResponse,
-} from "@/src/features/search/types";
+import type { SearchErrorResponse, SearchResponse } from "./_types";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;

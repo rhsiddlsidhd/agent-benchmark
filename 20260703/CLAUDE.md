@@ -10,5 +10,8 @@
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|----------|------|------|
 | 2026-07-05 | 초기 구성 (planner/implementer/qa + dev-orchestrator) | 전체 | 초기 개발 단계, 기능 개발 파이프라인 재사용형으로 구축 |
-| 2026-07-08 | src/app, src/components, src/lib CLAUDE.md에 타임스탬프 추가 | src/*/CLAUDE.md | 하위 CLAUDE.md 최신성 추적 |
+| 2026-07-08 | src/app, src/components, src/lib CLAUDE.md 신설, src/context/src/hooks CLAUDE.md 신설, AGENTS.md 네이밍 컨벤션 추가, 컴포넌트 Props/타입 규칙을 docs/COMPONENT_TYPES.md로 분리 | src/app/CLAUDE.md, src/components/CLAUDE.md, src/lib/CLAUDE.md, src/context/CLAUDE.md, src/hooks/CLAUDE.md, AGENTS.md, docs/COMPONENT_TYPES.md | features 폴더 해체를 앞두고 도메인별 배치 규칙 정비 + Context/공유 훅 배치 규칙 신설 필요, 신설된 5개 CLAUDE.md가 공통 참조할 네이밍 컨벤션(AGENTS.md)·컴포넌트 Props/타입 규칙(COMPONENT_TYPES.md)을 중복 없이 별도 문서로 분리 |
+| 2026-07-08 | src/app/api CLAUDE.md 신설, src/app/CLAUDE.md "작성 예정" 표기 제거 | src/app/api/CLAUDE.md, src/app/CLAUDE.md | api 폴더 규칙 문서 작성 완료에 맞춰 참조 링크 정리 |
+| 2026-07-08 | "폴더 배치 판단" 섹션 신설(파일 신규/이동 시 대상 폴더 CLAUDE.md 정의와 성격 일치 확인, 불일치 시 후보 폴더 비교 후 이동, 매칭 안 되면 신규 폴더/사용자 확인 강제) | AGENTS.md | 네이밍 케이스만 맞고 폴더 성격이 안 맞는 배치 실수 방지 |
+| 2026-07-08 | 소개 문단 폴더 참조 오기 수정(`ui/` → `components/`) | src/components/CLAUDE.md | 실제 상위 폴더명과 불일치하던 표기 정정 |
 

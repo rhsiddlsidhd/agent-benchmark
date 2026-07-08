@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { QueryProvider } from "@/src/components/providers/query-provider";
-import { AdultContentProvider } from "@/src/features/adult-content/adult-content-context";
-import { AdultToggle } from "@/src/features/adult-content/adult-toggle";
+import { QueryProvider } from "@/src/lib/tanstack-query/QueryProvider";
+import { AdultContentProvider } from "@/src/context/AdultContentContext";
+import { AdultToggle } from "@/src/components/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {

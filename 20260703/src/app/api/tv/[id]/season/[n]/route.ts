@@ -17,10 +17,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { getTvSeason } from "@/src/lib/tmdb/client";
 import { isTmdbError } from "@/src/lib/tmdb/errors";
-import type {
-  SeasonErrorResponse,
-  SeasonResponse,
-} from "@/src/features/tv-detail/types";
+import type { SeasonErrorResponse, SeasonResponse } from "./_types";
 
 export async function GET(
   _request: NextRequest,

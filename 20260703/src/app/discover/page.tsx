@@ -15,36 +15,14 @@
  */
 import type { Metadata } from "next";
 
-import { DiscoverExplorer } from "@/src/features/discover/discover-explorer";
 import { getGenres } from "@/src/lib/tmdb/client";
-import type { Genre, MediaType } from "@/src/lib/tmdb/types";
+import { DiscoverExplorer } from "./_components";
+import { parseType, parseGenreIds } from "./_utils";
 
 export const metadata: Metadata = {
   title: "장르 탐색",
   description: "미디어 타입과 장르로 영화·TV 프로그램을 탐색하세요.",
 };
-
-/** searchParams 값(string | string[] | undefined)에서 첫 문자열만 취한다. */
-function firstValue(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-/** type 파라미터를 movie/tv 로 검증(그 외/누락은 movie 기본). */
-function parseType(value: string | string[] | undefined): MediaType {
-  return firstValue(value) === "tv" ? "tv" : "movie";
-}
-
-/** genres 파라미터를 파싱해 주어진 장르 목록에 존재하는 양의 정수 id 만 남긴다. */
-function parseGenreIds(
-  value: string | string[] | undefined,
-  genres: Genre[]
-): number[] {
-  const valid = new Set(genres.map((genre) => genre.id));
-  return (firstValue(value) ?? "")
-    .split(",")
-    .map((token) => Number(token.trim()))
-    .filter((id) => Number.isInteger(id) && valid.has(id));
-}
 
 export default async function DiscoverPage({
   searchParams,
