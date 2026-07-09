@@ -1,8 +1,7 @@
-import { ContentCard } from "@/src/components/ui";
+import { ContentCard, ScrollRail } from "@/src/components/ui";
 import type { CardItem } from "../_types";
-import styles from "../home.module.css";
 
-/** 캐러셀 섹션 — h2 헤더 + 가로 스크롤 ContentCard 레일. */
+/** 캐러셀 섹션 — h2 헤더 + ScrollRail(드래그/키보드 스크롤 가능한 ContentCard 레일). */
 export function CarouselSection({
   title,
   items,
@@ -15,9 +14,9 @@ export function CarouselSection({
       <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
         {title}
       </h2>
-      <ul className={`mt-4 ${styles.rail}`}>
+      <ScrollRail>
         {items.map((item, index) => (
-          <li key={`${item.href}-${index}`} className={styles.railItem}>
+          <li key={`${item.href}-${index}`}>
             <ContentCard
               href={item.href}
               title={item.title}
@@ -27,7 +26,7 @@ export function CarouselSection({
             />
           </li>
         ))}
-      </ul>
+      </ScrollRail>
     </section>
   );
 }

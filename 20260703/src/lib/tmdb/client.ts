@@ -8,6 +8,7 @@ import type {
   MediaType,
   Movie,
   MovieDetail,
+  MovieSearchResult,
   MultiSearchResult,
   Paginated,
   PersonCombinedCredits,
@@ -15,6 +16,7 @@ import type {
   SeasonDetail,
   TVDetail,
   TVShow,
+  TVSearchResult,
 } from "./types";
 
 /**
@@ -144,30 +146,122 @@ async function tmdbRequestOrNull<T>(
 }
 
 // ---------------------------------------------------------------------------
+// 홈 인기 세션 공용 헬퍼 (T1~T4)
+// ---------------------------------------------------------------------------
+
+/**
+ * 오늘 기준 `months`개월 전 날짜를 TMDB date 파라미터 포맷(YYYY-MM-DD)으로 반환한다.
+ * 요청 시점마다 새로 계산되며(하드코딩 금지), `months = 0`이면 오늘 날짜.
+ */
+function dateParamMonthsAgo(months: number): string {
+  const date = new Date();
+  date.setUTCMonth(date.getUTCMonth() - months);
+  return date.toISOString().slice(0, 10);
+}
+
+/** `popularity` 내림차순 재정렬(원본 배열 변형 없음). TMDB `sort_by`만 믿지 않기 위함. */
+function sortByPopularityDesc<T extends { popularity: number }>(items: T[]): T[] {
+  return [...items].sort((a, b) => b.popularity - a.popularity);
+}
+
+/** 트렌딩(all) 결과에서 person을 제외한 영화/TV만 남긴다(히어로 캐러셀용). */
+function isTitledTrendingResult(
+  item: MultiSearchResult
+): item is MovieSearchResult | TVSearchResult {
+  return item.media_type === "movie" || item.media_type === "tv";
+}
+
+// ---------------------------------------------------------------------------
 // 목록류 (revalidate: 3600)
 // ---------------------------------------------------------------------------
 
-/** 이번 주 트렌딩(영화·TV·인물 혼합). media_type으로 분기. */
-export function getTrending(): Promise<Paginated<MultiSearchResult>> {
-  return tmdbRequest<Paginated<MultiSearchResult>>("/trending/all/week", {
+/**
+ * 인기 한국 드라마(홈 "인기 드라마" 세션).
+ *
+ * `/discover/tv` — `with_type=2|4`(Miniseries+Scripted, 실측상 2만 쓰면 최근작 절반
+ * 가까이 누락), `first_air_date.gte/.lte`는 오늘 기준 최근 1년(매 호출 동적 계산).
+ * `sort_by`만 믿지 않고 `popularity` 내림차순으로 재정렬한다.
+ */
+export async function getPopularKrDramas(): Promise<TVShow[]> {
+  const data = await tmdbRequest<Paginated<TVShow>>("/discover/tv", {
+    searchParams: {
+      with_origin_country: "KR",
+      with_type: "2|4",
+      sort_by: "popularity.desc",
+      "vote_count.gte": 3,
+      "first_air_date.gte": dateParamMonthsAgo(12),
+      "first_air_date.lte": dateParamMonthsAgo(0),
+    },
     cache: { revalidate: REVALIDATE.LIST },
   });
+  return sortByPopularityDesc(data.results);
 }
 
-/** 인기 영화 목록(페이지네이션). */
-export function getPopularMovies(page = 1): Promise<Paginated<Movie>> {
-  return tmdbRequest<Paginated<Movie>>("/movie/popular", {
-    searchParams: { page },
+/**
+ * 인기 한국 예능(홈 "인기 예능" 세션).
+ *
+ * `/discover/tv` — `with_type=3|5`(Reality+Talk Show). 최근성 필터는
+ * `first_air_date`가 아닌 `air_date`(에피소드 방영일) 사용 — 런닝맨/아는형님처럼
+ * 장수 프랜차이즈는 `first_air_date` 기준으로 거르면 현재 방영작이 누락된다(실측 근거,
+ * TODO.md). `.gte/.lte`는 오늘 기준 최근 6개월(매 호출 동적 계산). `popularity`
+ * 내림차순 재정렬.
+ */
+export async function getPopularKrVariety(): Promise<TVShow[]> {
+  const data = await tmdbRequest<Paginated<TVShow>>("/discover/tv", {
+    searchParams: {
+      with_origin_country: "KR",
+      with_type: "3|5",
+      sort_by: "popularity.desc",
+      "vote_count.gte": 5,
+      "air_date.gte": dateParamMonthsAgo(6),
+      "air_date.lte": dateParamMonthsAgo(0),
+    },
     cache: { revalidate: REVALIDATE.LIST },
   });
+  return sortByPopularityDesc(data.results);
 }
 
-/** 인기 TV 목록(페이지네이션). */
-export function getPopularTv(page = 1): Promise<Paginated<TVShow>> {
-  return tmdbRequest<Paginated<TVShow>>("/tv/popular", {
-    searchParams: { page },
+/**
+ * 인기 한국 영화(홈 "인기 영화" 세션).
+ *
+ * `/discover/movie` — movie는 국가 필드가 없어 `with_original_language=ko`로 근사.
+ * `primary_release_date.gte/.lte`는 오늘 기준 최근 6개월(매 호출 동적 계산, 미개봉작
+ * 유입 방지). `without_genres=99,10402`(다큐+음악)로 콘서트 실황/특별상영 필름 배제
+ * (`with_release_type`은 실측상 결과에 영향 없음 확인). `popularity` 내림차순 재정렬.
+ */
+export async function getPopularKrMovies(): Promise<Movie[]> {
+  const data = await tmdbRequest<Paginated<Movie>>("/discover/movie", {
+    searchParams: {
+      with_original_language: "ko",
+      sort_by: "popularity.desc",
+      "vote_count.gte": 2,
+      "primary_release_date.gte": dateParamMonthsAgo(6),
+      "primary_release_date.lte": dateParamMonthsAgo(0),
+      without_genres: "99,10402",
+    },
     cache: { revalidate: REVALIDATE.LIST },
   });
+  return sortByPopularityDesc(data.results);
+}
+
+/**
+ * 히어로 캐러셀 후보(홈 히어로, 3~5개).
+ *
+ * `/trending/all/week` 조회 — person 제외 → `backdrop_path` 있는 항목만 후보 →
+ * `popularity` 재정렬 후 상위 5개. 최근성 별도 필터는 적용하지 않는다(trending
+ * 자체가 half-life 감쇠로 최신성을 반영하므로, 재화제화된 구작을 부당 배제할 위험
+ * 방지). 후보가 3개 미만이면(이례적 상황) 있는 만큼만 반환하고 임의로 채우지 않는다.
+ */
+export async function getHeroCarouselItems(): Promise<
+  (MovieSearchResult | TVSearchResult)[]
+> {
+  const trending = await tmdbRequest<Paginated<MultiSearchResult>>(
+    "/trending/all/week",
+    { cache: { revalidate: REVALIDATE.LIST } }
+  );
+  const titled = trending.results.filter(isTitledTrendingResult);
+  const withBackdrop = titled.filter((item) => item.backdrop_path !== null);
+  return sortByPopularityDesc(withBackdrop).slice(0, 5);
 }
 
 /** 장르 목록(영화/TV). 결과 배열만 반환. */

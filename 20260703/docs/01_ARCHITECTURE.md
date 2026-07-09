@@ -3,7 +3,7 @@
 > 상태: Draft
 > 작성자:
 > 작성일:
-> 최종 수정일:
+> 최종 수정일: 2026-07-09
 > 관련 문서: [00_PRD.md](./00_PRD.md)
 
 ---
@@ -69,6 +69,7 @@ TanStack Query ──▶ /api/* Route Handler ──▶ tmdb-client ──▶ TM
 
 - 홈/상세 페이지: Server Component에서 직접 `tmdb-client` 호출, fetch revalidate로 캐싱
 - 검색/무한스크롤: Client Component + TanStack Query가 Route Handler(`/api/*`) 경유 (API 키는 Route Handler 안에서만 사용)
+- 홈 히어로 캐러셀처럼 자동전환 등 인터랙션이 필요한 하위 컴포넌트는 Client Component로 분리하되, 데이터 페칭 자체는 상위 Server Component가 그대로 담당하고 결과만 props로 전달한다(API 키 서버사이드 은닉 원칙은 유지)
 
 ### 에러/엣지케이스 처리 정책
 
@@ -82,13 +83,13 @@ TanStack Query ──▶ /api/* Route Handler ──▶ tmdb-client ──▶ TM
 
 ### 5.1 tmdb-client
 - 책임: TMDB API 호출 캡슐화, 응답 타입 정의, revalidate 정책 적용
-- 인터페이스: `getTrending()`, `getMovie(id)`, `getTvShow(id)`, `getPerson(id)`, `searchMulti(query)`, `getGenres(type)` 등
+- 인터페이스: `getPopularKrDramas()`, `getPopularKrVariety()`, `getPopularKrMovies()`, `getHeroCarouselItems()`, `getMovie(id)`, `getTvShow(id)`, `getPerson(id)`, `searchMulti(query)`, `getGenres(type)` 등
 - 의존성: TMDB REST API, `process.env.TMDB_API_KEY`
 
 ### 5.2 home
-- 책임: 인기/트렌딩 영화·TV 목록 렌더 (FR-1)
-- 인터페이스: `/` 페이지 (Server Component)
-- 의존성: tmdb-client, ui
+- 책임: 히어로 캐러셀(트렌딩 기반 자동전환) + 인기 세션(드라마/예능/영화) 3종 렌더 (FR-1)
+- 인터페이스: `/` 페이지 (Server Component, 데이터 페칭) + `HeroCarousel`(Client Component, 자동전환 인터랙션)
+- 의존성: tmdb-client, ui(`ScrollRail`, `useDragScroll`)
 
 ### 5.3 search
 - 책임: 통합 검색(영화/TV/인물) + 무한스크롤 (FR-2). 검색은 제출(Enter) 시에만 `/search` 결과가 갱신되며, 실시간 자동완성 드롭다운은 제공하지 않는다
@@ -101,8 +102,8 @@ TanStack Query ──▶ /api/* Route Handler ──▶ tmdb-client ──▶ TM
 - 의존성: tmdb-client, ui
 
 ### 5.5 ui
-- 책임: 공통 컴포넌트(카드, 이미지, 필터/토글, 애니메이션 래퍼) — 디자인 토큰은 [03_DESIGN.md](./03_DESIGN.md) 참조
-- 인터페이스: `<ContentCard>`, `<PosterImage>`, `<AdultToggle>`, `<GenreFilter>` 등
+- 책임: 공통 컴포넌트(카드, 이미지, 필터/토글, 애니메이션 래퍼, 드래그 스크롤 레일) — 디자인 토큰은 [03_DESIGN.md](./03_DESIGN.md) 참조
+- 인터페이스: `<ContentCard>`, `<PosterImage>`, `<AdultToggle>`, `<GenreFilter>`, `<ScrollRail>`(내부적으로 `useDragScroll` 훅 사용, 홈 캐러셀 3종 + movie/tv 상세 레일 공용) 등
 - 의존성: Tailwind CSS, framer-motion
 
 ## 6. 데이터 모델 (Data Model)

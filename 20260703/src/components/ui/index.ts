@@ -15,3 +15,4 @@ export { Pill } from "./Pill";
 export { FilterChip } from "./FilterChip";
 export { PersonLink } from "./PersonLink";
 export { AdultToggle } from "./AdultToggle";
+export { ScrollRail } from "./ScrollRail";
