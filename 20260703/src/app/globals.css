@@ -107,6 +107,24 @@
   z-index: 90;
 }
 
+/*
+ * 캐러셀 드래그 스크롤 레일 유틸 (ScrollRail — TODO.md 캐러셀 드래그 스크롤 개선).
+ * 홈/상세 레일 3곳(home.module.css, movie·tv detail.module.css)의 중복 .rail CSS를
+ * 대체한다. scrollbar-hide 는 스크롤바 시각적 숨김, rail-snap 은 스냅 관련 3속성 묶음.
+ */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility rail-snap {
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Skeleton shimmer 키프레임 (§2.6 / §5) */
 @keyframes shimmer {
   0% {

@@ -1,8 +1,9 @@
 /**
  * 홈(`/`) 세그먼트 로딩 UI (T14 · NFR-1/NFR-3, 03_DESIGN §2.6/§5).
  *
- * page.tsx 가 getTrending/getPopularMovies/getPopularTv 를 병렬 조회하는 동안 표시되는
- * 스켈레톤. 히어로(backdrop) + 3개 캐러셀 레일 자리를 미리 잡아 레이아웃 이동(CLS)을 줄인다.
+ * page.tsx 가 getHeroCarouselItems/getPopularKrDramas/getPopularKrVariety/
+ * getPopularKrMovies 를 병렬 조회하는 동안 표시되는 스켈레톤. 히어로(backdrop) + 3개
+ * 캐러셀 레일 자리를 미리 잡아 레이아웃 이동(CLS)을 줄인다.
  * globals.css 의 `skeleton` shimmer 유틸을 사용하며 reduced-motion 은 전역 감쇠로 정적 처리(§5).
  *
  * loading.js 는 기본 Server Component 다(node_modules/next/dist/docs — file-conventions/loading).

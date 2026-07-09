@@ -23,7 +23,7 @@
  *   플레이스홀더가 처리한다.
  */
 import { notFound } from "next/navigation";
-import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge } from "@/src/components/ui";
+import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail } from "@/src/components/ui";
 import {
   getTvCredits,
   getTvRecommendations,
@@ -33,7 +33,6 @@ import { yearOf, formatRuntime } from "@/src/utils";
 import { MAX_CAST } from "./_constants";
 import { pickEpisodeRuntime } from "./_utils";
 import { SeasonSelector } from "./_components";
-import styles from "./detail.module.css";
 
 export default async function TvDetailPage({
   params,
@@ -136,9 +135,9 @@ export default async function TvDetailPage({
           <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
             출연진
           </h2>
-          <ul className={`mt-4 ${styles.rail}`}>
+          <ScrollRail>
             {cast.map((member) => (
-              <li key={member.credit_id} className={styles.personItem}>
+              <li key={member.credit_id}>
                 <PersonLink
                   href={`/person/${member.id}`}
                   path={member.profile_path}
@@ -147,7 +146,7 @@ export default async function TvDetailPage({
                 />
               </li>
             ))}
-          </ul>
+          </ScrollRail>
         </section>
       ) : null}
 
@@ -157,9 +156,9 @@ export default async function TvDetailPage({
           <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
             추천 작품
           </h2>
-          <ul className={`mt-4 ${styles.rail}`}>
+          <ScrollRail>
             {recommended.map((item, index) => (
-              <li key={`${item.id}-${index}`} className={styles.cardItem}>
+              <li key={`${item.id}-${index}`}>
                 <ContentCard
                   href={`/tv/${item.id}`}
                   title={item.name}
@@ -169,7 +168,7 @@ export default async function TvDetailPage({
                 />
               </li>
             ))}
-          </ul>
+          </ScrollRail>
         </section>
       ) : null}
     </div>

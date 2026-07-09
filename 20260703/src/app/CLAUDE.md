@@ -40,7 +40,7 @@ Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Han
 - `_components`/`_types`/`_utils`/`_constants`/`_hooks`를 폴더 + `index.ts`(컴포넌트는 `index.tsx`) 배럴 형태 외의 방식으로 만들지 않는다 — 폴더 안 파일이 1개뿐이어도 예외 없이 이 형태를 유지한다.
 - 각 파일은 기본적으로 export 1개다(`_components`/`_utils`/`_types`/`_constants`/`_hooks` 공통). 여러 export를 한 파일에 두는 건 하위 export가 주 export의 함수 body 안에서 직접 호출될 때만 허용한다 — 같은 도메인/섹션에서 쓰인다는 이유만으로 묶지 않는다.
   - 컴포넌트 예: `Skeleton`이 내부에서 `SkeletonCard`를 호출(`src/components/ui/skeleton.tsx`).
-  - 순수함수 예: `trendingToCard`/`movieToCard`/`tvToCard`가 내부에서 `yearOf`를 호출(`src/app/page.tsx`) — `_utils/`로 승격 시 한 파일 허용.
+  - 순수함수 예: `movieToCard`/`tvToCard`가 내부에서 `yearOf`를 호출(`src/app/page.tsx`) — `_utils/`로 승격 시 한 파일 허용.
 - 자기 폴더가 없는 루트 라우트라고 이 패턴을 생략하지 않는다 — `_components/` 등을 `layout.tsx`/`error.tsx`와 나란히 라우트 최상위에 둔다.
 - 2개 이상 라우트가 공유하는 순수함수/UI/훅을 라우트 폴더 안에 남겨두지 않는다 — 순수함수는 `src/utils.ts`, UI는 `src/components/ui/`, 순수 브라우저 훅(TanStack Query 도메인 훅 제외)은 `src/hooks/`로 승격한다. 컴포넌트명이 특정 도메인에 종속적이면 추상화한 이름으로 바꾼다.
 - 여러 위치(RootLayout·복수 라우트)가 동일 클라이언트 상태를 React Context로 공유해야 하는 경우 라우트 폴더 안에 두지 않는다 — `src/context/`로 옮긴다(규칙은 `src/context/CLAUDE.md` 참고).
