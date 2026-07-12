@@ -27,58 +27,23 @@ interface ScrollRailProps {
 
 export function ScrollRail({ children }: ScrollRailProps) {
   const [index, setIndex] = useState(0);
-  const { containerRef, trackRef, trackProps, scrollToIndex } =
+  const { containerRef, trackRef, trackProps, containerProps, scrollToIndex } =
     useDragScroll<HTMLUListElement>({ onIndexChange: setIndex });
   const count = Children.count(children);
 
   return (
-    <div ref={containerRef} className="scrollbr-hide rail-snap overflow-hidden">
+    <div
+      ref={containerRef}
+      {...containerProps}
+      className="relative scrollbr-hide rail-snap overflow-hidden"
+    >
       <motion.ul
         ref={trackRef}
         {...trackProps}
-        className="flex gap-card-gap px-gutter py-2 md:gap-card-gap-lg md:px-gutter-lg [&>*]:w-[42%] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-[29%] md:[&>*]:w-[22%] lg:[&>*]:w-[15.5%] xl:[&>*]:w-[13.2%]
-"
+        className="flex gap-card-gap px-gutter py-2 md:gap-card-gap-lg md:px-gutter-lg [&>*]:w-[42%] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-[29%] md:[&>*]:w-[22%] lg:[&>*]:w-[15.5%] xl:[&>*]:w-[13.2%]"
       >
         {children}
       </motion.ul>
-      <button
-        type="button"
-        aria-label="이전 카드"
-        onClick={() => scrollToIndex(index - 1)}
-        disabled={index === 0}
-        className="absolute left-2 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-pill bg-overlay text-content-primary shadow-pop backdrop-blur-sm transition-colors hover:bg-surface-hover disabled:opacity-30 md:flex"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-6 w-6"
-        >
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        aria-label="다음 카드"
-        onClick={() => scrollToIndex(index + 1)}
-        disabled={count === 0 || index >= count - 1}
-        className="absolute right-2 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-pill bg-overlay text-content-primary shadow-pop backdrop-blur-sm transition-colors hover:bg-surface-hover disabled:opacity-30 md:flex"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-6 w-6"
-        >
-          <path d="M9 18l6-6-6-6" />
-        </svg>
-      </button>
     </div>
   );
 }

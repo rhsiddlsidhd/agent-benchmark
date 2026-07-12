@@ -51,6 +51,7 @@ export function PosterImage({
         placeholder="blur"
         blurDataURL={BLUR_DATA_URL}
         preload={preload}
+        draggable={false}
         className="object-cover"
       />
     </div>
