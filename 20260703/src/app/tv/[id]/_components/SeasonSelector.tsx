@@ -116,7 +116,13 @@ export function SeasonSelector({ tvId, seasons }: SeasonSelectorProps) {
     );
 
     filmstripContent = (
-      <div role="tablist" aria-label="회차 선택">
+      <div
+        role="tablist"
+        aria-label="회차 선택"
+        aria-owns={episodes
+          .map((episode) => `episode-tab-${episode.id}`)
+          .join(" ")}
+      >
         <ScrollRail>
           {episodes.map((episode, index) => {
             const isActive = index === selectedEpisodeIndex;
@@ -124,6 +130,7 @@ export function SeasonSelector({ tvId, seasons }: SeasonSelectorProps) {
               <li key={episode.id}>
                 <button
                   type="button"
+                  id={`episode-tab-${episode.id}`}
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => setSelectedEpisodeIndex(index)}
