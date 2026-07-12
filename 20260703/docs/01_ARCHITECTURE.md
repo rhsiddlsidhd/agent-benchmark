@@ -3,7 +3,7 @@
 > 상태: Draft
 > 작성자:
 > 작성일:
-> 최종 수정일: 2026-07-09
+> 최종 수정일: 2026-07-12
 > 관련 문서: [00_PRD.md](./00_PRD.md)
 
 ---
@@ -70,6 +70,7 @@ TanStack Query ──▶ /api/* Route Handler ──▶ tmdb-client ──▶ TM
 - 홈/상세 페이지: Server Component에서 직접 `tmdb-client` 호출, fetch revalidate로 캐싱
 - 검색/무한스크롤: Client Component + TanStack Query가 Route Handler(`/api/*`) 경유 (API 키는 Route Handler 안에서만 사용)
 - 홈 히어로 캐러셀처럼 자동전환 등 인터랙션이 필요한 하위 컴포넌트는 Client Component로 분리하되, 데이터 페칭 자체는 상위 Server Component가 그대로 담당하고 결과만 props로 전달한다(API 키 서버사이드 은닉 원칙은 유지)
+- TV 상세 시즌/에피소드처럼 뷰포트 폭에 따라 서로 다른 하위 컴포넌트를 렌더해야 하는 경우, 라우트 전용 `useMediaQuery` 훅으로 분기하고 마운트 전(SSR/최초 페인트)엔 스켈레톤으로 처리한다 — 하이드레이션 시점의 깜빡임을 감수하는 대신 서버/클라이언트 렌더 불일치를 피하는 쪽을 택함
 
 ### 에러/엣지케이스 처리 정책
 
@@ -98,7 +99,7 @@ TanStack Query ──▶ /api/* Route Handler ──▶ tmdb-client ──▶ TM
 
 ### 5.4 detail
 - 책임: 영화/TV/인물 상세 + 연관 탐색 링크(출연진→인물, 필모그래피→작품) (FR-3, FR-4, FR-5)
-- 인터페이스: `/movie/[id]`, `/tv/[id]`, `/person/[id]` 페이지
+- 인터페이스: `/movie/[id]`, `/tv/[id]`, `/person/[id]` 페이지. TV 상세 회차 선택은 `md` 뷰포트 기준으로 가로 필름스트립(모바일, `ScrollRail` 재사용)/세로 리스트(데스크톱, 백드롭과 2열)로 분기 렌더하며, 시즌탭·회차선택 전체에 roving tabindex(화살표 키 네비, 라우트 전용 `useRovingTabIndex` 훅) 공유 적용
 - 의존성: tmdb-client, ui
 
 ### 5.5 ui
