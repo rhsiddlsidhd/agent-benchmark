@@ -21,19 +21,17 @@
  * - 에러: ErrorState(refetch 재시도) — 훅의 retry:1 이후 최종 실패 노출.
  * - 결과 변화(로딩/갱신/무결과/에러)는 sr-only aria-live 영역으로 안내.
  *
- * AdultToggle(§2.4)은 헤더와 동일 AdultContentContext 를 구독하며, 그 값(include_adult)을
- * useSearchInfinite 의 queryKey 로 넘겨 토글 전환 시 결과를 즉시 재조회한다(FR-7).
+ * 성인 콘텐츠(FR-7)는 서버가 상시 페칭하고, ContentCard 가 `adult` 플래그로
+ * 카드 단위 19+ 블러 게이트를 담당한다(전역 토글 없음).
  */
 import { useState, type SubmitEvent } from "react";
 
 import {
-  AdultToggle,
   ContentCard,
   EmptyState,
   ErrorState,
   SkeletonCard,
 } from "@/src/components/ui";
-import { useAdultContent } from "@/src/context/AdultContentContext";
 import { useIntersectionObserver } from "@/src/hooks";
 import { yearOf } from "@/src/utils";
 import { PersonResultCard } from "./PersonResultCard";
@@ -45,10 +43,6 @@ export function SearchExplorer() {
   const [inputValue, setInputValue] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
 
-  // 성인 콘텐츠 토글(FR-7) — 헤더의 토글과 동일 Context. 값이 queryKey 에 들어가므로
-  // 토글 전환 시 TanStack Query 가 새 키로 즉시 재조회한다(결과 즉시 반영).
-  const { includeAdult } = useAdultContent();
-
   const {
     data,
     isLoading,
@@ -57,7 +51,7 @@ export function SearchExplorer() {
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useSearchInfinite({ query: submittedQuery, includeAdult });
+  } = useSearchInfinite({ query: submittedQuery });
 
   // sentinel: 다음 페이지가 있고 로딩 중이 아닐 때만 감지(마지막 페이지 조용히 정지 · 중복 요청 방지).
   const sentinelRef = useIntersectionObserver({
@@ -136,9 +130,6 @@ export function SearchExplorer() {
               className="h-11 w-full rounded-md border border-border bg-surface pl-10 pr-3 text-body text-content-primary placeholder:text-content-muted"
             />
           </div>
-
-          {/* 성인 콘텐츠 토글(FR-7) — 헤더 토글과 동일 Context 를 공유(§2.4). */}
-          <AdultToggle className="shrink-0" />
         </div>
       </form>
 
@@ -199,6 +190,7 @@ export function SearchExplorer() {
                         posterPath={movie.poster_path}
                         year={yearOf(movie.release_date)}
                         rating={movie.vote_average}
+                        adult={movie.adult}
                       />
                     </li>
                   ))}
@@ -226,6 +218,7 @@ export function SearchExplorer() {
                         posterPath={show.poster_path}
                         year={yearOf(show.first_air_date)}
                         rating={show.vote_average}
+                        adult={show.adult}
                       />
                     </li>
                   ))}
