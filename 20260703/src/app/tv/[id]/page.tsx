@@ -75,6 +75,7 @@ export default async function TvDetailPage({
           size="w1280"
           sizes="100vw"
           preload
+          className="h-[70svh]"
         />
         <div
           aria-hidden="true"
@@ -83,7 +84,7 @@ export default async function TvDetailPage({
       </section>
 
       {/* 히어로 콘텐츠: 포스터가 백드롭 하단에 오버랩(md 미만 세로 스택 §4). */}
-      <div className="mx-auto -mt-16 w-full max-w-page px-gutter md:-mt-24 md:px-gutter-lg">
+      <div className="mx-auto -mt-[15svh] w-full max-w-page px-gutter md:px-gutter-lg">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
           <div className="w-28 shrink-0 sm:w-36 md:w-48">
             <PosterImage
