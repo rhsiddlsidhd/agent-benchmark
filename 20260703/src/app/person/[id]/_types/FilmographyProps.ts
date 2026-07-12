@@ -1,8 +1,9 @@
+import type { FilmographyYearCluster } from "./FilmographyYearCluster";
 import type { FilmographyEntry } from "./FilmographyEntry";
 
 export interface FilmographyProps {
-  /** 출연작(최신순 정렬·중복 제거 완료). */
-  castEntries: FilmographyEntry[];
-  /** 제작 참여작(최신순 정렬·중복 제거 완료). */
-  crewEntries: FilmographyEntry[];
+  /** 크레딧이 있는 연도 클러스터(과거→현재 오름차순). */
+  clusters: FilmographyYearCluster[];
+  /** 개봉/방영일 미정(예정) 작품 버킷. */
+  upcoming: FilmographyEntry[];
 }

@@ -6,10 +6,11 @@
  * .DETAIL)으로 주입되므로 페이지 레벨 설정은 두지 않는다.
  *
  * 레이아웃(§3.5): 좌(데스크톱)/상(모바일) 프로필(1/1) + 이름(display) + 약력
- * → 필모그래피(출연작/제작 참여 토글 + ContentCard 그리드, 최신순). 각 작품 카드는
- * media_type 에 따라 /movie/[id] · /tv/[id] 로 이어져 인물→작품 탐색 흐름(PRD §2)을
- * 완결한다. 토글은 인터랙티브라 Filmography(Client Component)로 분리하되, 정렬·중복
- * 제거·경로 산출은 여기(서버)에서 끝낸다.
+ * → 필모그래피 타임라인(좌측 고정 수직 레일 + 우측 연도별 카드 클러스터, 과거→현재
+ * 오름차순, 예정작은 별도 버킷). 각 작품 카드는 media_type 에 따라 /movie/[id] ·
+ * /tv/[id] 로 이어져 인물→작품 탐색 흐름(PRD §2)을 완결한다. 스크롤/툴팁 인터랙션은
+ * Filmography(Client Component)로 분리하되, cast+crew 병합·정렬·연도별 그룹핑·
+ * 경로 산출은 여기(서버, normalizeCredits+groupFilmographyEntries)에서 끝낸다.
  *
  * 에러/엣지케이스(§4):
  * - 존재하지 않는 id → getPerson 이 null → notFound()(→ not-found.tsx). id 파싱
@@ -18,14 +19,18 @@
  *   전파해 재시도. **인물 존재 확인(null → notFound) 이후에만** 필모그래피를 조회해,
  *   없는 id 가 credits throw 로 error.tsx 에 새지 않게 한다(T7/T8 순서 원칙 동일).
  * - 데이터 결측(§2.9): 약력이 비면 대체 문구, 프로필 이미지 null 은 이니셜
- *   플레이스홀더. cast/crew 가 모두 비면 필모그래피 섹션 자체를 숨긴다.
+ *   플레이스홀더. 연도 클러스터·예정작이 모두 비면 필모그래피 섹션 자체를 숨긴다.
  */
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Pill } from "@/src/components/ui";
 import { getPerson, getPersonCombinedCredits } from "@/src/lib/tmdb/client";
 import { BLUR_DATA_URL, tmdbImageUrl } from "@/src/lib/tmdb/images";
-import { formatBirthLine, normalizeCredits } from "./_utils";
+import {
+  formatBirthLine,
+  groupFilmographyEntries,
+  normalizeCredits,
+} from "./_utils";
 import { Filmography } from "./_components";
 
 export default async function PersonDetailPage({
@@ -47,9 +52,10 @@ export default async function PersonDetailPage({
   }
 
   const credits = await getPersonCombinedCredits(personId);
-  const castEntries = normalizeCredits(credits.cast);
-  const crewEntries = normalizeCredits(credits.crew);
-  const hasFilmography = castEntries.length > 0 || crewEntries.length > 0;
+  const normalizedCredits = normalizeCredits(credits.cast, credits.crew);
+  const filmography = groupFilmographyEntries(normalizedCredits);
+  const hasFilmography =
+    filmography.clusters.length > 0 || filmography.upcoming.length > 0;
 
   const initial = [...person.name.trim()][0]?.toUpperCase() ?? "?";
   const birthLine = formatBirthLine(person);
@@ -109,9 +115,12 @@ export default async function PersonDetailPage({
         </div>
       </section>
 
-      {/* 필모그래피(출연/제작 토글 + 그리드). cast/crew 모두 비면 섹션 숨김(§2.9). */}
+      {/* 필모그래피 타임라인. 크레딧/예정작 모두 없으면 섹션 숨김(§2.9). */}
       {hasFilmography ? (
-        <Filmography castEntries={castEntries} crewEntries={crewEntries} />
+        <Filmography
+          clusters={filmography.clusters}
+          upcoming={filmography.upcoming}
+        />
       ) : null}
     </div>
   );
