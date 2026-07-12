@@ -11,7 +11,6 @@
  * - `genreIds`: 콤마 구분 양의 정수(예: "28,12"). 유효하지 않은 항목은 제거한다.
  *   비었으면 with_genres 없이 인기순 디스커버(장르 0개 선택의 기본 동작 — 아래 참조).
  * - `page`: 1 이상 정수. NaN/0/음수/누락은 1 로 정규화.
- * - `includeAdult`: "true" 면 성인 콘텐츠 포함(FR-7 배선은 T13, 여기선 파라미터만 수용).
  *
  * 장르 0개 선택의 기본 동작(§4 "장르 선택 0개일 때 기본 동작 정의"):
  * - genreIds 가 비면 with_genres 파라미터 자체를 생략하고 popularity.desc 로 정렬된
@@ -54,14 +53,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const parsedPage = Number(searchParams.get("page"));
   const page = Number.isInteger(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
 
-  const includeAdult = searchParams.get("includeAdult") === "true";
-
   try {
     // 각 분기에서 typeParam 이 리터럴로 좁혀져 discoverByGenre 오버로드에 정확히 매칭된다.
     const data: DiscoverResponse =
       typeParam === "movie"
-        ? await discoverByGenre("movie", genreIds, page, includeAdult)
-        : await discoverByGenre("tv", genreIds, page, includeAdult);
+        ? await discoverByGenre("movie", genreIds, page)
+        : await discoverByGenre("tv", genreIds, page);
     return NextResponse.json(data);
   } catch (error) {
     if (isTmdbError(error)) {

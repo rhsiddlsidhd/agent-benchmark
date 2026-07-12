@@ -276,26 +276,24 @@ export async function getGenres(type: MediaType): Promise<Genre[]> {
 export function discoverByGenre(
   type: "movie",
   genreIds: number[],
-  page?: number,
-  includeAdult?: boolean
+  page?: number
 ): Promise<Paginated<Movie>>;
 /** 장르 다중 선택 기반 디스커버(TV). */
 export function discoverByGenre(
   type: "tv",
   genreIds: number[],
-  page?: number,
-  includeAdult?: boolean
+  page?: number
 ): Promise<Paginated<TVShow>>;
 export function discoverByGenre(
   type: MediaType,
   genreIds: number[],
-  page = 1,
-  includeAdult = false
+  page = 1
 ): Promise<Paginated<Movie> | Paginated<TVShow>> {
   return tmdbRequest<Paginated<Movie> | Paginated<TVShow>>(`/discover/${type}`, {
     searchParams: {
       page,
-      include_adult: includeAdult,
+      // 성인물은 항상 페칭하고 카드 단위 19+ 블러 게이트로 노출을 제어한다.
+      include_adult: true,
       sort_by: "popularity.desc",
       // 빈 배열이면 파라미터 자체를 생략(전체 디스커버).
       with_genres: genreIds.length > 0 ? genreIds.join(",") : undefined,
@@ -311,11 +309,11 @@ export function discoverByGenre(
 /** 통합 검색(영화/TV/인물). Route Handler에서 호출. */
 export function searchMulti(
   query: string,
-  page = 1,
-  includeAdult = false
+  page = 1
 ): Promise<Paginated<MultiSearchResult>> {
   return tmdbRequest<Paginated<MultiSearchResult>>("/search/multi", {
-    searchParams: { query, page, include_adult: includeAdult },
+    // 성인물은 항상 페칭하고 카드 단위 19+ 블러 게이트로 노출을 제어한다.
+    searchParams: { query, page, include_adult: true },
     cache: "no-store",
   });
 }
