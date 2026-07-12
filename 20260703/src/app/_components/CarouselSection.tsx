@@ -11,7 +11,8 @@ export function CarouselSection({
 }) {
   return (
     <section aria-label={title} className="mx-auto w-full max-w-page">
-      <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
+      <h2 className="mb-3 flex items-center gap-3 px-gutter text-h2 text-content-primary md:px-gutter-lg">
+        <span aria-hidden className="h-6 w-1 rounded-pill bg-brand" />
         {title}
       </h2>
       <ScrollRail>
