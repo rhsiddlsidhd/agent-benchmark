@@ -5,4 +5,5 @@ export interface CardItem {
   posterPath: string | null;
   year: string | null;
   rating: number;
+  adult: boolean;
 }

@@ -10,5 +10,6 @@ export function tvToCard(show: TVShow): CardItem {
     posterPath: show.poster_path,
     year: yearOf(show.first_air_date),
     rating: show.vote_average,
+    adult: show.adult,
   };
 }

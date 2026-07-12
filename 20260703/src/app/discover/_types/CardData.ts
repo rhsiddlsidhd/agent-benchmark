@@ -6,4 +6,5 @@ export interface CardData {
   posterPath: string | null;
   year: string | null;
   rating: number;
+  adult: boolean;
 }
