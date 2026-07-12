@@ -46,22 +46,36 @@ TMDB 탐색 웹앱의 planner→implementer→qa 파이프라인을 조율한다
 
 `01_planner_tasks.md`의 배치를 순서대로 처리한다. **다음 배치는 현재 배치의 merge-back이 완전히 끝난 뒤에만 시작한다** — 이 게이트를 건너뛰면 다음 배치가 이전 배치의 변경사항이 반영 안 된 stale한 브랜치에서 시작하게 된다.
 
-#### 3-1. 병렬 fan-out
+#### 3-1. worktree 수동 생성 + 병렬 fan-out
 
-배치 내 태스크마다 `Agent` 호출 — **한 메시지에 병렬**로, 각 호출에 `isolation: "worktree"` 지정(물리적 격리, 도구가 worktree/브랜치를 자동 생성·반환):
+`Agent(isolation:"worktree")`의 자동 프로비저닝은 **쓰지 않는다** — 알려진 문제로, 지정한 브랜치를 무시하고 stale한 고정 커밋(이 환경에서 재현된 사례: `20260703/` 프로젝트 재배치 이전, 즉 서브디렉토리 구조 자체가 없던 시점)에서 worktree를 만드는 경우가 재현 확인됐다. 대신 오케스트레이터가 `AGENTS.md`의 worktree 생성 규칙을 직접 실행해 기준을 보장한다.
 
-```
-Agent(subagent_type: "implementer", model: "sonnet", isolation: "worktree",
-      prompt: "태스크: {작업+근거}. feature-implementation 스킬 절차를 따르라.")
-```
+배치 내 태스크마다:
 
-배치가 태스크 1개뿐이면(예: 최초 배치의 `tmdb-client`처럼 아직 병렬 대상이 없음) `isolation: "worktree"` 없이 현재 브랜치에서 직접 처리해도 무방하다 — 격리는 "동시에 같은 디렉토리를 건드리는" 경우에만 필요하다.
+1. **오케스트레이터가 레포 루트에서 worktree를 직접 만든다**(현재 작업 브랜치 기준, `AGENTS.md` "Worktree 생성" 규칙 그대로):
+   ```bash
+   git worktree add -b worktree/{태스크슬러그} .claude/worktrees/{태스크슬러그} {현재 작업 브랜치}
+   ```
+2. **Agent를 `isolation` 없이 호출**, 작업 디렉토리를 프롬프트에 명시:
+   ```
+   Agent(subagent_type: "implementer", model: "sonnet",
+         prompt: "작업 디렉토리: {worktree 경로}/20260703 — 반드시 이 안에서만 작업, 다른 경로는 건드리지 마라.
+                  node_modules 없으면 새로 설치하지 말고 메인 체크아웃 것을 심볼릭 링크로 연결한다
+                  (package-lock.json 동일함을 먼저 확인한 뒤).
+                  작업 완료 후 이 worktree 안에서 직접 커밋까지 한다(add+commit, conventional 메시지) —
+                  merge-back은 오케스트레이터가 이 커밋을 기준으로 처리한다.
+                  태스크: {작업+근거}. feature-implementation 스킬 절차를 따르라.")
+   ```
+
+**한 메시지에 병렬**로 여러 Agent 호출.
+
+배치가 태스크 1개뿐이면(예: 최초 배치의 `tmdb-client`처럼 아직 병렬 대상이 없음) worktree 없이 현재 브랜치에서 직접 처리해도 무방하다 — 격리는 "동시에 같은 디렉토리를 건드리는" 경우에만 필요하다.
 
 각 결과(상태+비고)를 받아 `02_progress_state.md`에 태스크별로 즉시 append한다(배치 전체를 기다리지 않고 하나 끝날 때마다).
 
 #### 3-2. merge-back
 
-각 implementer가 반환한 worktree 브랜치를 이번 배치의 기준 브랜치(직전 상태의 작업 브랜치)로 `git merge`한다. 전원 완료된 것을 확인한 뒤 진행하며, worktree/브랜치는 `AGENTS.md`의 기존 정리 절차(worktree remove → branch -d)로 정리한다.
+각 implementer worktree의 커밋(`worktree/{태스크슬러그}`)을 이번 배치의 기준 브랜치(직전 상태의 작업 브랜치)로 `git merge`한다. 전원 완료된 것을 확인한 뒤 진행하며, worktree/브랜치는 `AGENTS.md`의 기존 정리 절차(worktree remove → branch -d)로 정리한다.
 
 #### 3-3. QA fan-in
 
@@ -94,7 +108,7 @@ Agent(subagent_type: "general-purpose", model: "opus",
 [오케스트레이터]
   ├─ Agent(planner) → 01_planner_tasks.md
   ├─ 배치N:
-  │   ├─ Agent(implementer×M, isolation:worktree) ── 병렬 ──┐
+  │   ├─ [오케스트레이터가 worktree 수동 생성] → Agent(implementer×M) ── 병렬 ──┐
   │   │                                                      ↓
   │   │                                          02_progress_state.md (태스크별 append)
   │   ├─ merge-back (전원 완료 확인 후)
@@ -111,6 +125,7 @@ Agent(subagent_type: "general-purpose", model: "opus",
 | QA 리젝트(구현이슈) | 같은 implementer 재호출, 배치당 최대 2회, 3회째 실패 시 사용자 에스컬레이션 |
 | QA 리젝트(분해이슈) | planner 부분 재호출(영향 배치만), 전체 재시작 금지 |
 | merge-back 충돌 | 배치 내 태스크가 실제로는 파일이 겹쳤다는 신호 — 분해이슈로 간주, planner에게 이 사실과 함께 재호출 |
+| implementer가 "대상 파일이 없다"고 보고(worktree provisioning 문제) | 3-1을 오케스트레이터 수동 생성 방식으로 전환한 뒤로는 원칙적으로 발생하지 않아야 함 — 그래도 발생하면 오케스트레이터가 만든 worktree 경로가 실제로 맞는지(`git -C {경로} log --oneline -1`) 먼저 확인 |
 | 세션 중단(토큰소진/크래시) | 재개 시 Phase 0에서 `02_progress_state.md` 읽어 마지막 완료 지점부터 재개 |
 
 ## 테스트 시나리오
