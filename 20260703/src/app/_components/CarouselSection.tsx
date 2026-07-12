@@ -24,6 +24,7 @@ export function CarouselSection({
               posterPath={item.posterPath}
               year={item.year}
               rating={item.rating}
+              adult={item.adult}
             />
           </li>
         ))}

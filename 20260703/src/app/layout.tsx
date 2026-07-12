@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { QueryProvider } from "@/src/lib/tanstack-query/QueryProvider";
-import { AdultContentProvider } from "@/src/context/AdultContentContext";
-import { AdultToggle } from "@/src/components/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +20,6 @@ export default function RootLayout({
     <html lang="ko" className="antialiased">
       <body className="flex min-h-screen flex-col bg-base text-content-primary">
         <QueryProvider>
-          <AdultContentProvider>
           <header className="z-header sticky top-0 border-b border-border bg-base/80 backdrop-blur">
           <div className="mx-auto flex h-14 w-full max-w-page items-center justify-between px-gutter md:px-gutter-lg">
             <Link
@@ -42,15 +39,11 @@ export default function RootLayout({
               >
                 검색
               </Link>
-
-              {/* 성인 콘텐츠 토글(FR-7) — 검색 페이지의 토글과 동일 Context 를 공유한다. */}
-              <AdultToggle />
             </nav>
           </div>
         </header>
 
           <main className="flex flex-1 flex-col">{children}</main>
-          </AdultContentProvider>
         </QueryProvider>
       </body>
     </html>
