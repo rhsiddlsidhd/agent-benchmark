@@ -23,7 +23,16 @@
  *   플레이스홀더가 처리한다.
  */
 import { notFound } from "next/navigation";
-import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail, ScrollReveal } from "@/src/components/ui";
+import {
+  BackdropImage,
+  ContentCard,
+  PersonLink,
+  Pill,
+  PosterImage,
+  RatingBadge,
+  ScrollRail,
+  ScrollReveal,
+} from "@/src/components/ui";
 import {
   getTvCredits,
   getTvRecommendations,
@@ -68,14 +77,17 @@ export default async function TvDetailPage({
   return (
     <div className="flex w-full flex-col gap-section pb-section">
       {/* 히어로: 백드롭 + 하단 보호 그라데이션. */}
-      <section aria-labelledby="tv-title" className="relative w-full">
+      <section
+        aria-labelledby="tv-title"
+        className="relative w-full overflow-hidden border-0"
+      >
         <BackdropImage
           path={tvShow.backdrop_path}
           alt={tvShow.name}
           size="w1280"
           sizes="100vw"
           preload
-          className="h-[70svh]"
+          className="min-h-[45svh]"
         />
         <div
           aria-hidden="true"
@@ -84,7 +96,7 @@ export default async function TvDetailPage({
       </section>
 
       {/* 히어로 콘텐츠: 포스터가 백드롭 하단에 오버랩(md 미만 세로 스택 §4). */}
-      <div className="mx-auto -mt-[15svh] w-full max-w-page px-gutter md:px-gutter-lg">
+      <div className="mx-auto -mt-[25svh] w-full max-w-page px-gutter md:px-gutter-lg z-10">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
           <div className="w-28 shrink-0 sm:w-36 md:w-48">
             <PosterImage

@@ -15,11 +15,11 @@ export const easeOutExpo: [number, number, number, number] = [
 
 /** 섹션/카드 등장 페이드업 (§5). */
 export const fadeUp: Variants = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 20 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.25, ease: easeOutExpo },
+    transition: { duration: 0.3, ease: easeOutExpo },
   },
 };
 

@@ -69,6 +69,41 @@
 
 **후속 발견(merge 시)**: `feat/adult-content-gate`가 `dev`에서 분기돼 위 두 드래그 픽스(`feat/ui-improvement`)를 모른 채 시작됨 — `ContentCard`/`PosterImage`의 `draggable={false}`, `ScrollRail`/`useDragScroll`의 컨테이너 hit-box 픽스가 전부 누락돼있었음. `feat/ui-improvement`를 `feat/adult-content-gate`로 merge해 `ContentCard.tsx` 충돌 해결(게이트 구조 유지 + `draggable={false}` 위치 재적용)로 통합 완료.
 
+## BackdropImage/PersonAvatar 위에서 가로 드래그 스크롤 안 됨
+
+### 문제점
+
+TV 상세 페이지 시즌/에피소드 UI 개편(아래 항목)으로 새로 만든 `EpisodeFilmstrip`(모바일, `ScrollRail` 재사용)에서 회차 썸네일 위 터치/마우스 드래그로 가로 스크롤이 안 됨. 출연진 레일(`PersonLink`/`PersonAvatar`)도 카드 위에서 동일 증상.
+
+### 원인
+
+`ContentCard 위에서 가로 드래그 스크롤 안 됨`(위 항목)에서 이미 규명된 것과 같은 원인 — `<img>`/`<a>`는 브라우저 기본값이 native draggable이라 카드 위 mousedown+move가 framer-motion 드래그 인식보다 먼저 네이티브 이미지/링크 드래그로 가로채짐. 그때 `PosterImage`/`ContentCard`엔 `draggable={false}`를 붙였지만, 이후 추가된 `BackdropImage`(필름스트립·백드롭 공용)와 `PersonAvatar`/`PersonLink`(출연진 레일)에는 반영이 안 되어 있었음 — 같은 버그가 컴포넌트만 다르게 재발한 것.
+
+### 해결
+
+- `src/components/ui/BackdropImage.tsx`: `<Image>`에 `draggable={false}` 추가
+- `src/components/ui/PersonAvatar.tsx`: `<Image>`에 `draggable={false}` 추가
+- `src/components/ui/PersonLink.tsx`: `MotionLink`(`<a>`)에 `draggable={false}` 추가
+- `src/app/tv/[id]/_components/EpisodeFilmstrip.tsx`: 탭 `<button>`에도 `draggable={false}` 추가(`ContentCard`의 링크-레벨 처리와 동일선상)
+
+**검증**: playwright로 필름스트립 썸네일 `<img>`의 `draggable` 속성이 `"false"`로 렌더되는 것 확인. `BackdropImage`가 공용 컴포넌트라 필름스트립뿐 아니라 히어로/`EpisodeList`(세로 리스트)/`EpisodeBackdropPanel` 등 모든 사용처에 함께 적용됨.
+
+## 실제 터치(Chrome 기기 툴바)에서 레일 가로 스크롤 안 됨
+
+### 문제점
+
+위 `draggable={false}` 픽스 이후에도 실제 크롬 기기 툴바(터치 에뮬레이션, 예: Galaxy S9)로 확인하면 `ScrollRail` 레일 위에서 가로 스와이프가 전혀 스크롤 안 됨. playwright mouse 이벤트 기반 테스트로는 이 증상이 재현되지 않아 그동안 발견 못 함.
+
+### 원인
+
+`useDragScroll`(`src/hooks/useDragScroll.ts`)이 `dragListener: false` + 트랙이 아닌 컨테이너의 `onPointerDown`에서 수동으로 `dragControls.start(event)`를 호출하는 방식(레일 hit-box 픽스, 위 TODO 항목)이라, framer-motion이 `drag` 엘리먼트에 보통 자동으로 걸어주는 `touch-action` 스타일이 안 붙음. 컨테이너/트랙 모두 `touch-action: auto`로 남아있어서, 실제 터치 기기에서 가로 스와이프가 시작되면 브라우저가 이를 먼저 스크롤 제스처로 판정해버려 JS 드래그(`dragControls.start`)가 아예 시작되지 못함. 마우스 포인터 이벤트는 이 네이티브 스크롤 중재 단계가 없어서 playwright mouse 테스트에선 안 드러났음.
+
+### 해결
+
+`src/app/globals.css`의 `rail-snap` 유틸리티(레일 전용, `ScrollRail` 컨테이너에 적용)에 `touch-action: pan-y` 추가 — 세로(페이지) 팬은 그대로 허용하고 가로 팬만 브라우저가 안 가져가게 막아서 JS 드래그가 가로 제스처를 온전히 받도록 함.
+
+**검증**: Chrome DevTools Protocol로 실제 터치 이벤트(`touchstart`/`touchmove`/`touchend`) 시퀀스를 `--mobile` 컨텍스트(hasTouch)에 직접 dispatch — 수정 전엔 pointerdown 자체가 컨테이너에 안 잡히고 트랙 transform 불변, 수정 후엔 트랙 transform이 `none` → `matrix(1, 0, 0, 1, -316.642, 0)`로 실제 이동 확인.
+
 ## [TODO] TV 상세 페이지 시즌/에피소드 UI 개편 (백드롭+필름스트립)
 
 ### 문제점

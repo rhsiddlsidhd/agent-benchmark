@@ -110,7 +110,11 @@
 /*
  * 캐러셀 드래그 스크롤 레일 유틸 (ScrollRail — TODO.md 캐러셀 드래그 스크롤 개선).
  * 홈/상세 레일 3곳(home.module.css, movie·tv detail.module.css)의 중복 .rail CSS를
- * 대체한다. scrollbar-hide 는 스크롤바 시각적 숨김, rail-snap 은 스냅 관련 3속성 묶음.
+ * 대체한다. scrollbar-hide 는 스크롤바 시각적 숨김, rail-snap 은 스냅+터치 관련 4속성
+ * 묶음(touch-action 포함 — useDragScroll 이 dragListener:false + 수동
+ * dragControls.start() 로 드래그를 시작하는 방식이라, framer-motion 이 보통 자동으로
+ * 걸어주는 touch-action 이 안 붙는다. 이게 없으면 실제 터치 기기에서 브라우저가
+ * 가로 스와이프를 먼저 스크롤 제스처로 판정해버려서 JS 드래그가 아예 시작 못 함).
  */
 @utility scrollbar-hide {
   scrollbar-width: none;
@@ -123,6 +127,7 @@
   scroll-snap-type: x proximity;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 /* Skeleton shimmer 키프레임 (§2.6 / §5) */

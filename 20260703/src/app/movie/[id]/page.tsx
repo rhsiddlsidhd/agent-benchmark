@@ -64,14 +64,14 @@ export default async function MovieDetailPage({
   return (
     <div className="flex w-full flex-col gap-section pb-section">
       {/* 히어로: 백드롭 + 하단 보호 그라데이션. */}
-      <section aria-labelledby="movie-title" className="relative w-full">
+      <section aria-labelledby="movie-title" className="relative w-full overflow-hidden">
         <BackdropImage
           path={movie.backdrop_path}
           alt={movie.title}
           size="w1280"
           sizes="100vw"
           preload
-          className="h-[70svh]"
+          className="min-h-[45svh]"
         />
         <div
           aria-hidden="true"
