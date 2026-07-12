@@ -23,7 +23,7 @@
  *   플레이스홀더가 처리한다.
  */
 import { notFound } from "next/navigation";
-import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail } from "@/src/components/ui";
+import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail, ScrollReveal } from "@/src/components/ui";
 import {
   getTvCredits,
   getTvRecommendations,
@@ -118,59 +118,67 @@ export default async function TvDetailPage({
       </div>
 
       {/* 개요(텍스트 결측 시 대체 문구, 섹션은 유지 §2.9). */}
-      <section className="mx-auto w-full max-w-page px-gutter md:px-gutter-lg">
-        <h2 className="text-h2 text-content-primary">개요</h2>
-        <p className="mt-3 max-w-3xl text-body text-content-secondary">
-          {tvShow.overview ? tvShow.overview : "개요 정보가 없습니다."}
-        </p>
-      </section>
+      <ScrollReveal>
+        <section className="mx-auto w-full max-w-page px-gutter md:px-gutter-lg">
+          <h2 className="text-h2 text-content-primary">개요</h2>
+          <p className="mt-3 max-w-3xl text-body text-content-secondary">
+            {tvShow.overview ? tvShow.overview : "개요 정보가 없습니다."}
+          </p>
+        </section>
+      </ScrollReveal>
 
       {/* 시즌/에피소드(§3.4). 시즌 목록이 비면 섹션 자체를 숨긴다(§2.9). */}
       {tvShow.seasons.length > 0 ? (
-        <SeasonSelector tvId={tvId} seasons={tvShow.seasons} />
+        <ScrollReveal>
+          <SeasonSelector tvId={tvId} seasons={tvShow.seasons} />
+        </ScrollReveal>
       ) : null}
 
       {/* 출연진 레일(빈 배열이면 섹션 숨김 §2.9). */}
       {cast.length > 0 ? (
-        <section aria-label="출연진" className="mx-auto w-full max-w-page">
-          <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
-            출연진
-          </h2>
-          <ScrollRail>
-            {cast.map((member) => (
-              <li key={member.credit_id}>
-                <PersonLink
-                  href={`/person/${member.id}`}
-                  path={member.profile_path}
-                  name={member.name}
-                  role={member.character || null}
-                />
-              </li>
-            ))}
-          </ScrollRail>
-        </section>
+        <ScrollReveal>
+          <section aria-label="출연진" className="mx-auto w-full max-w-page">
+            <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
+              출연진
+            </h2>
+            <ScrollRail>
+              {cast.map((member) => (
+                <li key={member.credit_id}>
+                  <PersonLink
+                    href={`/person/${member.id}`}
+                    path={member.profile_path}
+                    name={member.name}
+                    role={member.character || null}
+                  />
+                </li>
+              ))}
+            </ScrollRail>
+          </section>
+        </ScrollReveal>
       ) : null}
 
       {/* 추천/유사 작품 레일(전부 tv → /tv/[id], 빈 배열이면 숨김 §2.9). */}
       {recommended.length > 0 ? (
-        <section aria-label="추천 작품" className="mx-auto w-full max-w-page">
-          <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
-            추천 작품
-          </h2>
-          <ScrollRail>
-            {recommended.map((item, index) => (
-              <li key={`${item.id}-${index}`}>
-                <ContentCard
-                  href={`/tv/${item.id}`}
-                  title={item.name}
-                  posterPath={item.poster_path}
-                  year={yearOf(item.first_air_date)}
-                  rating={item.vote_average}
-                />
-              </li>
-            ))}
-          </ScrollRail>
-        </section>
+        <ScrollReveal>
+          <section aria-label="추천 작품" className="mx-auto w-full max-w-page">
+            <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
+              추천 작품
+            </h2>
+            <ScrollRail>
+              {recommended.map((item, index) => (
+                <li key={`${item.id}-${index}`}>
+                  <ContentCard
+                    href={`/tv/${item.id}`}
+                    title={item.name}
+                    posterPath={item.poster_path}
+                    year={yearOf(item.first_air_date)}
+                    rating={item.vote_average}
+                  />
+                </li>
+              ))}
+            </ScrollRail>
+          </section>
+        </ScrollReveal>
       ) : null}
     </div>
   );

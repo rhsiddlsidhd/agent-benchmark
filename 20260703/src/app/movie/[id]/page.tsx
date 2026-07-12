@@ -21,7 +21,7 @@
  *   PersonAvatar 플레이스홀더가 처리한다.
  */
 import { notFound } from "next/navigation";
-import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail } from "@/src/components/ui";
+import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail, ScrollReveal } from "@/src/components/ui";
 import {
   getMovie,
   getMovieCredits,
@@ -114,76 +114,84 @@ export default async function MovieDetailPage({
       </div>
 
       {/* 줄거리(텍스트 결측 시 대체 문구, 섹션은 유지 §2.9). */}
-      <section className="mx-auto w-full max-w-page px-gutter md:px-gutter-lg">
-        <h2 className="text-h2 text-content-primary">줄거리</h2>
-        <p className="mt-3 max-w-3xl text-body text-content-secondary">
-          {movie.overview ? movie.overview : "줄거리 정보가 없습니다."}
-        </p>
-      </section>
+      <ScrollReveal>
+        <section className="mx-auto w-full max-w-page px-gutter md:px-gutter-lg">
+          <h2 className="text-h2 text-content-primary">줄거리</h2>
+          <p className="mt-3 max-w-3xl text-body text-content-secondary">
+            {movie.overview ? movie.overview : "줄거리 정보가 없습니다."}
+          </p>
+        </section>
+      </ScrollReveal>
 
       {/* 출연진 레일(빈 배열이면 섹션 숨김 §2.9). */}
       {cast.length > 0 ? (
-        <section aria-label="출연진" className="mx-auto w-full max-w-page">
-          <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
-            출연진
-          </h2>
-          <ScrollRail>
-            {cast.map((member) => (
-              <li key={member.credit_id}>
-                <PersonLink
-                  href={`/person/${member.id}`}
-                  path={member.profile_path}
-                  name={member.name}
-                  role={member.character || null}
-                />
-              </li>
-            ))}
-          </ScrollRail>
-        </section>
+        <ScrollReveal>
+          <section aria-label="출연진" className="mx-auto w-full max-w-page">
+            <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
+              출연진
+            </h2>
+            <ScrollRail>
+              {cast.map((member) => (
+                <li key={member.credit_id}>
+                  <PersonLink
+                    href={`/person/${member.id}`}
+                    path={member.profile_path}
+                    name={member.name}
+                    role={member.character || null}
+                  />
+                </li>
+              ))}
+            </ScrollRail>
+          </section>
+        </ScrollReveal>
       ) : null}
 
       {/* 감독·제작진(빈 배열이면 섹션 숨김 §2.9). */}
       {keyCrew.length > 0 ? (
-        <section
-          aria-label="감독 및 제작진"
-          className="mx-auto w-full max-w-page px-gutter md:px-gutter-lg"
-        >
-          <h2 className="text-h2 text-content-primary">감독 · 제작진</h2>
-          <ul className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-            {keyCrew.map((person) => (
-              <li key={person.id}>
-                <PersonLink
-                  href={`/person/${person.id}`}
-                  path={person.profilePath}
-                  name={person.name}
-                  role={crewRoleLabel(person.jobs)}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
+        <ScrollReveal>
+          <section
+            aria-label="감독 및 제작진"
+            className="mx-auto w-full max-w-page px-gutter md:px-gutter-lg"
+          >
+            <h2 className="text-h2 text-content-primary">감독 · 제작진</h2>
+            <ul className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+              {keyCrew.map((person) => (
+                <li key={person.id}>
+                  <PersonLink
+                    href={`/person/${person.id}`}
+                    path={person.profilePath}
+                    name={person.name}
+                    role={crewRoleLabel(person.jobs)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        </ScrollReveal>
       ) : null}
 
       {/* 추천/유사 작품 레일(전부 movie → /movie/[id], 빈 배열이면 숨김 §2.9). */}
       {recommended.length > 0 ? (
-        <section aria-label="추천 작품" className="mx-auto w-full max-w-page">
-          <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
-            추천 작품
-          </h2>
-          <ScrollRail>
-            {recommended.map((item, index) => (
-              <li key={`${item.id}-${index}`}>
-                <ContentCard
-                  href={`/movie/${item.id}`}
-                  title={item.title}
-                  posterPath={item.poster_path}
-                  year={yearOf(item.release_date)}
-                  rating={item.vote_average}
-                />
-              </li>
-            ))}
-          </ScrollRail>
-        </section>
+        <ScrollReveal>
+          <section aria-label="추천 작품" className="mx-auto w-full max-w-page">
+            <h2 className="px-gutter text-h2 text-content-primary md:px-gutter-lg">
+              추천 작품
+            </h2>
+            <ScrollRail>
+              {recommended.map((item, index) => (
+                <li key={`${item.id}-${index}`}>
+                  <ContentCard
+                    href={`/movie/${item.id}`}
+                    title={item.title}
+                    posterPath={item.poster_path}
+                    year={yearOf(item.release_date)}
+                    rating={item.vote_average}
+                  />
+                </li>
+              ))}
+            </ScrollRail>
+          </section>
+        </ScrollReveal>
       ) : null}
     </div>
   );
