@@ -34,6 +34,7 @@ export function PersonLink({ href, path, name, role }: PersonLinkProps) {
     <MotionLink
       href={href}
       aria-label={name}
+      draggable={false}
       className="block rounded-lg"
       whileHover={shouldReduceMotion ? undefined : { scale: 1.04, y: -4 }}
       whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}

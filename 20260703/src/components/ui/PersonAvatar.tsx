@@ -50,6 +50,7 @@ export function PersonAvatar({
             sizes="(max-width: 640px) 30vw, 120px"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
+            draggable={false}
             className="object-cover"
           />
         ) : (

@@ -15,3 +15,4 @@ export { Pill } from "./Pill";
 export { FilterChip } from "./FilterChip";
 export { PersonLink } from "./PersonLink";
 export { ScrollRail } from "./ScrollRail";
+export { ScrollReveal } from "./ScrollReveal";

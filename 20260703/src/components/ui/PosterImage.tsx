@@ -8,7 +8,11 @@
  * 콜백 prop 을 쓰지 않으므로 Server Component 로 동작한다(홈/상세 직접 사용 가능).
  */
 import Image from "next/image";
-import { BLUR_DATA_URL, tmdbImageUrl, type PosterSize } from "@/src/lib/tmdb/images";
+import {
+  BLUR_DATA_URL,
+  tmdbImageUrl,
+  type PosterSize,
+} from "@/src/lib/tmdb/images";
 
 interface PosterImageProps {
   /** TMDB poster_path (없으면 null → 플레이스홀더). */
@@ -66,7 +70,6 @@ export function ImagePlaceholder({
   label: string;
   className?: string;
 }) {
-  const initial = [...label.trim()][0]?.toUpperCase() ?? "?";
   return (
     <div
       className={`flex flex-col items-center justify-center gap-2 text-content-muted${
@@ -89,9 +92,6 @@ export function ImagePlaceholder({
           d="M3 4.5h18v15H3zM3 9h18M7.5 4.5v4.5M16.5 4.5v4.5M7.5 15h4.5"
         />
       </svg>
-      <span className="text-caption font-semibold" aria-hidden="true">
-        {initial}
-      </span>
     </div>
   );
 }
