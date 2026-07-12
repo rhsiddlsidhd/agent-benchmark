@@ -46,6 +46,7 @@ export function ContentCard({
     <MotionLink
       href={href}
       aria-label={title}
+      draggable={false}
       className="group block rounded-lg"
       whileHover={shouldReduceMotion ? undefined : { scale: 1.04, y: -4 }}
       whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}

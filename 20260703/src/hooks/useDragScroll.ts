@@ -23,8 +23,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   animate,
+  useDragControls,
   useMotionValue,
   useReducedMotion,
+  type DragControls,
   type MotionValue,
   type PanInfo,
 } from "framer-motion";
@@ -45,6 +47,8 @@ export interface UseDragScrollOptions {
 
 export interface UseDragScrollTrackProps {
   drag: "x";
+  dragControls: DragControls;
+  dragListener: false;
   dragConstraints: { left: number; right: number };
   dragElastic: number;
   dragMomentum: false;
@@ -57,6 +61,10 @@ export interface UseDragScrollTrackProps {
   onClickCapture: (event: React.MouseEvent) => void;
 }
 
+export interface UseDragScrollContainerProps {
+  onPointerDown: (event: React.PointerEvent) => void;
+}
+
 export interface UseDragScrollResult<T extends HTMLElement = HTMLElement> {
   /** 뷰포트(overflow-hidden) 래퍼에 부착. */
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -64,6 +72,8 @@ export interface UseDragScrollResult<T extends HTMLElement = HTMLElement> {
   trackRef: React.RefObject<T | null>;
   /** 트랙 엘리먼트(motion.ul/motion.div)에 그대로 스프레드. */
   trackProps: UseDragScrollTrackProps;
+  /** 뷰포트(overflow-hidden) 래퍼에 그대로 스프레드 — 트랙 박스 바깥(클리핑 영역 포함) 어디서 눌러도 드래그가 시작되도록 함. */
+  containerProps: UseDragScrollContainerProps;
   /** 직전 드래그 사이클이 클릭 무력화 임계값을 넘었는지. */
   wasDraggedRef: React.RefObject<boolean>;
   /** 특정 카드 인덱스로 즉시/애니메이션 이동(예: 히어로 캐러셀 dot 클릭). */
@@ -78,6 +88,7 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
   const trackRef = useRef<T>(null);
   const x = useMotionValue(0);
   const wasDraggedRef = useRef(false);
+  const dragControls = useDragControls();
   const [minX, setMinX] = useState(0);
   const onIndexChangeRef = useRef(options.onIndexChange);
 
@@ -144,16 +155,19 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
   );
 
   function handleDragStart() {
+    console.log("[useDragScroll] onDragStart");
     wasDraggedRef.current = false;
   }
 
   function handleDrag(_event: DragEventLike, info: PanInfo) {
+    console.log("[useDragScroll] onDrag", info.offset.x);
     if (Math.abs(info.offset.x) > CLICK_SUPPRESS_THRESHOLD_PX) {
       wasDraggedRef.current = true;
     }
   }
 
   function handleDragEnd(_event: DragEventLike, info: PanInfo) {
+    console.log("[useDragScroll] onDragEnd", info.velocity.x);
     const positions = cardPositions();
     if (positions.length === 0) return;
 
@@ -210,6 +224,7 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
   }
 
   function handleClickCapture(event: React.MouseEvent) {
+    console.log("[useDragScroll] onClickCapture", wasDraggedRef.current);
     if (wasDraggedRef.current) {
       event.preventDefault();
       event.stopPropagation();
@@ -229,6 +244,8 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
     trackRef,
     trackProps: {
       drag: "x",
+      dragControls,
+      dragListener: false,
       dragConstraints: { left: minX, right: 0 },
       dragElastic: 0.05,
       dragMomentum: false,
@@ -239,6 +256,9 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
       onKeyDown: handleKeyDown,
       onFocusCapture: handleFocusCapture,
       onClickCapture: handleClickCapture,
+    },
+    containerProps: {
+      onPointerDown: (event) => dragControls.start(event),
     },
     wasDraggedRef,
     scrollToIndex,
