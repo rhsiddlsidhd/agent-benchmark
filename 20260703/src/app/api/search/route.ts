@@ -39,10 +39,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const page =
     Number.isInteger(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
 
-  const includeAdult = searchParams.get("includeAdult") === "true";
-
   try {
-    const data = await searchMulti(query, page, includeAdult);
+    const data = await searchMulti(query, page);
     return NextResponse.json(data);
   } catch (error) {
     if (isTmdbError(error)) {

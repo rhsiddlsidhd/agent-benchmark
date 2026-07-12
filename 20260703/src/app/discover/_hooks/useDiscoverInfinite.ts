@@ -19,6 +19,9 @@
  *   따라서 `enabled` 는 기본 true 이며, 호출부가 화면 조건에 따라 끌 수 있다.
  * - queryKey 의 genreIds 는 정렬해 담아, 선택 순서만 다른 동일 조합이 별도 캐시
  *   엔트리를 만들지 않도록 한다.
+ *
+ * 성인 콘텐츠(FR-7)는 서버가 상시 페칭하고 카드 단위 게이트로 처리하므로, 이 훅은
+ * include_adult 를 알지 않는다.
  */
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -37,8 +40,6 @@ interface UseDiscoverInfiniteParams<T extends MediaType> {
   type: T;
   /** 선택된 장르 id 목록. 비면 인기순 디스커버(기본 동작). */
   genreIds: number[];
-  /** 성인 콘텐츠 포함 여부(AdultToggle, T13). 기본 false. */
-  includeAdult?: boolean;
   /** 조회 활성화 여부. 기본 true(0개 선택도 인기작으로 유효). */
   enabled?: boolean;
 }
@@ -51,13 +52,11 @@ interface UseDiscoverInfiniteParams<T extends MediaType> {
 async function fetchDiscoverPage<T extends MediaType>(
   type: T,
   genreIds: number[],
-  page: number,
-  includeAdult: boolean
+  page: number
 ): Promise<Paginated<DiscoverItem<T>>> {
   const params = new URLSearchParams({
     type,
     page: String(page),
-    includeAdult: String(includeAdult),
   });
   if (genreIds.length > 0) {
     params.set("genreIds", genreIds.join(","));
@@ -75,16 +74,14 @@ async function fetchDiscoverPage<T extends MediaType>(
 export function useDiscoverInfinite<T extends MediaType>({
   type,
   genreIds,
-  includeAdult = false,
   enabled = true,
 }: UseDiscoverInfiniteParams<T>) {
   // 선택 순서 무관하게 동일 조합이 같은 캐시 키를 갖도록 정렬(원본 배열은 불변 유지).
   const sortedGenreIds = [...genreIds].sort((a, b) => a - b);
 
   return useInfiniteQuery({
-    queryKey: ["discover", type, sortedGenreIds, includeAdult],
-    queryFn: ({ pageParam }) =>
-      fetchDiscoverPage(type, genreIds, pageParam, includeAdult),
+    queryKey: ["discover", type, sortedGenreIds],
+    queryFn: ({ pageParam }) => fetchDiscoverPage(type, genreIds, pageParam),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined,

@@ -10,7 +10,7 @@ export function CarouselSection({
   items: CardItem[];
 }) {
   return (
-    <section aria-label={title} className="mx-auto w-full max-w-page">
+    <section aria-label={title} className="mx-auto w-full max-w-page px-gutter">
       <h2 className="mb-3 flex items-center gap-3 px-gutter text-h2 text-content-primary md:px-gutter-lg">
         <span aria-hidden className="h-6 w-1 rounded-pill bg-brand" />
         {title}
@@ -24,6 +24,7 @@ export function CarouselSection({
               posterPath={item.posterPath}
               year={item.year}
               rating={item.rating}
+              adult={item.adult}
             />
           </li>
         ))}

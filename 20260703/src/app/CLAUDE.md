@@ -47,4 +47,4 @@ Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Han
 - 컴포넌트 Props/타입 규칙은 `@../../docs/COMPONENT_TYPES.md`를 따른다.
 
 ## Gotchas
-- 성인 콘텐츠 토글은 `layout.tsx`에서 전역 제공 — 하위 라우트에서 재선언하지 않는다.
+- 없음.

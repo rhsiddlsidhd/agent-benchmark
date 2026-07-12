@@ -26,6 +26,9 @@
  * - 무결과: EmptyState.
  * - 마지막 페이지: sentinel 미부착으로 추가 UI 없이 조용히 정지.
  * - 장르 0개: 차단하지 않고 인기순 디스커버(훅/Route Handler 기본 동작).
+ *
+ * 성인 콘텐츠(FR-7)는 서버가 상시 페칭하고, ContentCard 가 `adult` 플래그로
+ * 카드 단위 19+ 블러 게이트를 담당한다(전역 토글 없음).
  */
 import { useState } from "react";
 
@@ -36,7 +39,6 @@ import {
   FilterChip,
   SkeletonCard,
 } from "@/src/components/ui";
-import { useAdultContent } from "@/src/context/AdultContentContext";
 import { useIntersectionObserver } from "@/src/hooks";
 import type { Genre, MediaType } from "@/src/lib/tmdb/types";
 import { GenreFilter } from "./GenreFilter";
@@ -64,9 +66,6 @@ export function DiscoverExplorer({
   const [type, setType] = useState<MediaType>(initialType);
   const [selectedIds, setSelectedIds] = useState<number[]>(initialGenreIds);
 
-  // 성인 콘텐츠 토글(FR-7) — 헤더의 토글과 동일 Context. queryKey 에 포함되어 전환 시 재조회.
-  const { includeAdult } = useAdultContent();
-
   const activeGenres = type === "movie" ? movieGenres : tvGenres;
 
   const {
@@ -80,7 +79,6 @@ export function DiscoverExplorer({
   } = useDiscoverInfinite<MediaType>({
     type,
     genreIds: selectedIds,
-    includeAdult,
   });
 
   // sentinel: 다음 페이지가 있고 로딩 중이 아닐 때만 감지(마지막 페이지 정지 · 중복 요청 방지).
@@ -221,6 +219,7 @@ export function DiscoverExplorer({
                   posterPath={card.posterPath}
                   year={card.year}
                   rating={card.rating}
+                  adult={card.adult}
                 />
               </li>
             ))}

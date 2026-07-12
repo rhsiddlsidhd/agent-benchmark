@@ -10,5 +10,6 @@ export function movieToCard(movie: Movie): CardItem {
     posterPath: movie.poster_path,
     year: yearOf(movie.release_date),
     rating: movie.vote_average,
+    adult: movie.adult,
   };
 }

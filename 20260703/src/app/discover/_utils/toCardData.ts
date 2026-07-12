@@ -15,6 +15,7 @@ export function toCardData(item: Movie | TVShow): CardData {
       posterPath: item.poster_path,
       year: yearOf(item.release_date),
       rating: item.vote_average,
+      adult: item.adult,
     };
   }
   return {
@@ -24,5 +25,6 @@ export function toCardData(item: Movie | TVShow): CardData {
     posterPath: item.poster_path,
     year: yearOf(item.first_air_date),
     rating: item.vote_average,
+    adult: item.adult,
   };
 }
