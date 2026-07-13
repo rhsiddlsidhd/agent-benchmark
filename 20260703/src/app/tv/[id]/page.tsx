@@ -8,9 +8,11 @@
  * 레이아웃(§3.4 — "영화 상세와 동일 히어로 + 시즌/에피소드 영역 추가"): 히어로
  * (백드롭 + 포스터 오버랩 + display 제목 · 방영연도/회차 러닝타임/장르 Pill ·
  * RatingBadge) → 개요 → 시즌/에피소드(SeasonSelector) → 출연진 레일(→ /person/[id])
- * → 추천/유사 작품 레일(→ /tv/[id]). movie/[id]/page.tsx 와 동일한 구조/컨벤션을
- * 재사용한다. 시즌 전환은 인터랙티브라 SeasonSelector(Client Component)가 온디맨드로
- * 시즌 상세를 조회한다(T9, ADR-0003 — Route Handler 경유).
+ * → 리뷰(ReviewSection, 확정 요구사항 — 읽기 전용, TMDB 리뷰를 10개 단위로
+ * 페이지네이션) → 추천/유사 작품 레일(→ /tv/[id]). movie/[id]/page.tsx 와 동일한
+ * 구조/컨벤션을 재사용한다. 시즌 전환·리뷰 페이지 이동은 인터랙티브라
+ * SeasonSelector/ReviewSection(Client Component)이 온디맨드로 데이터를 조회한다
+ * (T9, ADR-0003 — Route Handler 경유).
  *
  * 에러/엣지케이스(§4):
  * - 존재하지 않는 id → getTvShow 가 null → notFound()(→ not-found.tsx). id 파싱
@@ -41,7 +43,7 @@ import {
 import { yearOf, formatRuntime } from "@/src/utils";
 import { MAX_CAST } from "./_constants";
 import { pickEpisodeRuntime } from "./_utils";
-import { SeasonSelector } from "./_components";
+import { ReviewSection, SeasonSelector } from "./_components";
 
 export default async function TvDetailPage({
   params,
@@ -168,6 +170,12 @@ export default async function TvDetailPage({
           </section>
         </ScrollReveal>
       ) : null}
+
+      {/* 리뷰(확정 요구사항 — 읽기 전용, 인터랙티브 페이지네이션이라 Client
+          Component 가 온디맨드로 조회한다. 섹션 자체는 항상 렌더된다). */}
+      <ScrollReveal>
+        <ReviewSection tvId={tvId} />
+      </ScrollReveal>
 
       {/* 추천/유사 작품 레일(전부 tv → /tv/[id], 빈 배열이면 숨김 §2.9). */}
       {recommended.length > 0 ? (
