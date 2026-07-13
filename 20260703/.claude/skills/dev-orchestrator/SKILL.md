@@ -1,21 +1,22 @@
 ---
 name: dev-orchestrator
-description: "TMDB 탐색 웹앱 기능 개발을 계획→구현→검증까지 자동화하는 오케스트레이터. 기능 추가/구현/수정/QA 요청, 버그 수정, PRD 기반 신규 기능 개발 시 반드시 이 스킬을 사용. 후속 작업(이전 배치 재실행, 특정 태스크만 다시, QA 리젝트 재작업, 진행 중이던 기능 이어서 진행)도 이 스킬로 처리한다. 단순 질문·설명 요청에는 사용하지 않는다."
+description: "TMDB 탐색 웹앱 기능 개발을 분석→계획→구현→검증까지 자동화하는 오케스트레이터. 기능 추가/구현/수정/QA 요청, 버그 수정, PRD 기반 신규 기능 개발 시 반드시 이 스킬을 사용. 요구사항이 PRD상 타당한지, 모호한 부분이 없는지 확인하는 단계(analyst)부터 시작한다. 후속 작업(이전 배치 재실행, 특정 태스크만 다시, QA 리젝트 재작업, 진행 중이던 기능 이어서 진행)도 이 스킬로 처리한다. 단순 질문·설명 요청에는 사용하지 않는다."
 ---
 
 # Dev Orchestrator
 
-TMDB 탐색 웹앱의 planner→implementer→qa 파이프라인을 조율한다.
+TMDB 탐색 웹앱의 analyst→planner→implementer→qa 파이프라인을 조율한다.
 
 ## 실행 모드: 서브 에이전트
 
-팀 모드(SendMessage 직접 통신)를 쓰지 않는다. planner→implementer→qa는 순차 파이프라인이고, 배치 내 병렬 fan-out은 오케스트레이터가 한 메시지에 여러 `Agent` 호출로 직접 처리하며, 배치 fan-in QA도 오케스트레이터가 순차 호출한다 — 팀원 간 실시간 조율이 필요한 지점이 없다. 대신 상태 연속성은 `02_progress_state.md`(오케스트레이터 단독 writer)로 유지한다.
+팀 모드(SendMessage 직접 통신)를 쓰지 않는다. analyst→planner→implementer→qa는 순차 파이프라인이고, 배치 내 병렬 fan-out은 오케스트레이터가 한 메시지에 여러 `Agent` 호출로 직접 처리하며, 배치 fan-in QA도 오케스트레이터가 순차 호출한다 — 팀원 간 실시간 조율이 필요한 지점이 없다. 대신 상태 연속성은 `02_progress_state.md`(오케스트레이터 단독 writer)로 유지한다.
 
 ## 에이전트 구성
 
 | 에이전트 | subagent_type | model | 역할 | 스킬 | 출력 |
 |---------|--------------|-------|------|------|------|
-| planner | `planner` | opus | 요구사항분석+계획, 배치/의존성 산출 | `feature-planning` | `01_planner_tasks.md` |
+| analyst | `analyst` | opus | 적합성판단+모호성해소(PRD 통독) | `feature-analysis` | `00_analysis_result.md` |
+| planner | `planner` | sonnet | 배치/의존성 산출(ARCH/ADR 통독) | `feature-planning` | `01_planner_tasks.md` |
 | implementer | `implementer` | sonnet | 태스크 1건 구현 | `feature-implementation` | 반환값(상태+비고) |
 | qa | `general-purpose` (에이전트 정의는 `qa`) | opus | 배치 단위 경계면 교차비교 | `boundary-qa` | 반환값(판정+유형+상세) |
 
@@ -28,7 +29,11 @@ TMDB 탐색 웹앱의 planner→implementer→qa 파이프라인을 조율한다
 3. 분기:
    - **미존재** → 초기 실행. Phase 1로
    - **존재 + 사용자가 특정 배치/태스크 재작업 요청** → 부분 재실행. `02_progress_state.md`를 읽어 해당 배치부터 재개(Phase 3의 해당 배치로 바로 진입, 이전 배치는 건드리지 않음)
-   - **존재 + 세션이 끊겼다가 재개(크래시/토큰소진 등)** → `02_progress_state.md`를 읽어 마지막으로 완료 표시된 지점 파악, 미완료 태스크부터 재개
+   - **존재 + 세션이 끊겼다가 재개(크래시/토큰소진 등)** → 어느 Phase까지 끝났는지는 버전 필드가 아니라 **산출물 존재 여부**로 판단한다(마이그레이션 스크립트 불필요, 구버전 세션도 자동으로 맞물림):
+     - `01_planner_tasks.md` 있음 → analyst 단계는 지난 것으로 본다(analyst 도입 전 세션이거나 이미 완료된 세션). `02_progress_state.md`를 읽어 마지막으로 완료 표시된 지점 파악, 미완료 태스크부터 Phase 3 재개
+     - `01_planner_tasks.md` 없음 + `00_analysis_result.md` 있음 + 상태:확정 → analyst는 끝났으나 planner가 아직 → Phase 2-1(계획)부터 재개
+     - `01_planner_tasks.md` 없음 + `00_analysis_result.md` 있음 + 상태:질문대기 → 질문 왕복 도중 끊긴 것 → Phase 2-0의 질문 왕복 루프부터 재개(저장된 "확인 필요 질문"을 다시 사용자에게 묻는다)
+     - 둘 다 없음 → Phase 2-0(분석)부터 재개
    - **존재 + 완전히 새로운 요청** → 기존 `_workspace/<브랜치명>/`를 `_workspace/<브랜치명>_prev_{YYYYMMDD_HHMMSS}/`로 이동 후 Phase 1
 
 ### Phase 1: 준비
@@ -36,9 +41,25 @@ TMDB 탐색 웹앱의 planner→implementer→qa 파이프라인을 조율한다
 1. 현재 브랜치가 `dev`/`main`이면 `AGENTS.md`의 prefix 컨벤션(`feat/`,`fix/`,`docs/`,`refactor/`,`chore/`,`test/`)에 맞는 새 브랜치를 `dev`에서 분기해 생성한다. 이미 적절한 작업 브랜치면 그대로 사용.
 2. `_workspace/<브랜치명>/` 생성 — 브랜치명을 그대로 경로에 미러링한다(별도 네이밍 규칙 안 만듦).
 
-### Phase 2: 계획
+### Phase 2-0: 분석
 
-`Agent(subagent_type: "planner", model: "opus", prompt: "요청 원문 + docs/00_PRD.md, 01_ARCHITECTURE.md, 02_ADR.md 경로 전달. feature-planning 스킬 절차를 따르라.")`
+`Agent(subagent_type: "analyst", model: "opus", prompt: "사용자 요청 원문 그대로 + docs/00_PRD.md 경로 전달. feature-analysis 스킬 절차를 따르라.")`
+
+오케스트레이터는 요청 원문을 사전 필터링하지 않고 그대로 analyst에게 전달한다 — 오케스트레이터는 PRD를 읽지 않으므로 판단 근거가 없고, 필터링하면 analyst와 같은 문서를 중복 판독하게 된다.
+
+**질문 왕복 루프 (실측 확인된 제약)**: 서브에이전트 컨텍스트에서는 `AskUserQuestion`을 쓸 수 없다 — analyst가 직접 사용자에게 묻지 못한다. 그래서 오케스트레이터가 인터뷰를 중계한다:
+
+1. analyst 산출물(`00_analysis_result.md`)의 "상태"를 확인한다
+2. **상태: 질문대기** → "확인 필요 질문" 목록을 오케스트레이터가 `AskUserQuestion`으로 사용자에게 그대로 묻는다. `AskUserQuestion`은 **한 호출당 최대 4개 질문**만 받는다(실측 확인됨) — 목록이 4개를 넘으면 여러 번 나눠 호출한다. 답변을 받으면 이전 질문 목록 + 답변을 함께 담아 analyst를 재호출한다. 다시 1번으로.
+3. **상태: 확정** → 적합성 판정을 확인한다:
+   - **pass** → Phase 2-1로 진행
+   - **reject** → 상세(어떤 Non-Goals/Constraints와 충돌했는지)를 사용자에게 보여주고 진행 여부를 확인받는다. 승인 없이는 Phase 2-1로 넘어가지 않는다(스코프 조정 후 재요청 또는 중단)
+
+`grilling`/`grill-me` 같은 인터뷰 스킬을 오케스트레이터가 대신 경유할 이유는 없다 — `AskUserQuestion`을 오케스트레이터가 직접 쓰면 충분하고, `grill-me`는 `disable-model-invocation`이라 애초에 에이전트가 호출할 수 없다.
+
+### Phase 2-1: 계획
+
+`Agent(subagent_type: "planner", model: "sonnet", prompt: "00_analysis_result.md 경로 + docs/01_ARCHITECTURE.md, 02_ADR.md 경로 전달. feature-planning 스킬 절차를 따르라.")`
 
 산출물을 `_workspace/<브랜치명>/01_planner_tasks.md`로 저장. "미정 사항"이 비어있지 않으면 사용자에게 먼저 확인받는다 — 임의로 배치 진행하지 않는다.
 
@@ -95,6 +116,7 @@ Agent(subagent_type: "general-purpose", model: "opus",
 - **통과** → 다음 배치로 진행(Phase 3 반복). 더 없으면 Phase 4.
 - **리젝트 + 구현이슈** → 해당 태스크의 implementer를 QA 지적사항과 함께 재호출(3-1 방식 재사용, 같은 스코프만). 이 배치 안에서 최대 2회까지 재시도. 3번째도 실패하면 사용자에게 에스컬레이션(무엇이 계속 실패하는지 + QA 지적사항 요약) — 자동 재시도 중단.
 - **리젝트 + 분해이슈** → planner를 재호출하되, **영향받은 배치만** 재분해 요청(이전에 QA 통과한 배치는 전달하지 않음, 전체 재시작 안 함). 재분해 결과로 3-1부터 재개.
+- **리젝트 + 적합성이슈** → analyst를 재호출하지 않는다(같은 PRD를 다시 읽어도 판정이 바뀌지 않는다). 오케스트레이터가 즉시 사용자에게 에스컬레이션(어떤 Non-Goals/Constraints와 충돌했는지 + 지금까지 진행된 배치 현황). 구현이슈/분해이슈와 달리 자동 재시도 없음.
 
 ### Phase 4: 정리
 
@@ -106,6 +128,7 @@ Agent(subagent_type: "general-purpose", model: "opus",
 
 ```
 [오케스트레이터]
+  ├─ Agent(analyst) → 00_analysis_result.md (적합성 reject면 사용자 확인 게이트)
   ├─ Agent(planner) → 01_planner_tasks.md
   ├─ 배치N:
   │   ├─ [오케스트레이터가 worktree 수동 생성] → Agent(implementer×M) ── 병렬 ──┐
@@ -113,7 +136,7 @@ Agent(subagent_type: "general-purpose", model: "opus",
   │   │                                          02_progress_state.md (태스크별 append)
   │   ├─ merge-back (전원 완료 확인 후)
   │   ├─ Agent(qa) → 판정+유형+상세 → 02_progress_state.md append
-  │   └─ 분기: 통과(다음 배치) / 구현이슈(implementer 재호출≤2) / 분해이슈(planner 부분 재호출)
+  │   └─ 분기: 통과(다음 배치) / 구현이슈(implementer 재호출≤2) / 분해이슈(planner 부분 재호출) / 적합성이슈(재시도 없이 사용자 에스컬레이션)
   └─ 전 배치 완료 → 정리+보고
 ```
 
@@ -121,9 +144,11 @@ Agent(subagent_type: "general-purpose", model: "opus",
 
 | 상황 | 전략 |
 |------|------|
+| analyst 적합성 판정 reject | 충돌 상세를 사용자에게 보여주고 진행 여부 확인, 미승인 시 Phase 2-1로 넘어가지 않고 중단(브랜치/`_workspace`는 보존) |
 | implementer 1개 실패(상태:실패) | 비고 확인 후 원인이 명확하면 1회 자체 재호출, 불명확하면 사용자에게 즉시 보고 |
 | QA 리젝트(구현이슈) | 같은 implementer 재호출, 배치당 최대 2회, 3회째 실패 시 사용자 에스컬레이션 |
 | QA 리젝트(분해이슈) | planner 부분 재호출(영향 배치만), 전체 재시작 금지 |
+| QA 리젝트(적합성이슈) | analyst 재호출 안 함(재시도 대상 아님) — 오케스트레이터가 즉시 사용자에게 에스컬레이션 |
 | merge-back 충돌 | 배치 내 태스크가 실제로는 파일이 겹쳤다는 신호 — 분해이슈로 간주, planner에게 이 사실과 함께 재호출 |
 | implementer가 "대상 파일이 없다"고 보고(worktree provisioning 문제) | 3-1을 오케스트레이터 수동 생성 방식으로 전환한 뒤로는 원칙적으로 발생하지 않아야 함 — 그래도 발생하면 오케스트레이터가 만든 worktree 경로가 실제로 맞는지(`git -C {경로} log --oneline -1`) 먼저 확인 |
 | 세션 중단(토큰소진/크래시) | 재개 시 Phase 0에서 `02_progress_state.md` 읽어 마지막 완료 지점부터 재개 |
@@ -134,12 +159,24 @@ Agent(subagent_type: "general-purpose", model: "opus",
 1. 사용자가 "히어로 캐러셀 기능 추가해줘" 요청
 2. Phase 0: `_workspace/` 없음 → 초기 실행
 3. Phase 1: `feat/hero-carousel` 브랜치 생성, `_workspace/feat/hero-carousel/` 생성
-4. Phase 2: planner 호출 → 배치1(tmdb-client), 배치2(home) 산출
-5. Phase 3: 배치1 단일 태스크 처리+QA 통과 → merge-back → 배치2 처리+QA 통과 → merge-back
-6. Phase 4: 정리 및 보고
+4. Phase 2-0: analyst 호출 → PRD 대조 결과 적합성 pass, 모호성 없어 질문 없이 즉시 확정 → `00_analysis_result.md` 산출
+5. Phase 2-1: planner 호출 → 배치1(tmdb-client), 배치2(home) 산출
+6. Phase 3: 배치1 단일 태스크 처리+QA 통과 → merge-back → 배치2 처리+QA 통과 → merge-back
+7. Phase 4: 정리 및 보고
 
-### 에러 흐름
+### 에러 흐름 (구현이슈)
 1. 배치2(home/search/detail 병렬)에서 QA가 "home↔ui ScrollRail 사용법 불일치"로 리젝트, 유형: 구현이슈
 2. 오케스트레이터가 home 담당 implementer만 QA 지적사항과 함께 재호출
 3. 재작업 결과 QA 재검증 → 통과 → 다음 배치 진행
 4. (만약 2회 재작업 후에도 리젝트라면) 오케스트레이터가 사용자에게 에스컬레이션하고 자동 진행 중단
+
+### 에러 흐름 (적합성이슈, Phase 2-0)
+1. 사용자가 "찜하기 기능도 추가해줘" 요청
+2. Phase 2-0: analyst가 PRD §2 Non-Goals("찜하기/리뷰 작성/평점 부여 등 개인화 기능")와 충돌 확인 → 적합성 판정 `reject`
+3. 오케스트레이터가 충돌 상세를 사용자에게 보여주고 진행 여부 확인
+4. 사용자가 스코프에서 찜하기를 제외하기로 결정 → 남은 요청으로 analyst 재호출(또는 사용자가 중단 결정 시 여기서 종료)
+
+### 에러 흐름 (적합성이슈, QA 단계)
+1. 배치 구현 결과, implementer가 사용자별 검색 기록을 남기기 위해 로컬 스토리지가 아닌 서버 저장 구조로 구현
+2. QA가 "PRD Non-Goals(개인화 기능) 및 ADR-0002(DB 미사용) 위반"으로 리젝트, 유형: 적합성이슈
+3. 오케스트레이터가 analyst를 재호출하지 않고 즉시 사용자에게 에스컬레이션 — 자동 재시도 없음

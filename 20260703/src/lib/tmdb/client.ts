@@ -13,6 +13,7 @@ import type {
   Paginated,
   PersonCombinedCredits,
   PersonDetail,
+  Review,
   SeasonDetail,
   TVDetail,
   TVShow,
@@ -162,6 +163,13 @@ function dateParamMonthsAgo(months: number): string {
 /** `popularity` 내림차순 재정렬(원본 배열 변형 없음). TMDB `sort_by`만 믿지 않기 위함. */
 function sortByPopularityDesc<T extends { popularity: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => b.popularity - a.popularity);
+}
+
+/** `created_at` 내림차순(최신순) 재정렬(원본 배열 변형 없음). TMDB `sort_by`만 믿지 않기 위함. */
+function sortByCreatedAtDesc<T extends { created_at: string }>(items: T[]): T[] {
+  return [...items].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 }
 
 /** 트렌딩(all) 결과에서 person을 제외한 영화/TV만 남긴다(히어로 캐러셀용). */
@@ -363,6 +371,25 @@ export function getMovieRecommendations(id: number): Promise<Paginated<Movie>> {
   });
 }
 
+/**
+ * 영화 리뷰. `sort_by=created_at.desc`로 요청하되, TMDB `sort_by`만 믿지 않고
+ * `created_at` 내림차순(최신순)으로 재정렬해 반환한다.
+ */
+export async function getMovieReviews(
+  id: number,
+  page = 1
+): Promise<Paginated<Review>> {
+  const data = await tmdbRequest<Paginated<Review>>(`/movie/${id}/reviews`, {
+    // 리뷰는 TMDB가 다국어 번역해 제공하는 필드(제목/줄거리 등)와 달리 리뷰어가
+    // 작성한 언어 그대로인 사용자생성 콘텐츠다. 전역 DEFAULT_LANGUAGE(ko-KR)를
+    // 그대로 쓰면 한국어 리뷰 자체가 거의 없어(실측: 대부분 0건) 리뷰 섹션이
+    // 항상 비어 보인다 — 리뷰 코퍼스가 두꺼운 en-US로 이 엔드포인트만 고정한다.
+    searchParams: { page, sort_by: "created_at.desc", language: "en-US" },
+    cache: { revalidate: REVALIDATE.DETAIL },
+  });
+  return { ...data, results: sortByCreatedAtDesc(data.results) };
+}
+
 /** TV 출연진·제작진(movie/tv 공용 Credits shape). */
 export function getTvCredits(id: number): Promise<Credits> {
   return tmdbRequest<Credits>(`/tv/${id}/credits`, {
@@ -375,6 +402,25 @@ export function getTvRecommendations(id: number): Promise<Paginated<TVShow>> {
   return tmdbRequest<Paginated<TVShow>>(`/tv/${id}/recommendations`, {
     cache: { revalidate: REVALIDATE.DETAIL },
   });
+}
+
+/**
+ * TV 리뷰. `sort_by=created_at.desc`로 요청하되, TMDB `sort_by`만 믿지 않고
+ * `created_at` 내림차순(최신순)으로 재정렬해 반환한다.
+ */
+export async function getTvReviews(
+  id: number,
+  page = 1
+): Promise<Paginated<Review>> {
+  const data = await tmdbRequest<Paginated<Review>>(`/tv/${id}/reviews`, {
+    // 리뷰는 TMDB가 다국어 번역해 제공하는 필드(제목/줄거리 등)와 달리 리뷰어가
+    // 작성한 언어 그대로인 사용자생성 콘텐츠다. 전역 DEFAULT_LANGUAGE(ko-KR)를
+    // 그대로 쓰면 한국어 리뷰 자체가 거의 없어(실측: 대부분 0건) 리뷰 섹션이
+    // 항상 비어 보인다 — 리뷰 코퍼스가 두꺼운 en-US로 이 엔드포인트만 고정한다.
+    searchParams: { page, sort_by: "created_at.desc", language: "en-US" },
+    cache: { revalidate: REVALIDATE.DETAIL },
+  });
+  return { ...data, results: sortByCreatedAtDesc(data.results) };
 }
 
 /** TV 시즌 상세(에피소드 목록 포함). */

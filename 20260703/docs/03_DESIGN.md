@@ -3,7 +3,7 @@
 > 상태: Draft
 > 작성자:
 > 작성일:
-> 최종 수정일: 2026-07-12
+> 최종 수정일: 2026-07-13
 > **관련 문서**: [00_PRD.md](./00_PRD.md) · [01_ARCHITECTURE.md](./01_ARCHITECTURE.md)
 
 ---
@@ -185,6 +185,12 @@ boxShadow: {
 - 네이티브 스크롤 스냅 대신 `onDragEnd`에서 속도/위치 계산 후 카드 단위로 `animate()` 스냅 이동. `prefers-reduced-motion`이면 스냅 이동을 즉시 점프로 대체.
 - `scrollbar-hide`/`rail-snap`(전역 유틸) 자체는 정의·적용돼 있으나, 컨테이너가 transform 기반 드래그 구조상 `overflow-hidden`이라 네이티브 스크롤 스냅/스크롤바는 시각적으로 관여하지 않는다 — transform 재구현 방식의 필연적 결과.
 
+### 2.11 `ReviewCard` / `ReviewList` — 리뷰 (FR-8)
+- `ReviewList`: 리뷰 섹션의 렌더링 셸(movie/tv 공용, 데이터 페칭 없이 상태를 props로만 받음). 로딩(스켈레톤 라인 3개, `role="status"`) / 에러(`ErrorState`+재시도) / 빈 상태(`EmptyState`, "아직 리뷰가 없습니다") / 정상(카드 목록 + 페이지네이션)을 분기 렌더. 로딩·에러·빈 상태에는 페이지네이션 컨트롤을 숨긴다.
+- `ReviewCard`: 작성자명(`body-sm` semibold) + `RatingBadge`(작성자 평점 `null`이면 배지 자체를 렌더하지 않음 — 텍스트 대체도 없음) + 작성일(YYYY-MM-DD) + 본문(`body-sm`). 본문 200자 초과 시 말줄임 후 "더보기"/"접기" 토글 버튼(`text-brand`, `aria-expanded`).
+- 카드 컨테이너: `bg-surface` + `border-subtle` + `radius-lg`, `Skeleton`/`ContentCard`와 동일 서페이스 톤 재사용.
+- 페이지네이션: 이전/다음 `Button`(`secondary`, `sm`) + "N / 총페이지" 텍스트(`caption`). 10개 단위 로컬 페이지 — TMDB 응답(페이지당 20개) 재분할은 UI 컴포넌트가 아니라 라우트 훅 책임(도메인 로직, 아키텍처 §5.4).
+
 ---
 
 ## 3. 화면별 레이아웃 가이드
@@ -205,13 +211,14 @@ boxShadow: {
 
 ### 3.3 영화 상세 `/movie/[id]` (FR-3)
 - **히어로**: 백드롭 + 포스터 오버랩 + `display` 제목 · 메타(연도·러닝타임·장르 `Pill`) · `RatingBadge`.
-- **줄거리**(`body`) → **출연진 레일**(`PersonAvatar`, 클릭 시 `/person/[id]`) → **감독/제작진** → **추천/유사 작품 레일**.
+- **줄거리**(`body`) → **출연진 레일**(`PersonAvatar`, 클릭 시 `/person/[id]`) → **감독/제작진** → **리뷰 섹션**(`ReviewList`/`ReviewCard`, FR-8, 인라인) → **추천/유사 작품 레일**.
 - 모든 인물·연관작은 링크 — 콘텐츠→인물→다른 작품 탐색 흐름(PRD §2) 유지.
 
 ### 3.4 TV 상세 `/tv/[id]` (FR-4)
 - 영화 상세와 동일 히어로 + **시즌/에피소드 영역 추가**.
 - 시즌 선택(`FilterChip` 또는 셀렉트) → 해당 시즌 **에피소드 목록**(에피소드 스틸 `16/9` + 번호·제목 + 방영일 + 개요 요약).
 - 에피소드 목록은 모바일 1열 / 데스크톱 2열.
+- **리뷰 섹션**(`ReviewList`/`ReviewCard`, FR-8, 인라인): 출연진 레일과 추천 작품 레일 사이 — TV는 영화와 달리 감독/제작진 섹션이 없어 그 자리를 대체한다.
 
 ### 3.5 인물 상세 `/person/[id]` (FR-5)
 - 좌(데스크톱)/상(모바일): 프로필(`1/1`) + 이름(`display`) + 약력.

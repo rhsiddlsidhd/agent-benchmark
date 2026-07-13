@@ -1,0 +1,1 @@
+export { useMovieReviews } from "./useMovieReviews";
