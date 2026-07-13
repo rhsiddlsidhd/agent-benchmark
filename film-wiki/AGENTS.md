@@ -41,7 +41,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 git worktree add -b <브랜치명> <경로> <기반브랜치>
 
 # 예시
-git worktree add -b feat/some-feature ../cinelog-feat-some-feature dev
+git worktree add -b feat/some-feature ../film-wiki-feat-some-feature dev
 
 # 이미 존재하는 브랜치를 체크아웃할 때는 -b 없이 사용
 git worktree add <경로> <브랜치명>
