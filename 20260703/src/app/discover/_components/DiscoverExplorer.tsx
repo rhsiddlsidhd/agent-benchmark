@@ -40,6 +40,7 @@ import {
   SkeletonCard,
 } from "@/src/components/ui";
 import { useIntersectionObserver } from "@/src/hooks";
+import { cn } from "@/src/lib/clsx/merge";
 import type { Genre, MediaType } from "@/src/lib/tmdb/types";
 import { GenreFilter } from "./GenreFilter";
 import { useDiscoverInfinite } from "../_hooks";
@@ -94,7 +95,7 @@ export function DiscoverExplorer({
     window.history.replaceState(
       null,
       "",
-      `?${buildQuery(nextType, nextGenreIds)}`
+      `?${buildQuery(nextType, nextGenreIds)}`,
     );
   }
 
@@ -119,7 +120,9 @@ export function DiscoverExplorer({
 
   const results = data?.pages.flatMap((page) => page.results) ?? [];
   // 페이지 경계에서 정렬이 바뀌면 같은 항목이 두 페이지에 걸쳐 중복될 수 있어 id 로 dedupe.
-  const dedupedResults = [...new Map(results.map((item) => [item.id, item])).values()];
+  const dedupedResults = [
+    ...new Map(results.map((item) => [item.id, item])).values(),
+  ];
   const cards = dedupedResults.map(toCardData);
   const hasResults = cards.length > 0;
 
@@ -147,11 +150,7 @@ export function DiscoverExplorer({
         </div>
 
         {/* 미디어 타입 선택(단일). FilterChip 을 재사용하되 항상 하나만 선택된다. */}
-        <div
-          role="group"
-          aria-label="미디어 타입"
-          className="flex gap-2"
-        >
+        <div role="group" aria-label="미디어 타입" className="flex gap-2">
           <FilterChip
             label="영화"
             selected={type === "movie"}
@@ -181,7 +180,10 @@ export function DiscoverExplorer({
       {/* 결과 영역. */}
       {isLoading ? (
         <div
-          className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${DISCOVER_GRID}`}
+          className={cn(
+            "mx-auto w-full max-w-page px-gutter md:px-gutter-lg",
+            DISCOVER_GRID,
+          )}
           role="status"
           aria-busy="true"
           aria-label="콘텐츠를 불러오는 중"
@@ -209,7 +211,10 @@ export function DiscoverExplorer({
               메우는 h2 를 sr-only 로 둔다. 시각 디자인은 그대로 유지된다. */}
           <h2 className="sr-only">탐색 결과</h2>
           <ul
-            className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${DISCOVER_GRID}`}
+            className={cn(
+              "mx-auto w-full max-w-page px-gutter md:px-gutter-lg",
+              DISCOVER_GRID,
+            )}
           >
             {cards.map((card) => (
               <li key={card.href}>
@@ -230,7 +235,10 @@ export function DiscoverExplorer({
 
           {isFetchingNextPage ? (
             <div
-              className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${DISCOVER_GRID}`}
+              className={cn(
+                "mx-auto w-full max-w-page px-gutter md:px-gutter-lg",
+                DISCOVER_GRID,
+              )}
               role="status"
               aria-busy="true"
               aria-label="다음 페이지를 불러오는 중"

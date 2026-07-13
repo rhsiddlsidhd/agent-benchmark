@@ -27,7 +27,7 @@ interface UseSearchInfiniteParams {
 /** `/api/search` 한 페이지를 조회한다. 실패 응답은 에러로 던져 `retry: 1` 대상이 된다. */
 async function fetchSearchPage(
   query: string,
-  page: number
+  page: number,
 ): Promise<SearchResponse> {
   const params = new URLSearchParams({
     query,

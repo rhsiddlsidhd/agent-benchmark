@@ -318,9 +318,7 @@ export type PersonSearchResult = Person & { media_type: "person" };
 
 /** multi 검색/트렌딩(all) 결과 유니온. media_type으로 분기. */
 export type MultiSearchResult =
-  | MovieSearchResult
-  | TVSearchResult
-  | PersonSearchResult;
+  MovieSearchResult | TVSearchResult | PersonSearchResult;
 
 // ---------------------------------------------------------------------------
 // Person combined credits (필모그래피)
@@ -328,7 +326,12 @@ export type MultiSearchResult =
 
 /** 인물 필모그래피의 출연 크레딧(영화/TV 판별 유니온). */
 export type PersonCombinedCastCredit =
-  | (Movie & { media_type: "movie"; credit_id: string; character: string; order?: number })
+  | (Movie & {
+      media_type: "movie";
+      credit_id: string;
+      character: string;
+      order?: number;
+    })
   | (TVShow & {
       media_type: "tv";
       credit_id: string;
@@ -338,7 +341,12 @@ export type PersonCombinedCastCredit =
 
 /** 인물 필모그래피의 제작 크레딧(영화/TV 판별 유니온). */
 export type PersonCombinedCrewCredit =
-  | (Movie & { media_type: "movie"; credit_id: string; department: string; job: string })
+  | (Movie & {
+      media_type: "movie";
+      credit_id: string;
+      department: string;
+      job: string;
+    })
   | (TVShow & {
       media_type: "tv";
       credit_id: string;

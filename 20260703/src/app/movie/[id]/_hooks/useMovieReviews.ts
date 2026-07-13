@@ -20,10 +20,10 @@ import type { ReviewsResponse } from "@/src/app/api/movie/[id]/reviews/_types";
 /** `/api/movie/[id]/reviews` 를 조회한다. 실패 응답은 에러로 던져 `retry: 1` 대상이 된다. */
 async function fetchMovieReviews(
   movieId: number,
-  tmdbPage: number
+  tmdbPage: number,
 ): Promise<ReviewsResponse> {
   const response = await fetch(
-    `/api/movie/${movieId}/reviews?page=${tmdbPage}`
+    `/api/movie/${movieId}/reviews?page=${tmdbPage}`,
   );
   if (!response.ok) {
     throw new Error(`리뷰 요청 실패 (HTTP ${response.status})`);

@@ -11,6 +11,7 @@
  */
 import { motion, useReducedMotion, type HTMLMotionProps } from "framer-motion";
 import type { ReactNode } from "react";
+import { cn } from "@/src/lib/clsx/merge";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
@@ -24,8 +25,7 @@ interface ButtonProps extends HTMLMotionProps<"button"> {
 }
 
 const variantClass: Record<ButtonVariant, string> = {
-  primary:
-    "bg-brand text-base hover:bg-brand-strong disabled:hover:bg-brand",
+  primary: "bg-brand text-base hover:bg-brand-strong disabled:hover:bg-brand",
   secondary:
     "border border-border bg-surface text-content-primary hover:bg-surface-hover disabled:hover:bg-surface",
   ghost:
@@ -58,9 +58,12 @@ export function Button({
       disabled={isDisabled}
       aria-busy={isLoading || undefined}
       whileTap={shouldReduceMotion || isDisabled ? undefined : { scale: 0.98 }}
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${sizeClass[size]} ${variantClass[variant]}${
-        className ? ` ${className}` : ""
-      }`}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        sizeClass[size],
+        variantClass[variant],
+        className,
+      )}
       {...rest}
     >
       {children}

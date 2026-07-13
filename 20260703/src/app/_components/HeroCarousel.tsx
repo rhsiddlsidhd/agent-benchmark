@@ -20,6 +20,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { BackdropImage } from "@/src/components/ui";
 import { useDragScroll } from "@/src/hooks";
+import { cn } from "@/src/lib/clsx/merge";
 import type { MovieSearchResult, TVSearchResult } from "@/src/lib/tmdb/types";
 
 /** 자동 전환 간격(ms). */
@@ -88,7 +89,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                   size="w1280"
                   sizes="100vw"
                   preload={index === 0}
-                  className="min-h-[420px] max-h-[60vh] w-full"
+                  className="max-h-[60vh] min-h-[420px] w-full"
                 />
                 {/* 하단 텍스트 보호 그라데이션(§3.1). */}
                 <div
@@ -117,7 +118,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
       </div>
 
       {items.length > 1 ? (
-        <div className="absolute bottom-4 right-4 flex items-center gap-3 md:bottom-6 md:right-6">
+        <div className="absolute right-4 bottom-4 flex items-center gap-3 md:right-6 md:bottom-6">
           <div className="flex gap-2">
             {items.map((item, index) => (
               <button
@@ -126,9 +127,10 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                 aria-label={`${index + 1}번째 슬라이드로 이동: ${heroTitle(item)}`}
                 aria-current={index === activeIndex}
                 onClick={() => scrollToIndex(index)}
-                className={`h-2 w-2 rounded-pill transition-colors ${
-                  index === activeIndex ? "bg-brand" : "bg-content-muted"
-                }`}
+                className={cn(
+                  "h-2 w-2 rounded-pill transition-colors",
+                  index === activeIndex ? "bg-brand" : "bg-content-muted",
+                )}
               />
             ))}
           </div>

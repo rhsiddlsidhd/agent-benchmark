@@ -10,6 +10,7 @@
  * border 로만 한다(§Q10 — 세로로 촘촘히 쌓인 행이라 scale 시 이웃 행과 겹칠 수 있어서).
  */
 import { BackdropImage } from "@/src/components/ui";
+import { cn } from "@/src/lib/clsx/merge";
 import { useRovingTabIndex } from "../_hooks";
 import { isUpcomingEpisode } from "../_utils";
 import type { EpisodeSelectorProps } from "../_types";
@@ -47,14 +48,16 @@ export function EpisodeList({
               aria-controls={backdropPanelId}
               onClick={() => onSelect(index)}
               {...getTabProps(index)}
-              className={`flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors ${
-                isActive ? "bg-surface-hover" : "hover:bg-surface-hover/60"
-              }`}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors",
+                isActive ? "bg-surface-hover" : "hover:bg-surface-hover/60",
+              )}
             >
               <div
-                className={`relative w-24 shrink-0 overflow-hidden rounded-md border-2 ${
-                  isActive ? "border-brand" : "border-transparent"
-                }`}
+                className={cn(
+                  "relative w-24 shrink-0 overflow-hidden rounded-md border-2",
+                  isActive ? "border-brand" : "border-transparent",
+                )}
               >
                 <BackdropImage
                   path={episode.still_path}

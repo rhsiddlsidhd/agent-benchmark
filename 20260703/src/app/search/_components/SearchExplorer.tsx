@@ -33,6 +33,7 @@ import {
   SkeletonCard,
 } from "@/src/components/ui";
 import { useIntersectionObserver } from "@/src/hooks";
+import { cn } from "@/src/lib/clsx/merge";
 import { yearOf } from "@/src/utils";
 import { PersonResultCard } from "./PersonResultCard";
 import { useSearchInfinite } from "../_hooks";
@@ -72,7 +73,7 @@ export function SearchExplorer() {
   // media_type+id 복합 키로 dedupe(영화/TV/인물 id 는 타입 간 겹칠 수 있음).
   const results = [
     ...new Map(
-      rawResults.map((item) => [`${item.media_type}:${item.id}`, item])
+      rawResults.map((item) => [`${item.media_type}:${item.id}`, item]),
     ).values(),
   ];
   const { movies, tv, people } = partitionResults(results);
@@ -100,7 +101,7 @@ export function SearchExplorer() {
       <form
         role="search"
         onSubmit={handleSubmit}
-        className="z-header sticky top-14 border-b border-border bg-base"
+        className="sticky top-14 z-header border-b border-border bg-base"
       >
         <div className="mx-auto flex w-full max-w-page items-center gap-3 px-gutter py-3 md:px-gutter-lg">
           <div className="relative flex-1">
@@ -110,7 +111,7 @@ export function SearchExplorer() {
               fill="none"
               stroke="currentColor"
               strokeWidth={1.5}
-              className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-content-muted"
+              className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-content-muted"
             >
               <path
                 strokeLinecap="round"
@@ -127,7 +128,7 @@ export function SearchExplorer() {
               onChange={(event) => setInputValue(event.target.value)}
               placeholder="영화, TV 프로그램, 인물 검색"
               aria-label="검색어"
-              className="h-11 w-full rounded-md border border-border bg-surface pl-10 pr-3 text-body text-content-primary placeholder:text-content-muted"
+              className="h-11 w-full rounded-md border border-border bg-surface pr-3 pl-10 text-body text-content-primary placeholder:text-content-muted"
             />
           </div>
         </div>
@@ -146,7 +147,10 @@ export function SearchExplorer() {
           />
         ) : isLoading ? (
           <div
-            className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${TITLED_GRID}`}
+            className={cn(
+              "mx-auto w-full max-w-page px-gutter md:px-gutter-lg",
+              TITLED_GRID,
+            )}
             role="status"
             aria-busy="true"
             aria-label="검색 결과를 불러오는 중"
@@ -252,7 +256,10 @@ export function SearchExplorer() {
 
             {isFetchingNextPage ? (
               <div
-                className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${TITLED_GRID}`}
+                className={cn(
+                  "mx-auto w-full max-w-page px-gutter md:px-gutter-lg",
+                  TITLED_GRID,
+                )}
                 role="status"
                 aria-busy="true"
                 aria-label="다음 페이지를 불러오는 중"

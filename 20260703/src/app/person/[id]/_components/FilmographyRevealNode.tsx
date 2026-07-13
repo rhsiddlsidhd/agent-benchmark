@@ -30,10 +30,18 @@
  * value 파생이라 별도 `reduceMotion` prop으로 분기).
  */
 import type { ReactNode } from "react";
-import { motion, useSpring, useTransform, type MotionValue } from "framer-motion";
+import {
+  motion,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import { cardSpring } from "@/src/lib/framer-motion/preset";
 
-const REVEAL_SPRING = { stiffness: cardSpring.stiffness, damping: cardSpring.damping };
+const REVEAL_SPRING = {
+  stiffness: cardSpring.stiffness,
+  damping: cardSpring.damping,
+};
 
 interface FilmographyRevealNodeProps {
   scrollYProgress: MotionValue<number>;
@@ -51,10 +59,12 @@ export function FilmographyRevealNode({
   children,
 }: FilmographyRevealNodeProps) {
   const rawOpacity = useTransform(scrollYProgress, (progress): number =>
-    progress >= threshold ? 1 : 0
+    progress >= threshold ? 1 : 0,
   );
   const opacity = useSpring(rawOpacity, REVEAL_SPRING);
-  const y = useTransform(opacity, (value) => (reduceMotion ? 0 : (1 - value) * 20));
+  const y = useTransform(opacity, (value) =>
+    reduceMotion ? 0 : (1 - value) * 20,
+  );
 
   return (
     <motion.li style={{ opacity, y }} className={className}>

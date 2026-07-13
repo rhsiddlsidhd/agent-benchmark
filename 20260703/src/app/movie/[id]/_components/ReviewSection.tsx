@@ -19,7 +19,11 @@
  */
 import { useState } from "react";
 import { ReviewList } from "@/src/components/ui";
-import { localPageToTmdbPage, sliceReviewsForLocalPage, REVIEW_PAGE_SIZE } from "@/src/utils";
+import {
+  localPageToTmdbPage,
+  sliceReviewsForLocalPage,
+  REVIEW_PAGE_SIZE,
+} from "@/src/utils";
 import { useMovieReviews } from "../_hooks";
 
 export function ReviewSection({ movieId }: { movieId: number }) {
@@ -29,7 +33,8 @@ export function ReviewSection({ movieId }: { movieId: number }) {
 
   const isPending = reviewsQuery.isPending;
   const isError = reviewsQuery.isError;
-  const isEmpty = !isPending && !isError && reviewsQuery.data.total_results === 0;
+  const isEmpty =
+    !isPending && !isError && reviewsQuery.data.total_results === 0;
   const reviews =
     !isPending && !isError
       ? sliceReviewsForLocalPage(reviewsQuery.data.results, localPage)

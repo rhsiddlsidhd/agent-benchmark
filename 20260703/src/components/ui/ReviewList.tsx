@@ -62,7 +62,7 @@ export function ReviewList({
         aria-label="리뷰를 불러오는 중"
       >
         {Array.from({ length: 3 }, (_, index) => (
-          <div key={index} className="skeleton h-24 w-full rounded-lg" />
+          <div key={index} className="h-24 w-full skeleton rounded-lg" />
         ))}
       </div>
     );

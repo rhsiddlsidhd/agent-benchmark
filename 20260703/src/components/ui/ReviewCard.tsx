@@ -37,11 +37,14 @@ export function ReviewCard({ review }: { review: Review }) {
         {rating !== null ? <RatingBadge value={rating} /> : null}
       </div>
       {createdAt ? (
-        <time dateTime={review.created_at} className="text-caption text-content-muted">
+        <time
+          dateTime={review.created_at}
+          className="text-caption text-content-muted"
+        >
           {createdAt}
         </time>
       ) : null}
-      <p className="whitespace-pre-line text-body-sm text-content-secondary">
+      <p className="text-body-sm whitespace-pre-line text-content-secondary">
         {displayedContent}
       </p>
       {isLong ? (

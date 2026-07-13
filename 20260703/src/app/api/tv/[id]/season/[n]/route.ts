@@ -21,7 +21,7 @@ import type { SeasonErrorResponse, SeasonResponse } from "./_types";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string; n: string }> }
+  { params }: { params: Promise<{ id: string; n: string }> },
 ): Promise<NextResponse> {
   const { id, n } = await params;
 

@@ -11,6 +11,7 @@
  * 존재하지 않는 id 는 이 컴포넌트가 아니라 not-found.tsx 로 처리한다(§2.7).
  */
 import { Button } from "./Button";
+import { cn } from "@/src/lib/clsx/merge";
 
 interface ErrorStateProps {
   /** 제목. 기본 "문제가 발생했어요". */
@@ -34,9 +35,10 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className={`flex flex-col items-center justify-center gap-3 px-gutter py-section text-center${
-        className ? ` ${className}` : ""
-      }`}
+      className={cn(
+        "flex flex-col items-center justify-center gap-3 px-gutter py-section text-center",
+        className,
+      )}
     >
       <svg
         aria-hidden="true"

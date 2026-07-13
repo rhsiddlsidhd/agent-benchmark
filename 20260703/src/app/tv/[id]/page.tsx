@@ -98,7 +98,7 @@ export default async function TvDetailPage({
       </section>
 
       {/* 히어로 콘텐츠: 포스터가 백드롭 하단에 오버랩(md 미만 세로 스택 §4). */}
-      <div className="mx-auto -mt-[25svh] w-full max-w-page px-gutter md:px-gutter-lg z-10">
+      <div className="z-10 mx-auto -mt-[25svh] w-full max-w-page px-gutter md:px-gutter-lg">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
           <div className="w-28 shrink-0 sm:w-36 md:w-48">
             <PosterImage
@@ -113,7 +113,7 @@ export default async function TvDetailPage({
               {tvShow.name}
             </h1>
             {tvShow.tagline ? (
-              <p className="text-body italic text-content-secondary">
+              <p className="text-body text-content-secondary italic">
                 {tvShow.tagline}
               </p>
             ) : null}

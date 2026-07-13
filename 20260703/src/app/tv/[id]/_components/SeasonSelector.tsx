@@ -39,6 +39,7 @@ import {
   ErrorState,
   Skeleton,
 } from "@/src/components/ui";
+import { cn } from "@/src/lib/clsx/merge";
 import type { Episode, Season } from "@/src/lib/tmdb/types";
 import { useMediaQuery, useRovingTabIndex, useTvSeason } from "../_hooks";
 import type { SeasonSelectorProps } from "../_types";
@@ -163,9 +164,10 @@ export function SeasonSelector({ tvId, seasons }: SeasonSelectorProps) {
       id={backdropPanelId}
       role="tabpanel"
       aria-label="선택 회차"
-      className={`relative w-full overflow-hidden bg-surface${
-        isDesktop ? " h-full" : " mt-4 aspect-video"
-      }`}
+      className={cn(
+        "relative w-full overflow-hidden bg-surface",
+        isDesktop ? "h-full" : "mt-4 aspect-video",
+      )}
     >
       {backdropContent}
     </div>
@@ -190,11 +192,12 @@ export function SeasonSelector({ tvId, seasons }: SeasonSelectorProps) {
               onClick={() => setSelectedSeason(season.season_number)}
               {...seasonTabRoving.getTabProps(index)}
               whileTap={shouldReduceMotion ? undefined : { scale: 0.96 }}
-              className={`rounded-pill border px-4 py-1.5 text-body-sm font-medium transition-colors ${
+              className={cn(
+                "rounded-pill border px-4 py-1.5 text-body-sm font-medium transition-colors",
                 isActive
                   ? "border-brand bg-brand text-base"
-                  : "border-border bg-surface text-content-secondary hover:bg-surface-hover"
-              }`}
+                  : "border-border bg-surface text-content-secondary hover:bg-surface-hover",
+              )}
             >
               {season.name}
             </motion.button>

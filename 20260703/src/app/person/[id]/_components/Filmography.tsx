@@ -56,11 +56,12 @@ export function Filmography({ clusters, upcoming }: FilmographyProps) {
       return;
     }
     const containerHeight = container.offsetHeight;
-    const nodeEls = container.querySelectorAll<HTMLLIElement>(":scope > ol > li");
+    const nodeEls =
+      container.querySelectorAll<HTMLLIElement>(":scope > ol > li");
     setThresholds(
       Array.from(nodeEls).map((el) =>
-        containerHeight > 0 ? el.offsetTop / containerHeight : 0
-      )
+        containerHeight > 0 ? el.offsetTop / containerHeight : 0,
+      ),
     );
   }, [clusters, upcoming]);
 
@@ -80,13 +81,13 @@ export function Filmography({ clusters, upcoming }: FilmographyProps) {
         {/* 레일 베이스 라인(항상 노출) — ol 콘텐츠 높이만큼 top-0/bottom-0 로 늘어난다. */}
         <div
           aria-hidden="true"
-          className="absolute left-3 top-0 bottom-0 w-px bg-border md:left-4"
+          className="absolute top-0 bottom-0 left-3 w-px bg-border md:left-4"
         />
         {/* 스크롤 진행률 연동 드로잉 라인. reduced-motion 이어도 유지(스크롤 입력 1:1 연동). */}
         <motion.div
           aria-hidden="true"
           style={{ scaleY: scrollYProgress }}
-          className="absolute left-3 top-0 bottom-0 w-px origin-top bg-brand md:left-4"
+          className="absolute top-0 bottom-0 left-3 w-px origin-top bg-brand md:left-4"
         />
 
         <ol className="flex flex-col">
@@ -100,9 +101,9 @@ export function Filmography({ clusters, upcoming }: FilmographyProps) {
             >
               <span
                 aria-hidden="true"
-                className="absolute left-3 top-1 size-2.5 -translate-x-1/2 rounded-full bg-brand md:left-4 md:size-3"
+                className="absolute top-1 left-3 size-2.5 -translate-x-1/2 rounded-full bg-brand md:left-4 md:size-3"
               />
-              <h3 className="text-h3 tabular-nums text-content-primary">
+              <h3 className="text-h3 text-content-primary tabular-nums">
                 {cluster.year}
               </h3>
               <div className="mt-3">
@@ -126,7 +127,7 @@ export function Filmography({ clusters, upcoming }: FilmographyProps) {
           >
             <span
               aria-hidden="true"
-              className="absolute left-3 top-1 size-2.5 -translate-x-1/2 rounded-full border-2 border-base bg-content-muted md:left-4 md:size-3"
+              className="absolute top-1 left-3 size-2.5 -translate-x-1/2 rounded-full border-2 border-base bg-content-muted md:left-4 md:size-3"
             />
             <p className="text-body-sm font-medium text-content-secondary">
               현재

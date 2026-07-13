@@ -20,7 +20,7 @@ import type { ReviewsResponse } from "@/src/app/api/tv/[id]/reviews/_types";
 /** `/api/tv/[id]/reviews` 를 조회한다. 실패 응답은 에러로 던져 `retry: 1` 대상이 된다. */
 async function fetchTvReviews(
   tvId: number,
-  tmdbPage: number
+  tmdbPage: number,
 ): Promise<ReviewsResponse> {
   const response = await fetch(`/api/tv/${tvId}/reviews?page=${tmdbPage}`);
   if (!response.ok) {

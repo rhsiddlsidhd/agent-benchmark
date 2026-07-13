@@ -7,6 +7,7 @@
  *
  * JS 애니메이션이 없으므로 Server Component 로 동작한다.
  */
+import { cn } from "@/src/lib/clsx/merge";
 
 type SkeletonVariant = "card" | "poster" | "backdrop" | "text" | "line";
 
@@ -30,23 +31,17 @@ export function Skeleton({ variant = "line", className }: SkeletonProps) {
     return <SkeletonCard className={className} />;
   }
   return (
-    <div
-      className={`${variantClass[variant]}${className ? ` ${className}` : ""}`}
-      aria-hidden="true"
-    />
+    <div className={cn(variantClass[variant], className)} aria-hidden="true" />
   );
 }
 
 /** ContentCard 형태 스켈레톤(포스터 + 제목 + 메타). */
 export function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div
-      className={`flex flex-col gap-2${className ? ` ${className}` : ""}`}
-      aria-hidden="true"
-    >
-      <div className="skeleton aspect-poster w-full rounded-lg" />
-      <div className="skeleton h-4 w-3/4 rounded-md" />
-      <div className="skeleton h-3 w-1/2 rounded-md" />
+    <div className={cn("flex flex-col gap-2", className)} aria-hidden="true">
+      <div className="aspect-poster w-full skeleton rounded-lg" />
+      <div className="h-4 w-3/4 skeleton rounded-md" />
+      <div className="h-3 w-1/2 skeleton rounded-md" />
     </div>
   );
 }

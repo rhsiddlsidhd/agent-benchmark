@@ -42,7 +42,7 @@ export function FilmographyCard({ entry }: FilmographyCardProps) {
             <RatingBadge
               value={entry.rating}
               variant="overlay"
-              className="absolute left-2 top-2"
+              className="absolute top-2 left-2"
             />
           ) : null}
         </div>

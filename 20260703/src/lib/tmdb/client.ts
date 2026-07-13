@@ -66,7 +66,7 @@ interface RequestOptions {
  */
 async function tmdbRequest<T>(
   path: string,
-  { searchParams, cache }: RequestOptions
+  { searchParams, cache }: RequestOptions,
 ): Promise<T> {
   const accessToken = process.env.TMDB_ACCESS_TOKEN;
   if (!accessToken) {
@@ -104,7 +104,8 @@ async function tmdbRequest<T>(
     });
   } catch (cause) {
     // 네트워크 오류/타임아웃(AbortError 포함). 원인을 보존해 재전파.
-    const isTimeout = cause instanceof DOMException && cause.name === "TimeoutError";
+    const isTimeout =
+      cause instanceof DOMException && cause.name === "TimeoutError";
     const reason = isTimeout ? "요청 시간 초과" : "네트워크 오류";
     console.error(`[tmdb] ${reason}: ${path}`, cause);
     throw new TmdbError(`TMDB 요청 실패(${reason}): ${path}`, {
@@ -134,7 +135,7 @@ async function tmdbRequest<T>(
  */
 async function tmdbRequestOrNull<T>(
   path: string,
-  options: RequestOptions
+  options: RequestOptions,
 ): Promise<T | null> {
   try {
     return await tmdbRequest<T>(path, options);
@@ -161,20 +162,25 @@ function dateParamMonthsAgo(months: number): string {
 }
 
 /** `popularity` 내림차순 재정렬(원본 배열 변형 없음). TMDB `sort_by`만 믿지 않기 위함. */
-function sortByPopularityDesc<T extends { popularity: number }>(items: T[]): T[] {
+function sortByPopularityDesc<T extends { popularity: number }>(
+  items: T[],
+): T[] {
   return [...items].sort((a, b) => b.popularity - a.popularity);
 }
 
 /** `created_at` 내림차순(최신순) 재정렬(원본 배열 변형 없음). TMDB `sort_by`만 믿지 않기 위함. */
-function sortByCreatedAtDesc<T extends { created_at: string }>(items: T[]): T[] {
+function sortByCreatedAtDesc<T extends { created_at: string }>(
+  items: T[],
+): T[] {
   return [...items].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 }
 
 /** 트렌딩(all) 결과에서 person을 제외한 영화/TV만 남긴다(히어로 캐러셀용). */
 function isTitledTrendingResult(
-  item: MultiSearchResult
+  item: MultiSearchResult,
 ): item is MovieSearchResult | TVSearchResult {
   return item.media_type === "movie" || item.media_type === "tv";
 }
@@ -265,7 +271,7 @@ export async function getHeroCarouselItems(): Promise<
 > {
   const trending = await tmdbRequest<Paginated<MultiSearchResult>>(
     "/trending/all/week",
-    { cache: { revalidate: REVALIDATE.LIST } }
+    { cache: { revalidate: REVALIDATE.LIST } },
   );
   const titled = trending.results.filter(isTitledTrendingResult);
   const withBackdrop = titled.filter((item) => item.backdrop_path !== null);
@@ -284,30 +290,33 @@ export async function getGenres(type: MediaType): Promise<Genre[]> {
 export function discoverByGenre(
   type: "movie",
   genreIds: number[],
-  page?: number
+  page?: number,
 ): Promise<Paginated<Movie>>;
 /** 장르 다중 선택 기반 디스커버(TV). */
 export function discoverByGenre(
   type: "tv",
   genreIds: number[],
-  page?: number
+  page?: number,
 ): Promise<Paginated<TVShow>>;
 export function discoverByGenre(
   type: MediaType,
   genreIds: number[],
-  page = 1
+  page = 1,
 ): Promise<Paginated<Movie> | Paginated<TVShow>> {
-  return tmdbRequest<Paginated<Movie> | Paginated<TVShow>>(`/discover/${type}`, {
-    searchParams: {
-      page,
-      // 성인물은 항상 페칭하고 카드 단위 19+ 블러 게이트로 노출을 제어한다.
-      include_adult: true,
-      sort_by: "popularity.desc",
-      // 빈 배열이면 파라미터 자체를 생략(전체 디스커버).
-      with_genres: genreIds.length > 0 ? genreIds.join(",") : undefined,
+  return tmdbRequest<Paginated<Movie> | Paginated<TVShow>>(
+    `/discover/${type}`,
+    {
+      searchParams: {
+        page,
+        // 성인물은 항상 페칭하고 카드 단위 19+ 블러 게이트로 노출을 제어한다.
+        include_adult: true,
+        sort_by: "popularity.desc",
+        // 빈 배열이면 파라미터 자체를 생략(전체 디스커버).
+        with_genres: genreIds.length > 0 ? genreIds.join(",") : undefined,
+      },
+      cache: { revalidate: REVALIDATE.LIST },
     },
-    cache: { revalidate: REVALIDATE.LIST },
-  });
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -317,7 +326,7 @@ export function discoverByGenre(
 /** 통합 검색(영화/TV/인물). Route Handler에서 호출. */
 export function searchMulti(
   query: string,
-  page = 1
+  page = 1,
 ): Promise<Paginated<MultiSearchResult>> {
   return tmdbRequest<Paginated<MultiSearchResult>>("/search/multi", {
     // 성인물은 항상 페칭하고 카드 단위 19+ 블러 게이트로 노출을 제어한다.
@@ -377,7 +386,7 @@ export function getMovieRecommendations(id: number): Promise<Paginated<Movie>> {
  */
 export async function getMovieReviews(
   id: number,
-  page = 1
+  page = 1,
 ): Promise<Paginated<Review>> {
   const data = await tmdbRequest<Paginated<Review>>(`/movie/${id}/reviews`, {
     // 리뷰는 TMDB가 다국어 번역해 제공하는 필드(제목/줄거리 등)와 달리 리뷰어가
@@ -410,7 +419,7 @@ export function getTvRecommendations(id: number): Promise<Paginated<TVShow>> {
  */
 export async function getTvReviews(
   id: number,
-  page = 1
+  page = 1,
 ): Promise<Paginated<Review>> {
   const data = await tmdbRequest<Paginated<Review>>(`/tv/${id}/reviews`, {
     // 리뷰는 TMDB가 다국어 번역해 제공하는 필드(제목/줄거리 등)와 달리 리뷰어가
@@ -426,7 +435,7 @@ export async function getTvReviews(
 /** TV 시즌 상세(에피소드 목록 포함). */
 export function getTvSeason(
   id: number,
-  seasonNumber: number
+  seasonNumber: number,
 ): Promise<SeasonDetail> {
   return tmdbRequest<SeasonDetail>(`/tv/${id}/season/${seasonNumber}`, {
     cache: { revalidate: REVALIDATE.DETAIL },
@@ -435,7 +444,7 @@ export function getTvSeason(
 
 /** 인물 필모그래피(영화/TV 통합 크레딧). */
 export function getPersonCombinedCredits(
-  id: number
+  id: number,
 ): Promise<PersonCombinedCredits> {
   return tmdbRequest<PersonCombinedCredits>(`/person/${id}/combined_credits`, {
     cache: { revalidate: REVALIDATE.DETAIL },

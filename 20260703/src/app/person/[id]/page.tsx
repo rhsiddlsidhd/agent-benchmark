@@ -108,7 +108,7 @@ export default async function PersonDetailPage({
           </div>
           <div className="mt-1">
             <h2 className="text-h3 text-content-primary">약력</h2>
-            <p className="mt-2 max-w-3xl whitespace-pre-line text-body text-content-secondary">
+            <p className="mt-2 max-w-3xl text-body whitespace-pre-line text-content-secondary">
               {person.biography ? person.biography : "약력 정보가 없습니다."}
             </p>
           </div>

@@ -8,6 +8,7 @@
  * 링크는 호출부에서 <Link>로 감싼다(탐색 흐름은 상위 책임).
  */
 import Image from "next/image";
+import { cn } from "@/src/lib/clsx/merge";
 import {
   BLUR_DATA_URL,
   tmdbImageUrl,
@@ -37,9 +38,7 @@ export function PersonAvatar({
 
   return (
     <figure
-      className={`flex flex-col items-center gap-2 text-center${
-        className ? ` ${className}` : ""
-      }`}
+      className={cn("flex flex-col items-center gap-2 text-center", className)}
     >
       <div className="relative aspect-profile w-full overflow-hidden rounded-full bg-surface">
         {path ? (

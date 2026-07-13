@@ -10,6 +10,7 @@
  * 논리적 소유관계를 명시한다(기존 필름스트립 수정 이력, `aria-owns` 복원 커밋과 동일 이유).
  */
 import { BackdropImage, ScrollRail } from "@/src/components/ui";
+import { cn } from "@/src/lib/clsx/merge";
 import { useRovingTabIndex } from "../_hooks";
 import { isUpcomingEpisode } from "../_utils";
 import type { EpisodeSelectorProps } from "../_types";
@@ -33,7 +34,9 @@ export function EpisodeFilmstrip({
       id={id}
       role="tablist"
       aria-label="회차 선택"
-      aria-owns={episodes.map((episode) => `episode-tab-${episode.id}`).join(" ")}
+      aria-owns={episodes
+        .map((episode) => `episode-tab-${episode.id}`)
+        .join(" ")}
     >
       <ScrollRail>
         {episodes.map((episode, index) => {
@@ -49,9 +52,10 @@ export function EpisodeFilmstrip({
                 onClick={() => onSelect(index)}
                 draggable={false}
                 {...getTabProps(index)}
-                className={`relative block w-full overflow-hidden rounded-lg border-2 transition-transform ${
-                  isActive ? "border-brand scale-105" : "border-transparent"
-                }`}
+                className={cn(
+                  "relative block w-full overflow-hidden rounded-lg border-2 transition-transform",
+                  isActive ? "scale-105 border-brand" : "border-transparent",
+                )}
               >
                 <BackdropImage
                   path={episode.still_path}

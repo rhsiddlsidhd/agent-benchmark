@@ -9,6 +9,7 @@
  * 유틸을 직접 사용한다(reduced-motion 은 전역 감쇠로 정적 처리 — §5).
  */
 import { SkeletonGrid } from "@/src/components/ui";
+import { cn } from "@/src/lib/clsx/merge";
 
 const DISCOVER_GRID =
   "grid grid-cols-2 gap-card-gap sm:grid-cols-3 md:grid-cols-4 md:gap-card-gap-lg lg:grid-cols-5 xl:grid-cols-6";
@@ -17,21 +18,24 @@ export default function DiscoverLoading() {
   return (
     <div className="flex w-full flex-col gap-section py-section">
       <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-gutter md:px-gutter-lg">
-        <div className="skeleton h-8 w-40 rounded-md" aria-hidden="true" />
+        <div className="h-8 w-40 skeleton rounded-md" aria-hidden="true" />
         <div className="flex gap-2" aria-hidden="true">
-          <div className="skeleton h-8 w-16 rounded-pill" />
-          <div className="skeleton h-8 w-16 rounded-pill" />
+          <div className="h-8 w-16 skeleton rounded-pill" />
+          <div className="h-8 w-16 skeleton rounded-pill" />
         </div>
         <div className="flex gap-2" aria-hidden="true">
           {Array.from({ length: 8 }, (_, index) => (
-            <div key={index} className="skeleton h-8 w-20 rounded-pill" />
+            <div key={index} className="h-8 w-20 skeleton rounded-pill" />
           ))}
         </div>
       </div>
 
       <SkeletonGrid
         count={12}
-        className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${DISCOVER_GRID}`}
+        className={cn(
+          "mx-auto w-full max-w-page px-gutter md:px-gutter-lg",
+          DISCOVER_GRID,
+        )}
         label="장르 탐색을 준비하는 중"
       />
     </div>
