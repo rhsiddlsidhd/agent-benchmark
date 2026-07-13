@@ -16,3 +16,5 @@ export { FilterChip } from "./FilterChip";
 export { PersonLink } from "./PersonLink";
 export { ScrollRail } from "./ScrollRail";
 export { ScrollReveal } from "./ScrollReveal";
+export { ReviewCard } from "./ReviewCard";
+export { ReviewList } from "./ReviewList";
