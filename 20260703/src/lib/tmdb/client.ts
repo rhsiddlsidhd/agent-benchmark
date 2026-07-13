@@ -13,6 +13,7 @@ import type {
   Paginated,
   PersonCombinedCredits,
   PersonDetail,
+  Review,
   SeasonDetail,
   TVDetail,
   TVShow,
@@ -162,6 +163,13 @@ function dateParamMonthsAgo(months: number): string {
 /** `popularity` 내림차순 재정렬(원본 배열 변형 없음). TMDB `sort_by`만 믿지 않기 위함. */
 function sortByPopularityDesc<T extends { popularity: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => b.popularity - a.popularity);
+}
+
+/** `created_at` 내림차순(최신순) 재정렬(원본 배열 변형 없음). TMDB `sort_by`만 믿지 않기 위함. */
+function sortByCreatedAtDesc<T extends { created_at: string }>(items: T[]): T[] {
+  return [...items].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 }
 
 /** 트렌딩(all) 결과에서 person을 제외한 영화/TV만 남긴다(히어로 캐러셀용). */
@@ -361,6 +369,21 @@ export function getMovieRecommendations(id: number): Promise<Paginated<Movie>> {
   return tmdbRequest<Paginated<Movie>>(`/movie/${id}/recommendations`, {
     cache: { revalidate: REVALIDATE.DETAIL },
   });
+}
+
+/**
+ * 영화 리뷰. `sort_by=created_at.desc`로 요청하되, TMDB `sort_by`만 믿지 않고
+ * `created_at` 내림차순(최신순)으로 재정렬해 반환한다.
+ */
+export async function getMovieReviews(
+  id: number,
+  page = 1
+): Promise<Paginated<Review>> {
+  const data = await tmdbRequest<Paginated<Review>>(`/movie/${id}/reviews`, {
+    searchParams: { page, sort_by: "created_at.desc" },
+    cache: { revalidate: REVALIDATE.DETAIL },
+  });
+  return { ...data, results: sortByCreatedAtDesc(data.results) };
 }
 
 /** TV 출연진·제작진(movie/tv 공용 Credits shape). */

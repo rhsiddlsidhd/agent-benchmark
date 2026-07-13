@@ -283,6 +283,29 @@ export interface Credits {
 }
 
 // ---------------------------------------------------------------------------
+// Review (영화 상세 하위 리소스)
+// ---------------------------------------------------------------------------
+
+/** 리뷰 작성자 상세(평점 등). 평점 미부여 시 `rating`은 null. */
+export interface ReviewAuthorDetails {
+  name: string;
+  username: string;
+  avatar_path: string | null;
+  rating: number | null;
+}
+
+/** TMDB 사용자 리뷰. */
+export interface Review {
+  id: string;
+  author: string;
+  author_details: ReviewAuthorDetails;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  url: string;
+}
+
+// ---------------------------------------------------------------------------
 // Search (multi: movie | tv | person 유니온)
 // ---------------------------------------------------------------------------
 
