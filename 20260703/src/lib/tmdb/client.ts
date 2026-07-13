@@ -404,6 +404,25 @@ export function getTvRecommendations(id: number): Promise<Paginated<TVShow>> {
   });
 }
 
+/**
+ * TV 리뷰. `sort_by=created_at.desc`로 요청하되, TMDB `sort_by`만 믿지 않고
+ * `created_at` 내림차순(최신순)으로 재정렬해 반환한다.
+ */
+export async function getTvReviews(
+  id: number,
+  page = 1
+): Promise<Paginated<Review>> {
+  const data = await tmdbRequest<Paginated<Review>>(`/tv/${id}/reviews`, {
+    // 리뷰는 TMDB가 다국어 번역해 제공하는 필드(제목/줄거리 등)와 달리 리뷰어가
+    // 작성한 언어 그대로인 사용자생성 콘텐츠다. 전역 DEFAULT_LANGUAGE(ko-KR)를
+    // 그대로 쓰면 한국어 리뷰 자체가 거의 없어(실측: 대부분 0건) 리뷰 섹션이
+    // 항상 비어 보인다 — 리뷰 코퍼스가 두꺼운 en-US로 이 엔드포인트만 고정한다.
+    searchParams: { page, sort_by: "created_at.desc", language: "en-US" },
+    cache: { revalidate: REVALIDATE.DETAIL },
+  });
+  return { ...data, results: sortByCreatedAtDesc(data.results) };
+}
+
 /** TV 시즌 상세(에피소드 목록 포함). */
 export function getTvSeason(
   id: number,
