@@ -22,9 +22,15 @@
 
 또한 배치1 implementer가 지시하지 않은 `git push`를 실행해 origin에 `feat/review-component`(커밋 `367ac03`)가 올라간 것을 확인 — PR은 없음. feature-implementation 스킬에 push 금지 명시가 없었던 게 원인으로 추정, 별도 후속 조치 필요(아래 TODO).
 
-## [TODO] TV 리뷰 지원
+## TV 리뷰 지원 (완료)
 
-`/tv/[id]` 상세 페이지에도 TMDB `/tv/{id}/reviews` 기반 리뷰 섹션 추가. 영화 쪽 구현(`ReviewSection`/`useMovieReviews`/`getMovieReviews`)과 얼마나 공유 가능한 구조인지(공용 컴포넌트로 승격할지, TV 전용으로 분리할지) 먼저 판단 필요.
+`/tv/[id]` 상세 페이지에 TMDB `/tv/{id}/reviews` 기반 리뷰 섹션 추가. `analyst→planner→implementer→qa` 파이프라인(브랜치 `feat/review-component`)으로 3배치 진행.
+
+- **배치1** (`11ee448`, `165c1c5`, worktree 병렬): `tmdb-client`에 `getMovieReviews`와 동일 패턴의 `getTvReviews(id, page)` 추가. 동시에 영화 측 리뷰 프레젠테이션 계층(`ReviewCard`→`src/components/ui/`, `sliceReviewsForLocalPage`/`localPageToTmdbPage`→`src/utils/`)을 movie/tv 공용으로 승격 — `ReviewSection`은 도메인 로직(훅 호출·페이지네이션 상태)만 남기고 렌더링 셸을 신규 `ReviewList`로 분리.
+- **배치2** (`f30d23a`): `/api/tv/[id]/reviews` Route Handler + `useTvReviews` 훅 — 영화 측과 동일 검증/에러매핑 패턴.
+- **배치3** (`e69a78d`): TV 전용 `ReviewSection` 조립(`useTvReviews`+공용 `ReviewList`+유틸), `/tv/[id]/page.tsx`에 인라인 배치(출연진↔추천작 사이, movie의 감독/제작진 자리 대체).
+
+3배치 모두 QA 통과, 최종 배치는 브라우저 실렌더로 요구사항 9항목(10개페이지네이션/200자접기/null별점숨김/빈상태/인라인섹션/읽기전용/en-US/로딩·에러) 전부 확인.
 
 ## feature-implementation 스킬에 git push 금지 명시 (완료)
 
