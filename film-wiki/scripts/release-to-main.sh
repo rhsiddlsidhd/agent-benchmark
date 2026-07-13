@@ -14,10 +14,11 @@ EXCLUDE_PATHS=(
   "$PROJECT_DIR/.vscode"
   "$PROJECT_DIR/TODO.md"
   "$PROJECT_DIR/AGENTS.md"
-  "$PROJECT_DIR/CLAUDE.md"
   "$PROJECT_DIR/docs"
   "$PROJECT_DIR/scripts/release-to-main.sh"
 )
+# CLAUDE.md는 루트 + src 하위 각 레이어(app/components/lib/hooks/utils/context 등)에
+# 흩어져있어 정적 목록 대신 find로 전부 잡는다.
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
@@ -47,6 +48,11 @@ for path in "${EXCLUDE_PATHS[@]}"; do
     rm -rf "$path"
   fi
 done
+
+while IFS= read -r -d '' claude_md; do
+  git rm --cached --ignore-unmatch "$claude_md" >/dev/null
+  rm -f "$claude_md"
+done < <(find "$PROJECT_DIR" -name "CLAUDE.md" -print0)
 
 echo
 echo "머지 스테이징 완료(아직 커밋 안 됨). 아래 상태 확인 후 직접 커밋하세요:"
