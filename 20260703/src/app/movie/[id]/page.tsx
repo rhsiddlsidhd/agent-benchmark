@@ -7,8 +7,9 @@
  *
  * 레이아웃(§3.3): 히어로(백드롭 + 포스터 오버랩 + display 제목 · 연도/러닝타임/
  * 장르 Pill · RatingBadge) → 줄거리 → 출연진 레일(→ /person/[id]) → 감독·제작진
- * → 추천/유사 작품 레일(→ /movie/[id]). 모든 인물/연관작은 링크로 이어
- * 콘텐츠→인물→다른 작품 탐색 흐름(PRD §2)을 유지한다.
+ * → 리뷰(ReviewSection, 확정 요구사항 — 읽기 전용, TMDB 리뷰를 10개 단위로
+ * 페이지네이션) → 추천/유사 작품 레일(→ /movie/[id]). 모든 인물/연관작은 링크로
+ * 이어 콘텐츠→인물→다른 작품 탐색 흐름(PRD §2)을 유지한다.
  *
  * 에러/엣지케이스(§4):
  * - 존재하지 않는 id → getMovie 가 null → notFound()(→ not-found.tsx). id 파싱
@@ -19,6 +20,9 @@
  * - 데이터 결측(§2.9): 줄거리/러닝타임/연도는 대체 문구, 리스트(출연진/제작진/
  *   추천작)가 비면 해당 섹션 자체를 숨긴다. 이미지 null 은 Poster/Backdrop/
  *   PersonAvatar 플레이스홀더가 처리한다.
+ * - 리뷰는 인터랙티브 페이지네이션이 필요해 ReviewSection(Client Component)이
+ *   `/api/movie/[id]/reviews` 를 온디맨드로 조회한다(§4 — SeasonSelector 와 동일
+ *   패턴). 로딩/에러/0건 상태는 이 컴포넌트 내부에서 자체 처리한다.
  */
 import { notFound } from "next/navigation";
 import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail, ScrollReveal } from "@/src/components/ui";
@@ -28,6 +32,7 @@ import {
   getMovieRecommendations,
 } from "@/src/lib/tmdb/client";
 import { yearOf, formatRuntime } from "@/src/utils";
+import { ReviewSection } from "./_components";
 import { MAX_CAST } from "./_constants";
 import { selectKeyCrew, crewRoleLabel } from "./_utils";
 
@@ -169,6 +174,12 @@ export default async function MovieDetailPage({
           </section>
         </ScrollReveal>
       ) : null}
+
+      {/* 리뷰(확정 요구사항 — 읽기 전용, 인터랙티브 페이지네이션이라 Client
+          Component 가 온디맨드로 조회한다. 섹션 자체는 항상 렌더된다). */}
+      <ScrollReveal>
+        <ReviewSection movieId={movieId} />
+      </ScrollReveal>
 
       {/* 추천/유사 작품 레일(전부 movie → /movie/[id], 빈 배열이면 숨김 §2.9). */}
       {recommended.length > 0 ? (
