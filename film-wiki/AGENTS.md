@@ -16,10 +16,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## dev→main 병합 시 제외 대상
 
-`main`은 배포 소스만 유지한다. 개발 하네스/도구 로컬 설정(`.claude/`, `.playwright/`, `TODO.md`)은 `dev`에선 정상 추적하되 `main`엔 절대 넘어가지 않아야 한다.
+`main`은 배포 소스만 유지한다. 개발/기획 프로세스 산출물(`.claude/`, `.playwright/`, `.vscode/`, `TODO.md`, `AGENTS.md`, `CLAUDE.md`, `docs/`)은 `dev`에선 정상 추적하되 `main`엔 절대 넘어가지 않아야 한다.
 
 - `.gitattributes`의 `merge=ours`로는 이 문제를 못 푼다 — `merge=ours`는 양쪽에 다 있고 내용이 다를 때만 개입하고, main엔 없고 dev에만 있는 신규 파일(add-only)은 그냥 통과시켜버린다(dry-run으로 확인됨). 시도했다가 되돌린 이력 있음
-- 대신 `scripts/release-to-main.sh`로 릴리스한다 — `dev`에서 실행하면 `main`으로 전환 후 `git merge --no-commit`으로 스테이징하고, 제외 경로(`.claude/`, `.playwright/`, `TODO.md`, 스크립트 자신)를 `git rm --cached`로 인덱스에서 뺀 뒤 커밋 직전에 멈춘다 — 최종 커밋/push는 직접 확인 후 수동으로 한다
+- 대신 `scripts/release-to-main.sh`로 릴리스한다 — `dev`에서 실행하면 `main`으로 전환 후 `git merge --no-commit`으로 스테이징하고, 제외 경로(스크립트 상단 `EXCLUDE_PATHS` 배열 참고)를 `git rm --cached`로 인덱스에서 뺀 뒤 커밋 직전에 멈춘다 — 최종 커밋/push는 직접 확인 후 수동으로 한다
 
 ## 브랜치 prefix 컨벤션
 

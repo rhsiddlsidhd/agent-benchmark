@@ -11,7 +11,11 @@ PROJECT_DIR="film-wiki"
 EXCLUDE_PATHS=(
   "$PROJECT_DIR/.claude"
   "$PROJECT_DIR/.playwright"
+  "$PROJECT_DIR/.vscode"
   "$PROJECT_DIR/TODO.md"
+  "$PROJECT_DIR/AGENTS.md"
+  "$PROJECT_DIR/CLAUDE.md"
+  "$PROJECT_DIR/docs"
   "$PROJECT_DIR/scripts/release-to-main.sh"
 )
 
