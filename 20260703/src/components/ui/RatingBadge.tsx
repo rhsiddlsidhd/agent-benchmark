@@ -6,6 +6,7 @@
  * vote 가 없어(value<=0) 표시할 값이 없으면 렌더하지 않는다(§2.9 — 결측이면
  * 배지 자체 생략, 호출부가 판단하도록 null 반환).
  */
+import { cn } from "@/src/lib/clsx/merge";
 
 interface RatingBadgeProps {
   /** vote_average (0~10). */
@@ -35,7 +36,7 @@ export function RatingBadge({
 
   return (
     <span
-      className={`${base} ${variantClass}${className ? ` ${className}` : ""}`}
+      className={cn(base, variantClass, className)}
       aria-label={`평점 ${rounded} / 10`}
     >
       <svg

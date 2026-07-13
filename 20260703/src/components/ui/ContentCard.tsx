@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cardSpring } from "@/src/lib/framer-motion/preset";
+import { cn } from "@/src/lib/clsx/merge";
 import { PosterImage } from "./PosterImage";
 import { RatingBadge } from "./RatingBadge";
 
@@ -60,7 +61,7 @@ export function ContentCard({
       <PosterImage
         path={posterPath}
         alt={title}
-        className={`rounded-lg${isGated ? " blur-lg scale-110" : ""}`}
+        className={cn("rounded-lg", isGated && "blur-lg scale-110")}
       />
       {rating != null && !isGated ? (
         <RatingBadge

@@ -8,6 +8,7 @@
  * 콜백 prop 을 쓰지 않으므로 Server Component 로 동작한다(홈/상세 직접 사용 가능).
  */
 import Image from "next/image";
+import { cn } from "@/src/lib/clsx/merge";
 import {
   BLUR_DATA_URL,
   tmdbImageUrl,
@@ -37,9 +38,7 @@ export function PosterImage({
   className,
   preload = false,
 }: PosterImageProps) {
-  const wrapperClass = `relative aspect-poster overflow-hidden bg-surface${
-    className ? ` ${className}` : ""
-  }`;
+  const wrapperClass = cn("relative aspect-poster overflow-hidden bg-surface", className);
 
   if (!path) {
     return <ImagePlaceholder label={alt} className={wrapperClass} />;
@@ -72,9 +71,7 @@ export function ImagePlaceholder({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-2 text-content-muted${
-        className ? ` ${className}` : ""
-      }`}
+      className={cn("flex flex-col items-center justify-center gap-2 text-content-muted", className)}
       role="img"
       aria-label={label}
     >

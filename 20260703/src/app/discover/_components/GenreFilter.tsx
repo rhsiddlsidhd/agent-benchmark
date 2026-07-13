@@ -14,6 +14,7 @@
  * 각 칩의 선택 상태/체크 아이콘은 FilterChip 이 담당한다(§2.5).
  */
 import { FilterChip } from "@/src/components/ui";
+import { cn } from "@/src/lib/clsx/merge";
 import type { Genre } from "@/src/lib/tmdb/types";
 
 interface GenreFilterProps {
@@ -46,9 +47,10 @@ export function GenreFilter({
     <div
       role="group"
       aria-label={ariaLabel}
-      className={`flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0${
-        className ? ` ${className}` : ""
-      }`}
+      className={cn(
+        "flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0",
+        className,
+      )}
     >
       {genres.map((genre) => (
         <FilterChip

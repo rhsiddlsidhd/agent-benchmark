@@ -6,6 +6,7 @@
  * 토큰만 사용하며 Server Component 로 동작한다.
  */
 import type { ReactNode } from "react";
+import { cn } from "@/src/lib/clsx/merge";
 
 type PillVariant = "default" | "brand" | "outline";
 
@@ -25,9 +26,11 @@ const variantClass: Record<PillVariant, string> = {
 export function Pill({ children, variant = "default", className }: PillProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-pill px-2.5 py-1 text-caption font-medium ${variantClass[variant]}${
-        className ? ` ${className}` : ""
-      }`}
+      className={cn(
+        "inline-flex items-center rounded-pill px-2.5 py-1 text-caption font-medium",
+        variantClass[variant],
+        className,
+      )}
     >
       {children}
     </span>

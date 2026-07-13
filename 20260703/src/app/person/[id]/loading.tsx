@@ -7,6 +7,7 @@
  * globals.css 의 `skeleton` shimmer 유틸을 사용하며 reduced-motion 은 전역 감쇠로 정적 처리(§5).
  */
 import { SkeletonCard } from "@/src/components/ui";
+import { cn } from "@/src/lib/clsx/merge";
 
 const FILMOGRAPHY_GRID =
   "grid grid-cols-2 gap-card-gap sm:grid-cols-3 md:grid-cols-4 md:gap-card-gap-lg lg:grid-cols-6";
@@ -41,7 +42,7 @@ export default function PersonDetailLoading() {
 
       {/* 필모그래피 그리드 자리. */}
       <div
-        className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${FILMOGRAPHY_GRID}`}
+        className={cn("mx-auto w-full max-w-page px-gutter md:px-gutter-lg", FILMOGRAPHY_GRID)}
         aria-hidden="true"
       >
         {Array.from({ length: 12 }, (_, index) => (

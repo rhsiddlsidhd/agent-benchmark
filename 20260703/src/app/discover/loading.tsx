@@ -9,6 +9,7 @@
  * 유틸을 직접 사용한다(reduced-motion 은 전역 감쇠로 정적 처리 — §5).
  */
 import { SkeletonGrid } from "@/src/components/ui";
+import { cn } from "@/src/lib/clsx/merge";
 
 const DISCOVER_GRID =
   "grid grid-cols-2 gap-card-gap sm:grid-cols-3 md:grid-cols-4 md:gap-card-gap-lg lg:grid-cols-5 xl:grid-cols-6";
@@ -31,7 +32,7 @@ export default function DiscoverLoading() {
 
       <SkeletonGrid
         count={12}
-        className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${DISCOVER_GRID}`}
+        className={cn("mx-auto w-full max-w-page px-gutter md:px-gutter-lg", DISCOVER_GRID)}
         label="장르 탐색을 준비하는 중"
       />
     </div>

@@ -21,6 +21,7 @@
  */
 import { motion, useReducedMotion } from "framer-motion";
 
+import { cn } from "@/src/lib/clsx/merge";
 import { cardSpring } from "@/src/lib/framer-motion/preset";
 
 interface FilterChipProps {
@@ -48,11 +49,13 @@ export function FilterChip({
       onClick={onToggle}
       whileTap={shouldReduceMotion ? undefined : { scale: 0.96 }}
       transition={cardSpring}
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-pill px-3 py-1.5 text-body-sm font-medium transition-colors ${
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1.5 rounded-pill px-3 py-1.5 text-body-sm font-medium transition-colors",
         selected
           ? "bg-brand text-base"
-          : "border border-border bg-surface text-content-secondary hover:bg-surface-hover hover:text-content-primary"
-      }${className ? ` ${className}` : ""}`}
+          : "border border-border bg-surface text-content-secondary hover:bg-surface-hover hover:text-content-primary",
+        className,
+      )}
     >
       {selected ? (
         <svg

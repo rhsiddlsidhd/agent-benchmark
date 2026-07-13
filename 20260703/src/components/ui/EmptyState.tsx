@@ -7,6 +7,7 @@
  * 상위에서 넣는다).
  */
 import type { ReactNode } from "react";
+import { cn } from "@/src/lib/clsx/merge";
 
 interface EmptyStateProps {
   /** 제목. */
@@ -29,9 +30,10 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-3 px-gutter py-section text-center${
-        className ? ` ${className}` : ""
-      }`}
+      className={cn(
+        "flex flex-col items-center justify-center gap-3 px-gutter py-section text-center",
+        className,
+      )}
     >
       <div className="text-content-muted">
         {icon ?? (

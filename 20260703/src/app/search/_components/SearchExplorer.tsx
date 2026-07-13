@@ -33,6 +33,7 @@ import {
   SkeletonCard,
 } from "@/src/components/ui";
 import { useIntersectionObserver } from "@/src/hooks";
+import { cn } from "@/src/lib/clsx/merge";
 import { yearOf } from "@/src/utils";
 import { PersonResultCard } from "./PersonResultCard";
 import { useSearchInfinite } from "../_hooks";
@@ -146,7 +147,7 @@ export function SearchExplorer() {
           />
         ) : isLoading ? (
           <div
-            className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${TITLED_GRID}`}
+            className={cn("mx-auto w-full max-w-page px-gutter md:px-gutter-lg", TITLED_GRID)}
             role="status"
             aria-busy="true"
             aria-label="검색 결과를 불러오는 중"
@@ -252,7 +253,7 @@ export function SearchExplorer() {
 
             {isFetchingNextPage ? (
               <div
-                className={`mx-auto w-full max-w-page px-gutter md:px-gutter-lg ${TITLED_GRID}`}
+                className={cn("mx-auto w-full max-w-page px-gutter md:px-gutter-lg", TITLED_GRID)}
                 role="status"
                 aria-busy="true"
                 aria-label="다음 페이지를 불러오는 중"

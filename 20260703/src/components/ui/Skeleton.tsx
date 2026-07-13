@@ -7,6 +7,7 @@
  *
  * JS 애니메이션이 없으므로 Server Component 로 동작한다.
  */
+import { cn } from "@/src/lib/clsx/merge";
 
 type SkeletonVariant = "card" | "poster" | "backdrop" | "text" | "line";
 
@@ -31,7 +32,7 @@ export function Skeleton({ variant = "line", className }: SkeletonProps) {
   }
   return (
     <div
-      className={`${variantClass[variant]}${className ? ` ${className}` : ""}`}
+      className={cn(variantClass[variant], className)}
       aria-hidden="true"
     />
   );
@@ -41,7 +42,7 @@ export function Skeleton({ variant = "line", className }: SkeletonProps) {
 export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
-      className={`flex flex-col gap-2${className ? ` ${className}` : ""}`}
+      className={cn("flex flex-col gap-2", className)}
       aria-hidden="true"
     >
       <div className="skeleton aspect-poster w-full rounded-lg" />
