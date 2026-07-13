@@ -18,8 +18,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 `main`은 배포 소스만 유지한다. 개발 하네스/도구 로컬 설정(`.claude/`, `.playwright/`, `TODO.md`)은 `dev`에선 정상 추적하되 `main`엔 절대 넘어가지 않아야 한다.
 
-- `main`의 `.gitattributes`에 해당 경로 `merge=ours` 지정돼있음 — `dev→main` 병합 시 이 경로들은 자동으로 스킵(main 쪽엔 애초에 없으니 계속 없는 채로 유지, 충돌도 안 남)
-- **로컬 git config 필요**: `git config merge.ours.driver true` — 이건 레포에 커밋되지 않는 로컬 설정이라, 새로 클론하거나 새 머신에서 작업할 땐 `main`으로 병합하기 전에 반드시 먼저 실행해야 한다. 안 해두면 `merge=ours` 지정이 무시되고 하네스 파일이 그대로 main에 딸려 들어간다
+- `.gitattributes`의 `merge=ours`로는 이 문제를 못 푼다 — `merge=ours`는 양쪽에 다 있고 내용이 다를 때만 개입하고, main엔 없고 dev에만 있는 신규 파일(add-only)은 그냥 통과시켜버린다(dry-run으로 확인됨). 시도했다가 되돌린 이력 있음
+- 대신 `scripts/release-to-main.sh`로 릴리스한다 — `dev`에서 실행하면 `main`으로 전환 후 `git merge --no-commit`으로 스테이징하고, 제외 경로(`.claude/`, `.playwright/`, `TODO.md`, 스크립트 자신)를 `git rm --cached`로 인덱스에서 뺀 뒤 커밋 직전에 멈춘다 — 최종 커밋/push는 직접 확인 후 수동으로 한다
 
 ## 브랜치 prefix 컨벤션
 
