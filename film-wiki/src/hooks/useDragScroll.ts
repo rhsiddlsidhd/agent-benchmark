@@ -155,19 +155,16 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
   );
 
   function handleDragStart() {
-    console.log("[useDragScroll] onDragStart");
     wasDraggedRef.current = false;
   }
 
   function handleDrag(_event: DragEventLike, info: PanInfo) {
-    console.log("[useDragScroll] onDrag", info.offset.x);
     if (Math.abs(info.offset.x) > CLICK_SUPPRESS_THRESHOLD_PX) {
       wasDraggedRef.current = true;
     }
   }
 
   function handleDragEnd(_event: DragEventLike, info: PanInfo) {
-    console.log("[useDragScroll] onDragEnd", info.velocity.x);
     const positions = cardPositions();
     if (positions.length === 0) return;
 
@@ -224,7 +221,6 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
   }
 
   function handleClickCapture(event: React.MouseEvent) {
-    console.log("[useDragScroll] onClickCapture", wasDraggedRef.current);
     if (wasDraggedRef.current) {
       event.preventDefault();
       event.stopPropagation();
