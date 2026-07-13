@@ -9,14 +9,10 @@
  * 간격/좌우 여백은 기존 토큰(`gap-card-gap`/`-lg`, `px-gutter`/`-lg`)만 사용한다.
  * 카드 hover 상승(`y:-4`)/그림자가 잘리지 않도록 세로 패딩을 둔다.
  *
- * 데스크톱(`md` 이상)에서는 좌우 화살표 버튼도 노출한다 — 마우스로는 드래그 가능
- * 영역이 시각적으로 드러나지 않아 발견성이 떨어지기 때문. 모바일 터치 스와이프/드래그는
- * 그대로 유지하고 화살표 버튼은 `md` 미만에서 숨긴다.
- *
  * children은 이미 `<li>`로 감싼 카드 목록이어야 한다(트랙의 직계 자식 = 스냅 대상).
  * 리스트가 빈 배열일 때 섹션 자체를 숨기는 판단은 호출부 책임이다(§4, 03_DESIGN §2.9).
  */
-import { Children, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useDragScroll } from "@/src/hooks";
 
@@ -26,16 +22,14 @@ interface ScrollRailProps {
 }
 
 export function ScrollRail({ children }: ScrollRailProps) {
-  const [index, setIndex] = useState(0);
-  const { containerRef, trackRef, trackProps, containerProps, scrollToIndex } =
-    useDragScroll<HTMLUListElement>({ onIndexChange: setIndex });
-  const count = Children.count(children);
+  const { containerRef, trackRef, trackProps, containerProps } =
+    useDragScroll<HTMLUListElement>();
 
   return (
     <div
       ref={containerRef}
       {...containerProps}
-      className="scrollbr-hide relative rail-snap overflow-hidden"
+      className="scrollbar-hide rail-snap overflow-hidden"
     >
       <motion.ul
         ref={trackRef}
