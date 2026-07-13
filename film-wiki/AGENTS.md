@@ -14,6 +14,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 충돌 해결은 `feat/*` → `dev` 단계에서 한다 (`main`에서 하지 않는다)
 - 머지 완료된 로컬 브랜치는 즉시 삭제한다 (`git branch -d`)
 
+## dev→main 병합 시 제외 대상
+
+`main`은 배포 소스만 유지한다. 개발 하네스/도구 로컬 설정(`.claude/`, `.playwright/`, `TODO.md`)은 `dev`에선 정상 추적하되 `main`엔 절대 넘어가지 않아야 한다.
+
+- `main`의 `.gitattributes`에 해당 경로 `merge=ours` 지정돼있음 — `dev→main` 병합 시 이 경로들은 자동으로 스킵(main 쪽엔 애초에 없으니 계속 없는 채로 유지, 충돌도 안 남)
+- **로컬 git config 필요**: `git config merge.ours.driver true` — 이건 레포에 커밋되지 않는 로컬 설정이라, 새로 클론하거나 새 머신에서 작업할 땐 `main`으로 병합하기 전에 반드시 먼저 실행해야 한다. 안 해두면 `merge=ours` 지정이 무시되고 하네스 파일이 그대로 main에 딸려 들어간다
+
 ## 브랜치 prefix 컨벤션
 
 | prefix      | 용도                          |
