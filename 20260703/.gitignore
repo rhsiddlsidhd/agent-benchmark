@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 _workspace
+
+# 개발 하네스/도구 로컬 설정 — 제품 코드 아님
+.claude
+.playwright
+TODO.md
