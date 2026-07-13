@@ -1,5 +1,7 @@
 import type { Review } from "@/src/lib/tmdb/types";
-import { REVIEW_PAGE_SIZE } from "../_constants";
+
+/** 리뷰 섹션 로컬 페이지네이션 단위(요구사항 확정: 10개씩 노출). */
+export const REVIEW_PAGE_SIZE = 10;
 
 /**
  * TMDB 응답(20개)에서 로컬 페이지(10개)에 해당하는 절반을 잘라낸다.

@@ -9,9 +9,11 @@
  * `Date` 객체 없이 ISO 문자열 앞 10자(YYYY-MM-DD)만 그대로 쓴다.
  */
 import { useState } from "react";
-import { RatingBadge } from "@/src/components/ui";
 import type { Review } from "@/src/lib/tmdb/types";
-import { REVIEW_CONTENT_LIMIT } from "../_constants";
+import { RatingBadge } from "./RatingBadge";
+
+/** 리뷰 본문 접기 기준 글자 수(요구사항 확정: 200자 초과 시 "더보기"로 펼침). */
+const REVIEW_CONTENT_LIMIT = 200;
 
 export function ReviewCard({ review }: { review: Review }) {
   const [expanded, setExpanded] = useState(false);
