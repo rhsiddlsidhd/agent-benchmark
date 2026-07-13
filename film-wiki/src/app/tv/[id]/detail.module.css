@@ -1,0 +1,7 @@
+/*
+ * TV 상세 가로 스크롤 레일 — 이 파일의 .rail/.cardItem/.personItem 은 제거됐다
+ * (T10, TODO.md 캐러셀 드래그 스크롤 공용화). 동일 스펙(간격/여백 토큰)이
+ * `src/components/ui/ScrollRail.tsx` + `globals.css`의 `scrollbar-hide`/`rail-snap`
+ * 유틸로 대체됐다(카드 폭은 ScrollRail이 단일 반응형 값으로 통일 적용). page.tsx는
+ * 더 이상 이 모듈을 import하지 않는다.
+ */
