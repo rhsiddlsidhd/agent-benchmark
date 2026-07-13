@@ -71,7 +71,7 @@ export function RoleTooltip({ badges, roleDetail }: RoleTooltipProps) {
         <div
           id={tooltipId}
           role="tooltip"
-          className="absolute left-0 top-full z-dropdown mt-1 w-max max-w-56 rounded-md bg-surface-hover px-2.5 py-1.5 text-caption text-content-secondary shadow-pop"
+          className="absolute top-full left-0 z-dropdown mt-1 w-max max-w-56 rounded-md bg-surface-hover px-2.5 py-1.5 text-caption text-content-secondary shadow-pop"
         >
           {detailLines.map((line) => (
             <p key={line}>{line}</p>

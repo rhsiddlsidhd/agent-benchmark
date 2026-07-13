@@ -25,7 +25,16 @@
  *   패턴). 로딩/에러/0건 상태는 이 컴포넌트 내부에서 자체 처리한다.
  */
 import { notFound } from "next/navigation";
-import { BackdropImage, ContentCard, PersonLink, Pill, PosterImage, RatingBadge, ScrollRail, ScrollReveal } from "@/src/components/ui";
+import {
+  BackdropImage,
+  ContentCard,
+  PersonLink,
+  Pill,
+  PosterImage,
+  RatingBadge,
+  ScrollRail,
+  ScrollReveal,
+} from "@/src/components/ui";
 import {
   getMovie,
   getMovieCredits,
@@ -69,7 +78,10 @@ export default async function MovieDetailPage({
   return (
     <div className="flex w-full flex-col gap-section pb-section">
       {/* 히어로: 백드롭 + 하단 보호 그라데이션. */}
-      <section aria-labelledby="movie-title" className="relative w-full overflow-hidden">
+      <section
+        aria-labelledby="movie-title"
+        className="relative w-full overflow-hidden"
+      >
         <BackdropImage
           path={movie.backdrop_path}
           alt={movie.title}
@@ -100,7 +112,7 @@ export default async function MovieDetailPage({
               {movie.title}
             </h1>
             {movie.tagline ? (
-              <p className="text-body italic text-content-secondary">
+              <p className="text-body text-content-secondary italic">
                 {movie.tagline}
               </p>
             ) : null}

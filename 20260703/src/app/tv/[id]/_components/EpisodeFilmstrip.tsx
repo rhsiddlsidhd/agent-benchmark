@@ -34,7 +34,9 @@ export function EpisodeFilmstrip({
       id={id}
       role="tablist"
       aria-label="회차 선택"
-      aria-owns={episodes.map((episode) => `episode-tab-${episode.id}`).join(" ")}
+      aria-owns={episodes
+        .map((episode) => `episode-tab-${episode.id}`)
+        .join(" ")}
     >
       <ScrollRail>
         {episodes.map((episode, index) => {
@@ -52,7 +54,7 @@ export function EpisodeFilmstrip({
                 {...getTabProps(index)}
                 className={cn(
                   "relative block w-full overflow-hidden rounded-lg border-2 transition-transform",
-                  isActive ? "border-brand scale-105" : "border-transparent",
+                  isActive ? "scale-105 border-brand" : "border-transparent",
                 )}
               >
                 <BackdropImage

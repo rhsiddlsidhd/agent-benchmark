@@ -55,7 +55,9 @@ export function EmptyState({
       </div>
       <h2 className="text-h3 text-content-primary">{title}</h2>
       {message ? (
-        <p className="max-w-sm text-body-sm text-content-secondary">{message}</p>
+        <p className="max-w-sm text-body-sm text-content-secondary">
+          {message}
+        </p>
       ) : null}
       {action ? <div className="mt-1">{action}</div> : null}
     </div>

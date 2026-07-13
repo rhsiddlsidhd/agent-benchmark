@@ -81,7 +81,7 @@ export interface UseDragScrollResult<T extends HTMLElement = HTMLElement> {
 }
 
 export function useDragScroll<T extends HTMLElement = HTMLElement>(
-  options: UseDragScrollOptions = {}
+  options: UseDragScrollOptions = {},
 ): UseDragScrollResult<T> {
   const shouldReduceMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -117,7 +117,7 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
     const track = trackRef.current;
     if (!track) return [];
     return Array.from(track.children).map(
-      (card) => -(card as HTMLElement).offsetLeft
+      (card) => -(card as HTMLElement).offsetLeft,
     );
   }
 
@@ -131,7 +131,7 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
         Math.abs(pos - value) < Math.abs(positions[closest] - value)
           ? index
           : closest,
-      0
+      0,
     );
   }
 
@@ -151,7 +151,7 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
       onIndexChangeRef.current?.(clampedIndex);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [minX, shouldReduceMotion]
+    [minX, shouldReduceMotion],
   );
 
   function handleDragStart() {
@@ -196,7 +196,7 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
     if (!track || !container) return;
 
     const card = Array.from(track.children).find((child) =>
-      child.contains(event.target as Node)
+      child.contains(event.target as Node),
     ) as HTMLElement | undefined;
     if (!card) return;
 
@@ -236,7 +236,7 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>(
     (index: number) => {
       snapToIndex(index, cardPositions());
     },
-    [snapToIndex]
+    [snapToIndex],
   );
 
   return {

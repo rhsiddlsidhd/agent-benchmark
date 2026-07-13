@@ -61,13 +61,13 @@ export function ContentCard({
       <PosterImage
         path={posterPath}
         alt={title}
-        className={cn("rounded-lg", isGated && "blur-lg scale-110")}
+        className={cn("rounded-lg", isGated && "scale-110 blur-lg")}
       />
       {rating != null && !isGated ? (
         <RatingBadge
           value={rating}
           variant="overlay"
-          className="absolute left-2 top-2"
+          className="absolute top-2 left-2"
         />
       ) : null}
       {isGated ? (

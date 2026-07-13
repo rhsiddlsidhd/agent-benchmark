@@ -26,6 +26,6 @@ export function selectKeyCrew(crew: CrewMember[]): KeyCrewPerson[] {
   // 감독을 먼저 노출(Director 포함 인물 우선).
   return [...byPerson.values()].sort(
     (a, b) =>
-      Number(b.jobs.includes("Director")) - Number(a.jobs.includes("Director"))
+      Number(b.jobs.includes("Director")) - Number(a.jobs.includes("Director")),
   );
 }

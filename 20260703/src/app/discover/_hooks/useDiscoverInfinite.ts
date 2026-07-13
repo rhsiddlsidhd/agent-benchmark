@@ -25,12 +25,7 @@
  */
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import type {
-  MediaType,
-  Movie,
-  Paginated,
-  TVShow,
-} from "@/src/lib/tmdb/types";
+import type { MediaType, Movie, Paginated, TVShow } from "@/src/lib/tmdb/types";
 
 /** 대상 미디어 타입에 따른 discover 결과 아이템 타입 매핑. */
 type DiscoverItem<T extends MediaType> = T extends "movie" ? Movie : TVShow;
@@ -52,7 +47,7 @@ interface UseDiscoverInfiniteParams<T extends MediaType> {
 async function fetchDiscoverPage<T extends MediaType>(
   type: T,
   genreIds: number[],
-  page: number
+  page: number,
 ): Promise<Paginated<DiscoverItem<T>>> {
   const params = new URLSearchParams({
     type,

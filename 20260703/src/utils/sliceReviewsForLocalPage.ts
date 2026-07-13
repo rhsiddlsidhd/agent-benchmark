@@ -9,7 +9,7 @@ export const REVIEW_PAGE_SIZE = 10;
  */
 export function sliceReviewsForLocalPage(
   tmdbResults: Review[],
-  localPage: number
+  localPage: number,
 ): Review[] {
   const isFirstHalf = localPage % 2 === 1;
   const start = isFirstHalf ? 0 : REVIEW_PAGE_SIZE;

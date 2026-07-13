@@ -9,9 +9,7 @@
 import type { Transition, Variants } from "framer-motion";
 
 /** easeOutExpo 계열 베지어 (§5). */
-export const easeOutExpo: [number, number, number, number] = [
-  0.22, 1, 0.36, 1,
-];
+export const easeOutExpo: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 /** 섹션/카드 등장 페이드업 (§5). */
 export const fadeUp: Variants = {

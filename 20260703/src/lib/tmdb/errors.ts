@@ -17,7 +17,7 @@ export class TmdbError extends Error {
 
   constructor(
     message: string,
-    options: { status: number; endpoint: string; cause?: unknown }
+    options: { status: number; endpoint: string; cause?: unknown },
   ) {
     super(message, { cause: options.cause });
     this.name = "TmdbError";

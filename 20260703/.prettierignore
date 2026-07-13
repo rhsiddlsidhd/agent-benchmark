@@ -1,2 +1,8 @@
 .next
 node_modules
+
+# 하네스/문서 — 코드 포맷 대상 아님
+.claude
+.playwright
+docs
+*.md

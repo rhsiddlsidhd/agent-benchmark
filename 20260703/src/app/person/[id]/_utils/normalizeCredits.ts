@@ -80,7 +80,7 @@ function applyCrew(entry: FilmographyEntry, credit: PersonCombinedCrewCredit) {
  */
 export function normalizeCredits(
   cast: PersonCombinedCastCredit[],
-  crew: PersonCombinedCrewCredit[]
+  crew: PersonCombinedCrewCredit[],
 ): NormalizedCredits {
   const byKey = new Map<string, { entry: FilmographyEntry; date: string }>();
 

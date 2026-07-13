@@ -38,7 +38,10 @@ export function PosterImage({
   className,
   preload = false,
 }: PosterImageProps) {
-  const wrapperClass = cn("relative aspect-poster overflow-hidden bg-surface", className);
+  const wrapperClass = cn(
+    "relative aspect-poster overflow-hidden bg-surface",
+    className,
+  );
 
   if (!path) {
     return <ImagePlaceholder label={alt} className={wrapperClass} />;
@@ -71,7 +74,10 @@ export function ImagePlaceholder({
 }) {
   return (
     <div
-      className={cn("flex flex-col items-center justify-center gap-2 text-content-muted", className)}
+      className={cn(
+        "flex flex-col items-center justify-center gap-2 text-content-muted",
+        className,
+      )}
       role="img"
       aria-label={label}
     >

@@ -36,8 +36,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // page: 1 이상 정수만 허용, 그 외(NaN/0/음수/누락)는 1로 정규화.
   const parsedPage = Number(searchParams.get("page"));
-  const page =
-    Number.isInteger(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
+  const page = Number.isInteger(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
 
   try {
     const data = await searchMulti(query, page);

@@ -26,7 +26,7 @@ import type { ReviewsErrorResponse, ReviewsResponse } from "./_types";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { id } = await params;
   const movieId = Number(id);
@@ -39,8 +39,7 @@ export async function GET(
 
   // page: 1 이상 정수만 허용, 그 외(NaN/0/음수/누락)는 1로 정규화.
   const parsedPage = Number(request.nextUrl.searchParams.get("page"));
-  const page =
-    Number.isInteger(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
+  const page = Number.isInteger(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
 
   try {
     const data: ReviewsResponse = await getMovieReviews(movieId, page);

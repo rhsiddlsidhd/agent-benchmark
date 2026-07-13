@@ -15,15 +15,12 @@ function RailSkeleton() {
   return (
     <section className="mx-auto w-full max-w-page">
       <div
-        className="skeleton mx-gutter h-7 w-32 rounded-md md:mx-gutter-lg"
+        className="mx-gutter h-7 w-32 skeleton rounded-md md:mx-gutter-lg"
         aria-hidden="true"
       />
       <div className="mt-4 flex gap-card-gap overflow-hidden px-gutter md:px-gutter-lg">
         {Array.from({ length: 6 }, (_, index) => (
-          <SkeletonCard
-            key={index}
-            className="w-32 shrink-0 sm:w-40 md:w-44"
-          />
+          <SkeletonCard key={index} className="w-32 shrink-0 sm:w-40 md:w-44" />
         ))}
       </div>
     </section>
@@ -39,7 +36,7 @@ export default function HomeLoading() {
       aria-label="홈 콘텐츠를 불러오는 중"
     >
       {/* 히어로 백드롭 자리. */}
-      <div className="skeleton aspect-backdrop w-full" aria-hidden="true" />
+      <div className="aspect-backdrop w-full skeleton" aria-hidden="true" />
       <RailSkeleton />
       <RailSkeleton />
       <RailSkeleton />

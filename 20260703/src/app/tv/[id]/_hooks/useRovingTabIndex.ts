@@ -31,7 +31,8 @@ export function useRovingTabIndex<T extends HTMLElement>({
         itemRefs.current[index] = el;
       },
       onKeyDown: (event: KeyboardEvent) => {
-        const nextKey = orientation === "horizontal" ? "ArrowRight" : "ArrowDown";
+        const nextKey =
+          orientation === "horizontal" ? "ArrowRight" : "ArrowDown";
         const prevKey = orientation === "horizontal" ? "ArrowLeft" : "ArrowUp";
 
         let nextIndex: number | null = null;

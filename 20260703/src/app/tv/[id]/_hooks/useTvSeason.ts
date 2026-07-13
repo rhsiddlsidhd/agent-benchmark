@@ -20,7 +20,7 @@ import type { SeasonResponse } from "@/src/app/api/tv/[id]/season/[n]/_types";
 /** `/api/tv/[id]/season/[n]` 을 조회한다. 실패 응답은 에러로 던져 `retry: 1` 대상이 된다. */
 async function fetchSeason(
   tvId: number,
-  seasonNumber: number
+  seasonNumber: number,
 ): Promise<SeasonResponse> {
   const response = await fetch(`/api/tv/${tvId}/season/${seasonNumber}`);
   if (!response.ok) {

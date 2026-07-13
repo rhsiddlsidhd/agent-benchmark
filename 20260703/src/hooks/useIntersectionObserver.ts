@@ -53,7 +53,7 @@ export function useIntersectionObserver({
           callbackRef.current();
         }
       },
-      { rootMargin }
+      { rootMargin },
     );
 
     observer.observe(node);

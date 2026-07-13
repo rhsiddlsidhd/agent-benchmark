@@ -15,23 +15,26 @@ export default function MovieDetailLoading() {
       aria-label="영화 정보를 불러오는 중"
     >
       {/* 히어로 백드롭 자리. */}
-      <div className="skeleton aspect-backdrop w-full" aria-hidden="true" />
+      <div className="aspect-backdrop w-full skeleton" aria-hidden="true" />
 
       {/* 포스터 오버랩 + 제목/메타 자리. */}
       <div className="mx-auto -mt-16 w-full max-w-page px-gutter md:-mt-24 md:px-gutter-lg">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
           <div
-            className="skeleton aspect-poster w-28 shrink-0 rounded-lg sm:w-36 md:w-48"
+            className="aspect-poster w-28 shrink-0 skeleton rounded-lg sm:w-36 md:w-48"
             aria-hidden="true"
           />
-          <div className="flex flex-1 flex-col gap-3 sm:pb-2" aria-hidden="true">
-            <div className="skeleton h-9 w-3/4 rounded-md" />
+          <div
+            className="flex flex-1 flex-col gap-3 sm:pb-2"
+            aria-hidden="true"
+          >
+            <div className="h-9 w-3/4 skeleton rounded-md" />
             <div className="flex flex-wrap gap-2">
-              <div className="skeleton h-6 w-16 rounded-pill" />
-              <div className="skeleton h-6 w-20 rounded-pill" />
-              <div className="skeleton h-6 w-16 rounded-pill" />
+              <div className="h-6 w-16 skeleton rounded-pill" />
+              <div className="h-6 w-20 skeleton rounded-pill" />
+              <div className="h-6 w-16 skeleton rounded-pill" />
             </div>
-            <div className="skeleton h-5 w-24 rounded-md" />
+            <div className="h-5 w-24 skeleton rounded-md" />
           </div>
         </div>
       </div>
@@ -41,19 +44,19 @@ export default function MovieDetailLoading() {
         className="mx-auto flex w-full max-w-page flex-col gap-3 px-gutter md:px-gutter-lg"
         aria-hidden="true"
       >
-        <div className="skeleton h-7 w-24 rounded-md" />
-        <div className="skeleton h-4 w-full max-w-3xl rounded-md" />
-        <div className="skeleton h-4 w-full max-w-2xl rounded-md" />
+        <div className="h-7 w-24 skeleton rounded-md" />
+        <div className="h-4 w-full max-w-3xl skeleton rounded-md" />
+        <div className="h-4 w-full max-w-2xl skeleton rounded-md" />
       </div>
 
       {/* 출연진 레일 자리. */}
       <div className="mx-auto w-full max-w-page" aria-hidden="true">
-        <div className="skeleton mx-gutter h-7 w-28 rounded-md md:mx-gutter-lg" />
+        <div className="mx-gutter h-7 w-28 skeleton rounded-md md:mx-gutter-lg" />
         <div className="mt-4 flex gap-4 overflow-hidden px-gutter md:px-gutter-lg">
           {Array.from({ length: 8 }, (_, index) => (
             <div key={index} className="flex w-20 shrink-0 flex-col gap-2">
-              <div className="skeleton aspect-square w-full rounded-lg" />
-              <div className="skeleton h-3 w-3/4 rounded-md" />
+              <div className="aspect-square w-full skeleton rounded-lg" />
+              <div className="h-3 w-3/4 skeleton rounded-md" />
             </div>
           ))}
         </div>

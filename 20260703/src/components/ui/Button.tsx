@@ -25,8 +25,7 @@ interface ButtonProps extends HTMLMotionProps<"button"> {
 }
 
 const variantClass: Record<ButtonVariant, string> = {
-  primary:
-    "bg-brand text-base hover:bg-brand-strong disabled:hover:bg-brand",
+  primary: "bg-brand text-base hover:bg-brand-strong disabled:hover:bg-brand",
   secondary:
     "border border-border bg-surface text-content-primary hover:bg-surface-hover disabled:hover:bg-surface",
   ghost:

@@ -23,7 +23,7 @@ export type StillSize = "w300" | "w780" | "original";
  */
 export function tmdbImageUrl(
   path: string,
-  size: PosterSize | BackdropSize | ProfileSize | StillSize
+  size: PosterSize | BackdropSize | ProfileSize | StillSize,
 ): string {
   return `${TMDB_IMAGE_BASE}/${size}${path}`;
 }

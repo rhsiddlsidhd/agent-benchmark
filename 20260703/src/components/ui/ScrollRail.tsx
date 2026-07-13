@@ -35,7 +35,7 @@ export function ScrollRail({ children }: ScrollRailProps) {
     <div
       ref={containerRef}
       {...containerProps}
-      className="relative scrollbr-hide rail-snap overflow-hidden"
+      className="scrollbr-hide relative rail-snap overflow-hidden"
     >
       <motion.ul
         ref={trackRef}

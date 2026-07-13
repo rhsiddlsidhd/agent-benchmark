@@ -89,7 +89,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                   size="w1280"
                   sizes="100vw"
                   preload={index === 0}
-                  className="min-h-[420px] max-h-[60vh] w-full"
+                  className="max-h-[60vh] min-h-[420px] w-full"
                 />
                 {/* 하단 텍스트 보호 그라데이션(§3.1). */}
                 <div
@@ -118,7 +118,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
       </div>
 
       {items.length > 1 ? (
-        <div className="absolute bottom-4 right-4 flex items-center gap-3 md:bottom-6 md:right-6">
+        <div className="absolute right-4 bottom-4 flex items-center gap-3 md:right-6 md:bottom-6">
           <div className="flex gap-2">
             {items.map((item, index) => (
               <button
