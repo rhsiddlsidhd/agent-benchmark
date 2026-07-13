@@ -5,6 +5,19 @@
 # dev에만 있고 main엔 없는 신규 파일(add-only) 케이스는 그냥 통과시켜버려서
 # 개발 하네스/도구 파일을 main에서 영구히 배제하는 용도로 쓸 수 없다(dry-run으로 확인됨).
 # 대신 매 릴리스마다 병합 스테이징 후 명시적으로 제외 경로를 인덱스에서 빼는 방식으로 대체한다.
+#
+# 사용법
+#   1. dev 브랜치에서, 워킹트리 클린한 상태로 실행: bash scripts/release-to-main.sh
+#      (dev 아니거나 dev/main 워킹트리가 지저분하면 스크립트가 바로 종료함)
+#   2. 스크립트가 main으로 전환해 dev를 --no-commit으로 병합 스테이징하고,
+#      EXCLUDE_PATHS + 전체 CLAUDE.md를 git rm --cached로 뺀 뒤 커밋 직전에 멈춘다
+#      (여기서 자동 커밋하지 않는다 — 매번 사람이 눈으로 확인하고 넘어가게 하려는 의도)
+#   3. 출력된 git status --short로 제외 대상이 실제로 안 끼었는지 직접 확인
+#   4. typecheck/lint/build 등 검증(스크립트가 해주지 않음, 직접 돌려야 함)
+#   5. 문제없으면 직접 커밋: git commit -m "release: dev → main"
+#   6. 필요하면 직접 push: git push origin main
+#
+# 새 하네스/도구 경로가 추가되면 EXCLUDE_PATHS 배열에 반영해야 한다(자동 감지 안 됨).
 set -euo pipefail
 
 PROJECT_DIR="film-wiki"
