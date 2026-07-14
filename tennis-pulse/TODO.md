@@ -54,6 +54,7 @@
 - **네이버 데이터랩 프록시**: `/api/naver-trend` 등, client_secret 노출 방지
 - **OpenAI 요약 프록시**: `/api/summary` 등, client가 요청하면 함수가 Supabase에서 date+title 조회 → OpenAI API 호출 → 요약 결과 반환. API 키 노출 방지
 - **결정: 세 서버리스 함수 모두 Node/TS로 통일** — OpenAI 호출은 단순 HTTP 요청이라 Python 이점 없음 (원본 date+title 그대로 LLM에 전달하는 구조라 별도 형태소분석 전처리 없음)
+- **결정: `/api/posts`와 `/api/summary`는 route/명세서 분리 유지, 대신 posts 조회 로직은 service 레이어 공유** — `/api/posts`는 프론트 게시글 분석 차트/리스트용으로 직접 노출(원본 필드 전체), `/api/summary`는 내부적으로 같은 service 함수 호출해 date+title만 select. route를 분리하는 이유는 응답 shape(리스트 vs 요약텍스트)와 비용/트리거 빈도(DB 읽기 vs OpenAI 과금)가 다르기 때문 — 쿼리 로직 자체의 중복은 service 공유로 방지
 
 ### DB 스키마 (초안, 최종 확정 아님)
 
