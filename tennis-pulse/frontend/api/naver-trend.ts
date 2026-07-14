@@ -3,9 +3,9 @@
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { validateNaverTrendQuery } from "./types/naver-trend.ts";
-import type { ApiError } from "./types/naver-trend.ts";
-import { NaverTrendError, fetchNaverTrend } from "./services/naver-trend.ts";
+import { validateNaverTrendQuery } from "../src/types/naver-trend.ts";
+import type { ApiError } from "../src/types/naver-trend.ts";
+import { NaverTrendError, fetchNaverTrend } from "../src/services/naver-trend.ts";
 
 function sendError(
   res: ServerResponse,

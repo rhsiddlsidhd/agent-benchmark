@@ -3,9 +3,9 @@
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { validateSummaryQuery } from "./types/posts.ts";
-import type { ApiError, SummaryResponse } from "./types/posts.ts";
-import { PostsError, queryPostDigests, summarizePosts } from "./services/posts.ts";
+import { validateSummaryQuery } from "../src/types/posts.ts";
+import type { ApiError, SummaryResponse } from "../src/types/posts.ts";
+import { PostsError, queryPostDigests, summarizePosts } from "../src/services/posts.ts";
 
 function sendError(
   res: ServerResponse,
