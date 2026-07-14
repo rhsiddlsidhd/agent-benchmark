@@ -32,6 +32,26 @@ tennis-pulse의 intake/planner/api-spec/backend/frontend/qa 6개 에이전트를
 
 **공통:** 이 프로젝트의 6개 에이전트는 전부 `Agent` 도구 호출 시 `subagent_type: "general-purpose"`로 스폰한다(Explore는 Write/Bash 불가, Plan은 설계 전용이라 구현 산출물을 못 냄 — general-purpose가 6개 역할 전부에 필요한 최소공통 툴셋). 역할 차이는 `.claude/agents/{name}.md` 내용을 프롬프트에 포함시켜서 만든다.
 
+## Worktree 전략
+
+**격리 단위: domain.** phase(agent) 단위로 쪼개지 않는다 — 팀모드(backend+frontend 동시)일 때 backend가 SendMessage로 보내는 `type_source`는 파일 경로 참조이지 내용 전송이 아니라서, 두 agent가 별도 worktree에 있으면 frontend가 그 파일에 물리적으로 접근할 수 없다. domain 안의 api-spec/backend/frontend/qa phase는 전부 같은 worktree를 공유한다.
+
+**격리 조건: domain이 2개 이상일 때만.** 서로 다른 domain이 병렬로 진행될 가능성이 있을 때만 격리 비용을 지불한다. `01_plan.yaml`의 domain이 1개뿐이면 worktree 없이 현재 작업 브랜치에서 직접 진행한다.
+
+**브랜치 네이밍: 작업 브랜치 접미사 결합 (nest 아님 — dry-run에서 git 자체 제약으로 실패 확인됨).** 최초 설계는 `{작업 브랜치}/{domain}`(하위 nest)이었으나, `feat/search-and-dark-mode` 브랜치가 이미 존재하는 상태에서 `feat/search-and-dark-mode/backend-posts`를 만들면 git이 거부한다 — git ref는 파일시스템처럼 동작해 `refs/heads/feat/search-and-dark-mode`가 이미 리프(파일)로 존재하면 그 밑을 디렉토리로 쓸 수 없다(`cannot lock ref ...: ... exists`, 실측 확인됨). 대신 `{작업 브랜치}-{domain}`(예: `feat/search-and-dark-mode-backend-posts`) — 기존 prefix(`feat/`) 디렉토리 안의 형제 리프로 생성되므로 충돌이 없다. `docs/GIT_STRATEGY.md`의 prefix 컨벤션 표에 없는 새 prefix(`worktree/` 등)를 발명하지 않는다는 원칙은 그대로 지켜진다(맨 앞 prefix는 안 바뀜, 접미사만 늘어남).
+
+**생성 (오케스트레이터가 Phase 3-0에서 직접 실행, `-b` 플래그 필수 — `docs/GIT_STRATEGY.md` 규칙):**
+```
+git worktree add -b {작업 브랜치}-{domain} .claude/worktrees/{작업브랜치를 -로 이은 것}-{domain} {작업 브랜치}
+```
+디렉토리명은 브랜치명을 그대로 반영하되 슬래시를 `-`로 이어붙인다(`docs/GIT_STRATEGY.md` 예시와 동일 관례). `path`(planner가 결정한 물리 경로)의 해석 방식은 바뀌지 않는다 — worktree 자체가 레포 전체의 완전한 체크아웃이라 그 루트 기준 상대경로 그대로 유효하다.
+
+**merge-back 시점: QA 통과 후에만.** QA가 위반을 발견한 상태에서 작업 브랜치로 병합하지 않는다 — 검증 안 된 코드가 먼저 섞이는 것을 막기 위함. 재작업은 같은 worktree 안에서 이어가고(새 worktree 재생성 안 함), 재검증 통과 후 병합한다.
+
+**정리 절차의 전제 차이 (문서 대조 주의):** `docs/GIT_STRATEGY.md`의 worktree 정리 절차(`remove → branch -d`)는 "PR 머지 완료"를 전제로 서술돼 있다. 하지만 domain 브랜치는 PR 대상이 된 적 없는, 작업 브랜치 내부의 임시 분기다 — 여기서는 **"로컬 merge-back 완료"**를 정리 트리거로 삼는다. 명령어 자체는 동일하게 재사용하되, 전제는 다르다는 점을 명시해 문서-구현 불일치를 방지한다.
+
+**merge-back 직렬화:** 여러 domain이 동시에 QA를 통과해도, merge-back(작업 브랜치로의 `git merge`)은 오케스트레이터가 한 번에 하나씩 순차 수행한다 — 전부 같은 작업 브랜치를 대상으로 하는 git 명령이라 동시 실행 시 경합 위험이 있다.
+
 ## 워크플로우
 
 ### Phase 0: 컨텍스트 확인 (후속 작업 지원)
@@ -43,18 +63,20 @@ tennis-pulse의 intake/planner/api-spec/backend/frontend/qa 6개 에이전트를
    - **`01_plan.yaml` 존재 + 사용자가 특정 domain/phase 재실행·수정 요청** → 부분 재실행. 해당 domain의 phase만 `status: pending`으로 되돌려 재스폰(다른 domain은 건드리지 않음), intake/planner는 다시 안 돌림
    - **`01_plan.yaml` 존재 + 사용자가 새 기능 요청(기존과 무관)** → 새 실행. 기존 `_workspace/`를 `_workspace_{YYYYMMDD_HHMMSS}/`로 이동 후 Phase 1
 3. 부분 재실행 시: 재스폰 대상 에이전트 프롬프트에 이전 산출물 경로(구현 코드/QA 리포트)를 포함해, 기존 결과를 읽고 피드백 반영하도록 지시
+4. `git worktree list`로 `.claude/worktrees/` 잔존 여부 확인 — 이전 세션이 중단(크래시/토큰소진)돼 merge-back 전에 끊긴 domain worktree가 남아있을 수 있다. 이번 요청과 같은 domain이면 3-0에서 재사용, 무관한 domain이면 임의 삭제하지 않고 사용자에게 알려 처리 여부 확인
 
-### Phase 1: 요구사항 명확화
+### Phase 1: 브랜치 준비 및 요구사항 명확화
 
-1. `intake` 스폰(서브 에이전트, model: opus):
+1. **브랜치 준비** — 현재 브랜치가 `dev`/`main`이면 `docs/GIT_STRATEGY.md`의 prefix 컨벤션(`feat/`,`fix/`,`docs/`,`refactor/`,`chore/`,`test/`)에 맞는 새 브랜치를 `dev`에서 분기해 생성한다(요청 성격에 맞는 prefix 선택 + 요청 요약을 kebab-case로 붙임). 이미 적절한 작업 브랜치면 그대로 사용. 이 브랜치가 이후 모든 domain worktree의 기준점(base)이 된다.
+2. `intake` 스폰(서브 에이전트, model: opus):
 ```
 Agent(subagent_type: "general-purpose", model: "opus",
       prompt: ".claude/agents/intake.md 전문 + 사용자 요청 원문 전달")
 ```
-2. 완료 알림에서 `_workspace/00_request.yaml` 확보, `pending` 배열 확인:
+3. 완료 알림에서 `_workspace/00_request.yaml` 확보, `pending` 배열 확인:
    - **비어있음** → Phase 2로
    - **항목 있음** → 각 id의 `requirements.{id}.question` 텍스트를 모아 **평문으로 사용자에게 직접 질문**(구조화 질문 도구 안 씀 — 개방형 사실확인이라 선택지형 도구는 안 맞음) → 답변 받으면 원본 요청 + 이번 답변을 묶어 `intake` 재스폰(이전 항목 id 유지 지시 포함) → `_workspace/00_request.yaml` 갱신 → 다시 `pending` 확인(비워질 때까지 반복, 상한 없음 — 사용자가 직접 관여하는 루프라 에이전트간 협의 폭주 리스크와 성격이 다름)
-3. 정상 포맷 예시: `references/00-request-example.yaml`
+4. 정상 포맷 예시: `references/00-request-example.yaml`
 
 ### Phase 2: 계획 수립
 
@@ -69,17 +91,41 @@ Agent(subagent_type: "general-purpose", model: "opus",
 
 `_workspace/01_plan.yaml`의 `domains[]`를 순회한다. **서로 다른 domain은 완전 독립 — 한 메시지에 병렬로 게이팅 진행 가능**(같은 domain 내부만 depends_on으로 순서 강제).
 
+#### 3-0. domain worktree 생성
+
+domain이 2개 이상이면 각 domain마다 "Worktree 전략"(위 섹션)에 따라 worktree를 만든다(여러 domain을 한 메시지에 순차 Bash 호출 — 각각 독립 경로/브랜치라 경합 없음). domain이 1개뿐이면 이 단계를 생략하고 현재 작업 브랜치에서 직접 진행한다.
+
+부분 재실행(Phase 0)으로 재진입한 domain은 `git worktree list`로 해당 domain 브랜치의 worktree가 이미 있는지 먼저 확인한다 — 있으면 재생성하지 않고 그대로 재사용(`-b`로 이미 존재하는 브랜치를 다시 만들면 에러, `docs/GIT_STRATEGY.md`의 동일 브랜치 동시 체크아웃 금지 규칙과도 충돌), 없으면(이전에 merge-back까지 끝나 정리된 경우) 새로 생성한다.
+
+worktree가 생성된 domain은, 아래 phase들의 프롬프트에 **"작업 디렉토리: {worktree 경로} — 반드시 이 안에서만 작업, 다른 경로는 건드리지 마라"**를 필수로 포함한다. node_modules 등 설치 자산은 새로 설치하지 않고 메인 체크아웃 것을 심볼릭 링크로 연결한다(lockfile 동일성 먼저 확인).
+
+#### 3-1. phase 게이팅 및 스폰
+
 각 domain 안에서, phase를 `depends_on`이 전부 `status: complete`인 것만 스폰 대상으로 추린다:
 
 1. **api-spec phase** — 대상이면 서브 에이전트로 스폰(model: opus, `.claude/agents/api-spec.md` + `write-api-spec` 스킬 내용 프롬프트에 포함, **`target`(해당 domain명) + `source_request_ids`(그 domain의 `01_plan.yaml` 값 그대로) + `request_path`(`_workspace/00_request.yaml`) 필수 전달** — agent가 그 경로에서 해당 id들의 내용을 직접 읽음). 완료 시 `status: complete` 갱신 + **agent의 완료보고에 담긴 실제 저장 경로를 그대로 받아** 그 domain에 `spec_path`로 기록(오케스트레이터가 경로를 계산·추측하지 않는다 — `output_path` 기본값이 항상 지켜진다는 보장이 없어서 agent 보고값만 신뢰)
-2. **backend/frontend phase** — 같은 domain에 이 둘이 **동시에** 대상이면 팀모드로 승격:
+2. **backend/frontend phase** — 같은 domain에 이 둘이 **동시에** 대상이면 팀모드로 승격(둘 다 같은 domain worktree를 공유 — 위 "Worktree 전략" 참고, `type_source`가 파일 경로 참조라 물리적 공유 없이는 동작 안 함):
    - backend phase의 `path`(planner가 `01_plan.yaml`에 이미 결정해둔 값)에 CLAUDE.md 컨벤션(`types/` 서브경로) 적용해 `type_source`도 함께 산출 — 오케스트레이터는 `path` 자체를 재판단 안 함, planner 값 그대로 relay
    - 둘 다 유휴 스폰(한 메시지에 병렬 `Agent` 호출, "추가 지시 대기") → 스폰 결과에서 각 id 확보. 이때 프롬프트에 `source_request_ids` + `request_path`(`_workspace/00_request.yaml`)도 포함 — `spec_path` 유무와 무관하게 항상 전달(계약변경 없는 domain은 `spec_path` 자체가 없어서 이게 유일한 요구사항 출처)
    - 서로에게 SendMessage로 kickoff: 상대 id + 임무(backend: `path`/spec_path, frontend: `path`/spec_path/`type_source`) — `path`는 각자 phase의 `01_plan.yaml` `path` 필드 값을 그대로 전달(오케스트레이터가 재판단 안 함, planner가 이미 결정). **`language`는 전달하지 않는다** — 각 agent가 자기 `path` 진입 후 스스로 확인(backend.md 작업원칙 참고) + 배경(계약 내용 요약) + 통신규칙("일반 텍스트는 안 보임, SendMessage로만") + **종료조건**(스펙 이탈 협의 최대 2왕복, frontend ack 1회로 종료, ack 후 backend 추가발신 금지) — **type 완료 신호는 이 종료조건(왕복 카운트)과 별개**, backend/frontend 각 agent 정의(`backend.md`/`frontend.md`)의 팀 통신 프로토콜에 따라 자율 처리
    - 하나만 대상이면 서브 에이전트로 단독 스폰(id 릴레이 불필요) — 프롬프트에 `target`, `path`(각자 phase의 `01_plan.yaml` 값 그대로), `source_request_ids` + `request_path`(항상 전달), `spec_path`(있으면), `type_source`(frontend 한정, 기존 backend 타입 참조 필요한 경우만 — 오케스트레이터가 정적 경로로 직접 전달, SendMessage 아님) 전달 — `language`는 전달하지 않음
-3. **qa phase** — 그 domain의 backend/frontend phase가 전부 `status: complete`면 서브 에이전트로 스폰(model: opus, `subagent_type: "general-purpose"` 필수, `.claude/agents/qa.md` 프롬프트 포함, `domain`+`impl_paths`+`spec_path`(있으면) 전달)
+3. **qa phase** — 그 domain의 backend/frontend phase가 전부 `status: complete`면 서브 에이전트로 스폰(model: opus, `subagent_type: "general-purpose"` 필수, `.claude/agents/qa.md` 프롬프트 포함, `domain`+`impl_paths`+`spec_path`(있으면) 전달) — worktree가 있으면 QA도 그 안에서 검증(별도 병합 없이 최신 상태 그대로 존재)
+
+worktree가 있는 domain은, 각 phase(agent) 완료 시 그 worktree 안에서 agent가 직접 커밋한다(add+commit, conventional 메시지) — merge-back은 오케스트레이터가 처리(3-2 참고).
 
 각 phase 완료 알림마다 `_workspace/01_plan.yaml`의 해당 `status`를 갱신(파일 재작성). 이 갱신이 다음 게이팅 판단의 근거가 된다.
+
+#### 3-2. merge-back 및 정리 (domain worktree 사용 시)
+
+그 domain의 qa phase가 `status: complete`(위반 없음 또는 검증대상 없음)로 끝나면, 오케스트레이터가 작업 브랜치를 체크아웃한 상태에서 domain 브랜치를 병합한다:
+```
+git merge {작업 브랜치}-{domain}
+```
+QA가 리젝트 상태면 병합하지 않는다(위 "Worktree 전략" 참고 — 재작업은 같은 worktree에서 이어감). 여러 domain이 동시에 QA를 통과해도 병합은 오케스트레이터가 순차 수행한다(경합 방지).
+
+병합 완료 후: `git worktree remove {경로}` → `git branch -d {작업 브랜치}-{domain}`. 정리 트리거는 "로컬 merge-back 완료"다(`docs/GIT_STRATEGY.md`의 "PR 머지 완료" 전제와 다름 — 위 "Worktree 전략" 참고).
+
+병합 충돌 발생 시 재시도하지 않는다 — 이 domain의 `path`가 다른 domain과 실제로 겹쳤다는 신호이므로 planner 도메인 분리 판단 오류로 간주하고 사용자에게 보고(에러 핸들링 표 참고).
 
 ### Phase 4: 종합 및 보고
 
@@ -91,8 +137,9 @@ Agent(subagent_type: "general-purpose", model: "opus",
 ### Phase 5: 정리
 
 1. 팀모드로 스폰됐던 backend/frontend에 종료 요청(SendMessage, 개별 전송) — 이미 phase 완료로 알아서 멈췄다면 생략
-2. `_workspace/` 보존(사후 감사·재실행 대비)
-3. 사용자에게 결과 요약 보고, 개선 피드백 요청
+2. domain worktree는 각 domain의 merge-back 시점(Phase 3-2)에 이미 정리됨 — 여기선 재확인만: `git worktree list`에 `.claude/worktrees/`가 남아있으면(QA `error`로 미병합 상태) 임의 삭제하지 않고 사용자에게 알려 보존
+3. `_workspace/` 보존(사후 감사·재실행 대비)
+4. 사용자에게 결과 요약 보고, 개선 피드백 요청
 
 ## 데이터 흐름
 
@@ -130,8 +177,9 @@ Agent(subagent_type: "general-purpose", model: "opus",
 | 서브 에이전트(api-spec/단독 backend·frontend/qa) 실패 | 1회 재시도, 재실패 시 해당 결과 없이 진행 + 최종보고서에 누락 명시 |
 | 팀모드 backend/frontend 중 1명 실패·중지 | SendMessage로 상태 확인 → 재스폰(id 릴레이 재배선). 재실패 시 남은 한쪽 결과만으로 진행, 누락 명시 |
 | backend↔frontend 협의 2왕복 초과 | 자동으로 해당 phase `status: error`, 오케스트레이터가 SendMessage로 개입해 상황 파악 후 사용자에게 에스컬레이션 |
-| qa가 위반사항 발견 | 코드 수정은 안 함(QA는 검증만) — 리포트를 최종보고서에 포함, 필요 시 사용자 확인 후 해당 backend/frontend agent 재스폰해서 수정 |
-| 도메인 간 데이터 충돌 | 발생 안 함(도메인 간 계약 공유 없음이 설계 전제) — 만약 발견되면 planner의 도메인 분리 판단 오류이므로 planner 재실행 필요 |
+| qa가 위반사항 발견 | 코드 수정은 안 함(QA는 검증만) — 리포트를 최종보고서에 포함, 필요 시 사용자 확인 후 해당 backend/frontend agent 재스폰해서 수정(같은 domain worktree 재사용, 새로 안 만듦). merge-back은 재검증 통과 후로 보류 |
+| domain worktree merge-back 충돌 | 재시도하지 않음 — 이 domain의 `path`가 다른 domain과 실제로 겹쳤다는 신호이므로 planner 도메인 분리 판단 오류로 간주, planner 재실행 필요 사용자 보고 |
+| 도메인 간 데이터 충돌 | 발생 안 함(도메인 간 계약 공유 없음이 설계 전제) — 만약 발견되면(merge-back 충돌 포함) planner의 도메인 분리 판단 오류이므로 planner 재실행 필요 |
 
 ## 테스트 시나리오
 
@@ -150,3 +198,13 @@ Agent(subagent_type: "general-purpose", model: "opus",
 4. Phase 3: frontend 서브 스폰(팀모드 아님 — backend phase 없음) → 구현 완료 → qa 서브 스폰 → 경계면 탐색 결과 "검증대상 없음"(순수 스타일링)으로 즉시 종료
 5. 중간에 frontend가 CSS 변수 충돌로 실패 → 1회 재시도 → 재실패 → 오케스트레이터가 해당 phase 없이 진행, 최종보고서에 "frontend-dark-mode 미완료, 원인: CSS 변수 충돌" 명시
 6. 예상 결과: qa phase는 "검증대상 없음"으로 complete, frontend phase는 error로 남고 사용자에게 재작업 필요 안내
+
+### 병렬 다중도메인 흐름 (worktree)
+1. 사용자: "검색 필터 추가하고 대시보드 다크모드도 같이"
+2. Phase 1: 브랜치 준비 — 현재 `dev`라 `feat/search-and-dark-mode` 생성
+3. Phase 2: planner가 `domain: backend-posts`(`contract_change_required: true`), `domain: frontend-chart`(`contract_change_required: false`) 2개 산출
+4. Phase 3-0: domain이 2개라 각각 worktree 생성 — `feat/search-and-dark-mode-backend-posts`, `feat/search-and-dark-mode-frontend-chart`를 `.claude/worktrees/`에 병렬 생성
+5. Phase 3: 두 domain 병렬 게이팅 — `backend-posts`는 api-spec → 팀모드(backend+frontend, 같은 worktree 공유) → qa, `frontend-chart`는 frontend 단독 → qa. 각 agent는 자기 domain worktree 안에서 커밋
+6. Phase 3-2: `backend-posts` qa 통과 → merge-back + 정리. `frontend-chart` qa도 거의 동시에 통과했지만 오케스트레이터가 순차 처리하므로 그 다음에 merge-back + 정리
+7. Phase 4: 최종보고서 종합
+8. 예상 결과: 두 domain 모두 `complete`, `.claude/worktrees/`는 비어있음(전부 정리됨), `feat/search-and-dark-mode` 브랜치에 두 domain 변경사항 모두 반영
