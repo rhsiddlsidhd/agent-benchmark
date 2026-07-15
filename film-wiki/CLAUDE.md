@@ -1,4 +1,13 @@
-@AGENTS.md
+> Git 전략(브랜치 흐름/prefix/Worktree)은 Global CLAUDE.md(`~/.claude/CLAUDE.md`, `~/.claude/docs/GIT.md`)로 전부 승격됨. `main`은 GitHub 브랜치 보호(ruleset `protect-main`)로 PR 없는 직접 push가 차단됨 — 로컬 스크립트 기반 릴리스 절차(`release-to-main.sh`)는 폐기.
+
+@docs/conventions/00_NAMING.md
+
+# 폴더 배치 판단
+
+- 파일을 새로 만들거나 옮길 때 네이밍 케이스만 맞추고 넘어가지 않는다 — 대상 폴더 `CLAUDE.md` 정의 문단과 성격이 맞는지 먼저 확인한다.
+- 성격이 대상 폴더 정의와 안 맞으면 그대로 두지 않는다 — 후보가 될 다른 `src/*` 폴더들의 `CLAUDE.md` 정의와 비교해 가장 맞는 곳으로 옮긴다.
+- 어느 폴더 정의와도 안 맞으면 기존 폴더에 임의로 끼워넣지 않는다 — 새 폴더를 만들거나 사용자에게 확인한다.
+- 후보 폴더 `CLAUDE.md` 비교 시 키워드 grep 매칭 결과만으로 "관련 규정 없음"이라 결론짓지 않는다 — 규칙이 다른 표현(예: provider 대신 "외부 상태관리 라이브러리")으로 적혀 있을 수 있으니 후보 문서는 전체를 통독한다.
 
 ## 하네스: TMDB 탐색 웹앱 기능 개발
 

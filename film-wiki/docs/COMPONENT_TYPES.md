@@ -1,6 +1,6 @@
 # COMPONENT_TYPES
 
-> 컴포넌트 Props/타입 전용 컨벤션. 이 문서는 컴포넌트 타입 규칙만 다룬다 — 네이밍/구조 등 다른 컨벤션은 각 CLAUDE.md/AGENTS.md를 따른다.
+> 컴포넌트 Props/타입 전용 컨벤션. 이 문서는 컴포넌트 타입 규칙만 다룬다 — 네이밍/구조 등 다른 컨벤션은 각 CLAUDE.md를 따른다.
 
 ## Props
 

@@ -14,7 +14,7 @@ src/components/ui/
 ```
 
 ## Critical Conventions
-- 파일명/export 식별자 케이스는 `AGENTS.md`의 "네이밍 컨벤션" 섹션을 따른다.
+- 파일명/export 식별자 케이스는 `CLAUDE.md`의 "네이밍 컨벤션" 섹션을 따른다.
   - `ui/{컴포넌트명}.tsx` — 파일명은 export 컴포넌트명과 동일하게 쓴다(`ContentCard.tsx` → `export function ContentCard`).
   - 컴포넌트명에 특정 엔티티/리소스명을 쓰지 않는다 — 형태·역할 명사로 짓는다(`Content`/`Person`처럼 여러 엔티티를 통칭하는 상위어는 허용). `_components/`→`ui/` 승격 시 이름에 엔티티명이 남아있으면 이 규칙대로 바꾼다(`src/app/CLAUDE.md` 승격 규칙과 짝).
 - 개별 파일 직접 import 하지 않는다 - `ui/` 컴포넌트는 배럴을 통해서만 import 

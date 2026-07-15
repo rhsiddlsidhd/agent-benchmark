@@ -1,6 +1,56 @@
 # CLAUDE.md — tennis-pulse
 
-@docs/GIT_STRATEGY.md
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+> Git 전략은 Global CLAUDE.md(`~/.claude/CLAUDE.md`, `~/.claude/docs/GIT.md`)로 전부 승격됨. `main`은 GitHub 브랜치 보호(ruleset `protect-main`)로 PR 없는 직접 push가 차단됨.
+
+## Commands
+
+전부 `frontend/` 또는 `backend/`에서 실행 — 루트엔 `package.json`이 없다.
+
+**frontend/** (React 19 + Vite, Node/TS)
+```bash
+npm install          # 최초 1회
+npm run dev           # Vite 개발 서버
+npm run build          # tsc -b (app/node/api 3개 tsconfig 참조 전부 타입체크) && vite build
+npm run lint            # oxlint
+npm run preview          # 빌드 결과 로컬 프리뷰
+```
+- 단일 파일/참조만 타입체크하려면 `npx tsc -p tsconfig.app.json --noEmit` (또는 `tsconfig.api.json`)처럼 개별 프로젝트를 지정한다.
+- 테스트 러너는 구성돼 있지 않다.
+
+**backend/** (Python 3.10, 크롤러 — 배치/수동 실행 전용, HTTP로 노출 안 됨)
+```bash
+source .venv/bin/activate   # 기존 venv 사용, 또는 python -m venv .venv 로 새로 생성
+pip install -r requirements.txt
+python main.py               # SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 필요 (.env, .env.example 참조)
+```
+- 테스트 러너/린터는 구성돼 있지 않다.
+
+## Architecture
+
+모노레포(`backend/` + `frontend/`), 데이터 접근은 전부 Vercel 서버리스 함수(`frontend/api/`) 경유로 통일한다. 배경/결정 근거는 `docs/00_PRD.md`·`docs/01_ARCHITECTURE.md`·`docs/02_ADR.md` 참고.
+
+```
+backend/ (Python, 배치 크롤러 — 상시 배포 안 됨)
+  crawler/service.py  ─UPSERT─▶  Supabase(posts, idxno PK)
+
+frontend/ (Vercel 배포 루트)
+  src/  (React SPA, 클라이언트)
+    hooks/use{도메인}.ts  ──fetch──▶  same-origin /api/*
+    components/{도메인}/   (Recharts)
+    services/{도메인}.ts   ← ⚠ 서버 시크릿 참조, 클라이언트 코드에서 import 금지(tsconfig.app.json이 exclude)
+    types/{도메인}.ts      (계약 타입 + zod 검증)
+  api/  (Vercel Serverless Functions, 파일기반 라우팅 /api/{도메인})
+    posts.ts / naver-trend.ts / summary.ts  → src/services/*, src/types/* 를 import
+      ├─ /api/posts        ─▶ Supabase(posts) 전체 조회
+      ├─ /api/naver-trend   ─▶ 네이버 데이터랩 프록시
+      └─ /api/summary        ─▶ Supabase(date+title only, posts와 service 공유) + OpenAI 요약
+```
+
+- **계약 우선(contract-first)**: 엔드포인트 구현 전 `docs/api/{도메인}.md`에 계약(파라미터/응답타입/에러shape)을 먼저 확정한다. 각 레이어 세부 컨벤션은 계층별 `CLAUDE.md`(`backend/CLAUDE.md`, `frontend/src/CLAUDE.md`, `frontend/api/CLAUDE.md`)에 있다.
+- **tennispeople.kr 크롤러 파싱**: 목록 HTML의 `<td>`가 정상적으로 닫히지 않아 DOM 트리 파싱이 실패함 — `<font color="#333333">` 라벨과 값 포맷을 순서 앵커링하는 정규식으로 파싱한다. 상단 고정 공지는 페이지 무관하게 항상 재노출되므로 "일반 게시글 0개"를 목록 종료 기준으로 삼는다 (`backend/crawler/service.py` 참고).
+- **인증 없음**: 모든 API는 공개 read-only. 네이버/Supabase(service role)/OpenAI 크레덴셜은 서버리스 함수 런타임에서만 읽는다 — `VITE_` 접두사 env var는 클라이언트 번들에 노출되므로 사용 금지.
 
 ## 하네스: tennis-pulse 개발 오케스트레이션
 

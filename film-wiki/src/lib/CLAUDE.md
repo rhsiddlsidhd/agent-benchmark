@@ -19,8 +19,8 @@ src/lib/
 ```
 
 ## Critical Conventions
-- 파일명/export 식별자 케이스는 `AGENTS.md`의 "네이밍 컨벤션" 섹션을 따른다.
-- 파일명에 라이브러리명을 그대로 쓰지 않는다(`motion.ts` 금지) — 역할(role) 명사로 짓는다(`framer-motion/preset.ts`). 컴포넌트/훅은 예외로 AGENTS.md 아티팩트별 케이스를 따른다.
+- 파일명/export 식별자 케이스는 `CLAUDE.md`의 "네이밍 컨벤션" 섹션을 따른다.
+- 파일명에 라이브러리명을 그대로 쓰지 않는다(`motion.ts` 금지) — 역할(role) 명사로 짓는다(`framer-motion/preset.ts`). 컴포넌트/훅은 예외로 CLAUDE.md 아티팩트별 케이스를 따른다.
 
 ## Gotchas
 - `tmdb/client.ts`는 클라이언트 컴포넌트에서 import 불가(`server-only`) — `tmdb/images.ts`는 예외.

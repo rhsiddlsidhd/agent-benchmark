@@ -27,7 +27,7 @@ Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Han
       ├── index.ts
       └── useDiscoverInfinite.ts
   ```
-  파일명 케이스는 `AGENTS.md`의 "네이밍 컨벤션" 섹션을 따른다.
+  파일명 케이스는 `CLAUDE.md`의 "네이밍 컨벤션" 섹션을 따른다.
 
 ## Critical Conventions
 
@@ -42,7 +42,7 @@ Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Han
   - 컴포넌트 예: `Skeleton`이 내부에서 `SkeletonCard`를 호출(`src/components/ui/skeleton.tsx`).
   - 순수함수 예: `movieToCard`/`tvToCard`가 내부에서 `yearOf`를 호출(`src/app/page.tsx`) — `_utils/`로 승격 시 한 파일 허용.
 - 자기 폴더가 없는 루트 라우트라고 이 패턴을 생략하지 않는다 — `_components/` 등을 `layout.tsx`/`error.tsx`와 나란히 라우트 최상위에 둔다.
-- 2개 이상 라우트가 공유하는 순수함수/UI/훅을 라우트 폴더 안에 남겨두지 않는다 — 순수함수는 `src/utils.ts`, UI는 `src/components/ui/`, 순수 브라우저 훅(TanStack Query 도메인 훅 제외)은 `src/hooks/`로 승격한다. 컴포넌트명이 특정 도메인에 종속적이면 추상화한 이름으로 바꾼다.
+- 2개 이상 라우트가 공유하는 순수함수/UI/훅/타입/상수를 라우트 폴더 안에 남겨두지 않는다 — 순수함수는 `src/utils/`, UI는 `src/components/ui/`, 순수 브라우저 훅(TanStack Query 도메인 훅 제외)은 `src/hooks/`, 타입은 `src/types/`, 상수는 `src/constants/`로 승격한다. 컴포넌트명이 특정 도메인에 종속적이면 추상화한 이름으로 바꾼다.
 - 여러 위치(RootLayout·복수 라우트)가 동일 클라이언트 상태를 React Context로 공유해야 하는 경우 라우트 폴더 안에 두지 않는다 — `src/context/`로 옮긴다(규칙은 `src/context/CLAUDE.md` 참고).
 - 컴포넌트 Props/타입 규칙은 `@../../docs/COMPONENT_TYPES.md`를 따른다.
 
