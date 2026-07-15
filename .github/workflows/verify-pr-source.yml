@@ -1,0 +1,16 @@
+name: Verify PR source branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR is from dev
+        if: github.event.pull_request.head.ref != 'dev'
+        run: |
+          echo "PRs into main must come from dev (got: ${{ github.event.pull_request.head.ref }})"
+          exit 1
