@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> Git 전략은 Global CLAUDE.md(`~/.claude/CLAUDE.md`, `~/.claude/docs/GIT.md`)로 전부 승격됨. `main`은 GitHub 브랜치 보호(ruleset `protect-main`)로 PR 없는 직접 push가 차단됨.
+> Git 전략의 범용 원칙(prefix taxonomy, 자동배포 브랜치 직접 push 금지 등)은 Global CLAUDE.md(`~/.claude/CLAUDE.md`, `~/.claude/docs/GIT.md`)에 있음. 이 프로젝트는 `main`이 Vercel 자동배포 대상이라, 그 원칙의 구체 구현으로 `dev`를 스테이징 브랜치로 둔다 — 브랜치 흐름: `<prefix>/*` → `dev` → `main`. `main`은 GitHub 브랜치 보호(ruleset `protect-main`)로 PR 없는 직접 push가 차단됨.
 
 ## Commands
 
