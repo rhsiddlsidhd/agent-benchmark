@@ -1,28 +1,6 @@
 import { useCallback, useState } from "react";
-import { z } from "zod";
-import { PostSchema } from "../types/posts";
-import type { ApiError, ApiErrorCode, PostsListResponse } from "../types/posts";
-
-// fetch 경계 런타임 검증 스키마 — 계약 문서(docs/api/posts.md) 기준.
-// Post 자체는 backend가 export한 PostSchema를 그대로 재사용(재정의 금지), 응답 envelope만 여기서 감싼다.
-const apiErrorCodeSchema: z.ZodType<ApiErrorCode> = z.enum([
-  "bad_request",
-  "method_not_allowed",
-  "upstream_error",
-  "internal_error",
-]);
-
-const apiErrorSchema: z.ZodType<ApiError> = z.object({
-  error: z.object({
-    code: apiErrorCodeSchema,
-    message: z.string(),
-  }),
-});
-
-const postsListResponseSchema: z.ZodType<PostsListResponse> = z.object({
-  posts: z.array(PostSchema),
-  count: z.number(),
-});
+import { ApiErrorSchema, PostsListResponseSchema } from "../schemas/posts";
+import type { PostsListResponse } from "../types/posts";
 
 export interface PostsQuery {
   from?: string;
@@ -65,7 +43,7 @@ export function usePosts() {
     const json: unknown = await res.json();
 
     if (!res.ok) {
-      const parsedError = apiErrorSchema.safeParse(json);
+      const parsedError = ApiErrorSchema.safeParse(json);
       if (!parsedError.success) {
         console.error("[usePosts] error response did not match ApiError shape", parsedError.error, json);
         setState({
@@ -79,7 +57,7 @@ export function usePosts() {
       return;
     }
 
-    const parsed = postsListResponseSchema.safeParse(json);
+    const parsed = PostsListResponseSchema.safeParse(json);
     if (!parsed.success) {
       console.error("[usePosts] response did not match PostsListResponse contract", parsed.error, json);
       setState({

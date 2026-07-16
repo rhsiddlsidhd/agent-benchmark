@@ -3,9 +3,8 @@
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { validatePostsQuery } from "../src/types/posts.ts";
 import type { ApiError, PostsListResponse } from "../src/types/posts.ts";
-import { PostsError, queryPosts } from "../services/posts.ts";
+import { PostsError, queryPosts, validatePostsQuery } from "../services/posts.ts";
 
 function sendError(
   res: ServerResponse,

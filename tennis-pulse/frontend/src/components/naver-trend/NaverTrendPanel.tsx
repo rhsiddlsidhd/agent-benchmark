@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNaverTrend } from "../../hooks/useNaverTrend";
 import type { TimeUnit } from "../../types/naver-trend";
+import { relativeFrom, toDateInputValue } from "../../utils/date";
 import { NaverTrendChart } from "./NaverTrendChart";
 
 const TIME_UNIT_OPTIONS: { value: TimeUnit; label: string }[] = [
@@ -13,20 +14,10 @@ function isTimeUnit(value: string): value is TimeUnit {
   return value === "date" || value === "week" || value === "month";
 }
 
-function toDateInputValue(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-function defaultStartDate(): string {
-  const date = new Date();
-  date.setMonth(date.getMonth() - 3);
-  return toDateInputValue(date);
-}
-
 /** 검색어/기간/단위 입력 폼 + 라인 차트. useNaverTrend 훅 반환 타입을 그대로 사용한다. */
 export function NaverTrendPanel() {
   const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [startDate, setStartDate] = useState(() => relativeFrom(3));
   const [endDate, setEndDate] = useState(() => toDateInputValue(new Date()));
   const [timeUnit, setTimeUnit] = useState<TimeUnit>("month");
   const { data, isLoading, error, fetchTrend } = useNaverTrend();
