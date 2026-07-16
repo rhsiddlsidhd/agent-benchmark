@@ -5,7 +5,7 @@ description: 프론트엔드 UI 구현. `type → hooks → UI` 절차 고정. "
 
 # frontend-impl
 
-frontend agent가 `frontend/src/` 경로에서 사용하는 구현 절차.
+frontend agent가 `src/` 경로에서 사용하는 구현 절차.
 
 ## Input
 - `target`: 구현 대상 도메인 식별자 (필수)
