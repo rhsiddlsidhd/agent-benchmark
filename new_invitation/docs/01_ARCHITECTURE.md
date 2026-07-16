@@ -71,10 +71,57 @@ src/components/      atoms → molecules → organisms (Atomic Design)
 
 호출 흐름: `components/organisms(폼)` → `actions/`(Server Action, `"use server"`) → `services/`(비즈니스 로직) → `models/`(Mongoose, DB) — 검증은 `schemas/`(Zod)를 액션·폼 양쪽에서 공유.
 
-### 에러/엣지케이스 처리 정책
+### 4.1 핵심 유스케이스 시퀀스
+
+**커플 — 템플릿 구매** (`00_PRD.md` UC-1 대응, 소스 추적 기준):
+
+```
+[상품상세 /products/[id]]
+  └─ ProductOptions.handlePurchase()
+       → Zustand order.store에 checkoutData 저장(sessionStorage persist)
+       → router.push('/couple-info')
+
+[/couple-info] ── 미들웨어: token 쿠키 없으면 → '/' 리다이렉트(비로그인 차단)
+  └─ CoupleInfoForm(type=create)
+       → 이미지 클라이언트 → Cloudinary 직접 업로드
+       → createCoupleInfoAction → CoupleInfo 문서 생성(_id 발급)
+       → router.push('/payment?q={coupleInfoId}')
+
+[/payment?q=coupleInfoId] ── 미들웨어: token 없으면 → '/' 리다이렉트
+  └─ CheckoutForm
+       → createOrderAction → Order 문서 생성(status=PENDING, merchantUid 발급)
+       → usePortOnePayment.triggerPayment() → PortOne 결제창(SDK) 팝업
+            ├─ [CARD / TRANSFER] 팝업에서 즉시 완료
+            └─ [VIRTUAL_ACCOUNT] 팝업은 "계좌 발급"만 완료, 실입금은 비동기(이후)
+       → POST /api/payment/complete { paymentId }
+            └─ syncPayment(): PortOne 서버 API로 실결제 재조회
+                 → verifyPayment(): 금액 검증(order.finalPrice vs 실결제액)
+                 → Payment 문서 생성/갱신, Order.orderStatus = CONFIRMED
+       → clearOrder(zustand) → router.push('/payment/success?orderId=merchantUid')
+
+[/order], [/order/edit] ── 주문 내역 확인, CoupleInfoForm(type=edit)로 무제한 재수정
+
+[/preview/[coupleInfoId]] (하객, 비로그인)
+  └─ getActiveOrderInfoByCoupleInfoId() — CONFIRMED/COMPLETED Order만 조회
+       → productId 기반 테마 자동 적용(예: blossom) + 구매한 프리미엄 기능 반영
+  └─ GuestBookClientSection → createGuestbook (이름/메시지/비밀번호/공개여부)
+```
+
+### 4.2 에러/엣지케이스 처리 정책
 
 - 비즈니스/시스템 에러 구분, 유저 피드백은 `sonner`(Toast) 우선 사용 (GEMINI.md).
 - (TODO: 에러 바운더리/로깅 정책 상세는 `docs/ERROR_HANDLER.md` 별도 확인 필요 — 이번 조사 범위에 미포함)
+
+**구매 플로우에서 발견된 미처리 엣지케이스** (코드 조사로 확인, `00_PRD.md` §8 오픈 이슈와 연결):
+
+| 케이스 | 위치 | 현상 |
+|--------|------|------|
+| 가상계좌 상태 오판 | `src/hooks/usePortOnePayment.ts` | `/api/payment/complete` 응답이 `PAID`가 아니면 무조건 실패 처리 — 가상계좌 발급(정상 `PENDING`)도 실패로 노출 |
+| 결제 확정 단일 경로 | `src/hooks/usePortOnePayment.ts`, `src/app/api/payment/complete/route.ts` | PortOne 웹훅 등 서버-서버 보정 경로 없음(라우트 조사 결과 부재) — 팝업 성공 후 클라이언트 이탈 시 결제는 됐지만 Order는 영구 PENDING |
+| Order 중복 생성 | `src/actions/createOrderAction.ts` | 멱등키/중복 체크 없음 — 결제 페이지 새로고침 후 재제출 시 같은 coupleInfoId로 Order가 추가 생성될 수 있음 |
+| CoupleInfo 고아 데이터 | `src/components/organisms/CoupleInfoForm.tsx` | CoupleInfo가 Order보다 먼저 생성되는 구조 — 결제 미완료 시 정리되지 않고 남음 |
+| 비로그인 구매 시도 무설명 리다이렉트 | `src/middleware.ts`, `ProductOptions.tsx` | `/couple-info` 진입 시 토큰 없으면 안내 없이 `/`로 리다이렉트, 로그인 후 원래 상품으로 복귀하는 경로 없음 |
+| `/payment` 잘못된 접근 시 unhandled Error | `src/app/(main)/(checkout)/payment/page.tsx` | `q` 파라미터 없으면 `notFound()`/`redirect()`가 아닌 plain `throw new Error` — 기본 에러 바운더리로 노출 |
 
 ## 5. 모듈/서비스 상세 (Module/Service Details)
 
