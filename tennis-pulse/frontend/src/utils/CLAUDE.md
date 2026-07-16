@@ -1,0 +1,25 @@
+# CLAUDE.md — frontend/src/utils/
+
+> Last updated: 2026-07-16T00:00:00+09:00
+
+## Scope
+
+- **2개 이상 소비자가 공유하는 순수 함수만** — 입력→출력만 있고 외부 상태·도메인 지식이 없는 함수. 소비자가 1개뿐인 함수는 그 소비자가 속한 레이어 파일(`services/{도메인}.ts`, 컴포넌트 파일 등)에 인라인으로 둔다.
+
+## Structure
+
+```
+frontend/src/utils/
+└── {목적}.ts     # 도메인 무관 순수 함수
+```
+
+## Critical Convention
+
+- 도메인 지식이 필요한 함수(비순수 포함)를 여기로 승격하지 않는다 — 그 도메인이 속한 레이어 파일에 그대로 둔다. 이유: `utils/`는 어떤 도메인이 갖다 써도 동작해야 하는 경계로 고정 — 도메인 로직이 섞이면 다른 도메인에서 재사용 시 깨짐
+- 2번째 소비자가 생기기 전에 미리 이 폴더로 옮겨두지 않는다. 이유: 실제로 공유될지 확정 안 된 상태에서 미리 중앙화하면 오버엔지니어링 — `frontend/src/types/CLAUDE.md`와 동일 원칙
+
+## Gotchas
+
+## 관련 문서
+
+- 파일명 케이스: `frontend/docs/conventions/00_FILE_CONVENTIONS.md`

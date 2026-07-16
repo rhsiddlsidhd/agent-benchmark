@@ -29,7 +29,7 @@ python main.py               # SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 필요 (
 
 ## Architecture
 
-모노레포(`backend/` + `frontend/`), 데이터 접근은 전부 Vercel 서버리스 함수(`frontend/api/`) 경유로 통일한다. 배경/결정 근거는 `docs/00_PRD.md`·`docs/01_ARCHITECTURE.md`·`docs/02_ADR.md` 참고.
+모노레포(`backend/` + `frontend/`), 데이터 접근은 전부 Vercel 서버리스 함수(`frontend/api/`) 경유로 통일한다. 배경/결정 근거는 `docs/planning/00_PRD.md`·`docs/planning/01_ARCHITECTURE.md`·`docs/planning/02_ADR.md` 참고.
 
 ```
 backend/ (Python, 배치 크롤러 — 상시 배포 안 됨)
@@ -39,17 +39,17 @@ frontend/ (Vercel 배포 루트)
   src/  (React SPA, 클라이언트)
     hooks/use{도메인}.ts  ──fetch──▶  same-origin /api/*
     components/{도메인}/   (Recharts)
-    services/{도메인}.ts   ← ⚠ 서버 시크릿 참조, 클라이언트 코드에서 import 금지(tsconfig.app.json이 exclude)
     types/{도메인}.ts      (계약 타입 + zod 검증)
+  services/{도메인}.ts   ← ⚠ 서버 시크릿 참조, 클라이언트 코드에서 import 금지(src 밖이라 tsconfig.app.json 대상에서 자동 제외)
   api/  (Vercel Serverless Functions, 파일기반 라우팅 /api/{도메인})
-    posts.ts / naver-trend.ts / summary.ts  → src/services/*, src/types/* 를 import
+    posts.ts / naver-trend.ts / summary.ts  → services/*, src/types/* 를 import
       ├─ /api/posts        ─▶ Supabase(posts) 전체 조회
       ├─ /api/naver-trend   ─▶ 네이버 데이터랩 프록시
       └─ /api/summary        ─▶ Supabase(date+title only, posts와 service 공유) + OpenAI 요약
 ```
 
-- **계약 우선(contract-first)**: 엔드포인트 구현 전 `docs/api/{도메인}.md`에 계약(파라미터/응답타입/에러shape)을 먼저 확정한다. 각 레이어 세부 컨벤션은 계층별 `CLAUDE.md`(`backend/CLAUDE.md`, `frontend/src/CLAUDE.md`, `frontend/api/CLAUDE.md`)에 있다.
-- **tennispeople.kr 크롤러 파싱**: 목록 HTML의 `<td>`가 정상적으로 닫히지 않아 DOM 트리 파싱이 실패함 — `<font color="#333333">` 라벨과 값 포맷을 순서 앵커링하는 정규식으로 파싱한다. 상단 고정 공지는 페이지 무관하게 항상 재노출되므로 "일반 게시글 0개"를 목록 종료 기준으로 삼는다 (`backend/crawler/service.py` 참고).
+- **계약 우선(contract-first)**: 엔드포인트 구현 전 `docs/api/{도메인}.md`에 계약(파라미터/응답타입/에러shape)을 먼저 확정한다. 각 레이어 세부 컨벤션은 계층별 `CLAUDE.md`(`backend/CLAUDE.md`, `frontend/src/CLAUDE.md`, `frontend/api/CLAUDE.md`, `frontend/services/CLAUDE.md`)에 있다.
+- **tennispeople.kr 크롤러 파싱 관련 함정**: `backend/CLAUDE.md`의 Gotchas 참고.
 - **인증 없음**: 모든 API는 공개 read-only. 네이버/Supabase(service role)/OpenAI 크레덴셜은 서버리스 함수 런타임에서만 읽는다 — `VITE_` 접두사 env var는 클라이언트 번들에 노출되므로 사용 금지.
 
 ## 하네스: tennis-pulse 개발 오케스트레이션

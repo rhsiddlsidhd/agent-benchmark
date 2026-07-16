@@ -5,7 +5,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { validateSummaryQuery } from "../src/types/posts.ts";
 import type { ApiError, SummaryResponse } from "../src/types/posts.ts";
-import { PostsError, queryPostDigests, summarizePosts } from "../src/services/posts.ts";
+import { PostsError, queryPostDigests, summarizePosts } from "../services/posts.ts";
 
 function sendError(
   res: ServerResponse,
