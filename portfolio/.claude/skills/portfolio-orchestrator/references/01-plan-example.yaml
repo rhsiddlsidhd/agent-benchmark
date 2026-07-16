@@ -19,14 +19,14 @@ domains:
       - id: 2
         name: backend-impl
         agent: backend
-        path: frontend/api/   # API 노출 요구사항이라 Vercel 서버리스 함수 경로로 매칭(backend/CLAUDE.md는 Convention상 API 작성 금지)
+        path: api/   # API 노출 요구사항이라 Vercel 서버리스 함수 경로로 매칭(backend/CLAUDE.md는 Convention상 API 작성 금지)
         depends_on: [1]
         status: pending
 
       - id: 3
         name: frontend-impl
         agent: frontend
-        path: frontend/src/
+        path: src/
         depends_on: [1]   # backend-impl(2) 완료 안 기다림 — api-spec(1) 확정되면 contract-first로 팀모드 병렬 시작
         status: pending
 
@@ -43,7 +43,7 @@ domains:
       - id: 5
         name: frontend-dark-mode
         agent: frontend
-        path: frontend/src/
+        path: src/
         depends_on: []
         status: pending
 
