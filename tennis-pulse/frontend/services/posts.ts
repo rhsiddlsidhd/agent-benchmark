@@ -4,8 +4,16 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 
-import { PostDigestSchema, PostSchema } from "../types/posts.ts";
-import type { ApiErrorCode, Post, PostDigest, PostsDateRange, SummaryDateRange } from "../types/posts.ts";
+import { PostDigestSchema, PostSchema } from "../src/schemas/posts.ts";
+import { isValidCalendarDate } from "../src/utils/date.ts";
+import type {
+  ApiErrorCode,
+  Post,
+  PostDigest,
+  PostsDateRange,
+  QueryValidationResult,
+  SummaryDateRange,
+} from "../src/types/posts.ts";
 
 const POSTS_TABLE = "posts";
 const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
@@ -129,4 +137,38 @@ export async function summarizePosts(digests: PostDigest[]): Promise<string> {
   } catch (error) {
     throw new PostsError("upstream_error", 502, `OpenAI summarize failed: ${toMessage(error)}`);
   }
+}
+
+/** `GET /api/posts` 쿼리 검증 — 계약 문서 2절. from/to 미지정 허용, 지정 시 형식/역전만 검사 */
+export function validatePostsQuery(params: URLSearchParams): QueryValidationResult<PostsDateRange> {
+  const fromRaw = params.get("from")?.trim();
+  const toRaw = params.get("to")?.trim();
+  const from = fromRaw ? fromRaw : undefined;
+  const to = toRaw ? toRaw : undefined;
+
+  if (from !== undefined && !isValidCalendarDate(from)) {
+    return { ok: false, message: "from must be a valid YYYY-MM-DD date" };
+  }
+  if (to !== undefined && !isValidCalendarDate(to)) {
+    return { ok: false, message: "to must be a valid YYYY-MM-DD date" };
+  }
+  if (from !== undefined && to !== undefined && from > to) {
+    return { ok: false, message: "from must not be after to" };
+  }
+
+  return { ok: true, value: { from, to } };
+}
+
+/** `GET /api/summary` 쿼리 검증 — 계약 문서 3절. from/to 둘 다 필수, 역전 시 400 */
+export function validateSummaryQuery(params: URLSearchParams): QueryValidationResult<SummaryDateRange> {
+  const from = params.get("from")?.trim() ?? "";
+  const to = params.get("to")?.trim() ?? "";
+
+  if (!from) return { ok: false, message: "from is required" };
+  if (!to) return { ok: false, message: "to is required" };
+  if (!isValidCalendarDate(from)) return { ok: false, message: "from must be a valid YYYY-MM-DD date" };
+  if (!isValidCalendarDate(to)) return { ok: false, message: "to must be a valid YYYY-MM-DD date" };
+  if (from > to) return { ok: false, message: "from must not be after to" };
+
+  return { ok: true, value: { from, to } };
 }

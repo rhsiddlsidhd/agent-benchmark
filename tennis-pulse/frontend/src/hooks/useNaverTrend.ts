@@ -1,43 +1,6 @@
 import { useCallback, useState } from "react";
-import { z } from "zod";
-import type {
-  ApiError,
-  ApiErrorCode,
-  NaverTrendResponse,
-  TimeUnit,
-  TrendPoint,
-} from "../types/naver-trend";
-
-// fetch 경계 런타임 검증 스키마 — 계약 문서(docs/api/naver-trend.md) 기준.
-// 계약 타입(NaverTrendResponse 등)은 재정의하지 않고, 구조 일치만 z.ZodType<T>로 강제한다.
-const timeUnitSchema: z.ZodType<TimeUnit> = z.enum(["date", "week", "month"]);
-
-const trendPointSchema: z.ZodType<TrendPoint> = z.object({
-  period: z.string(),
-  ratio: z.number(),
-});
-
-const naverTrendResponseSchema: z.ZodType<NaverTrendResponse> = z.object({
-  keyword: z.string(),
-  startDate: z.string(),
-  endDate: z.string(),
-  timeUnit: timeUnitSchema,
-  data: z.array(trendPointSchema),
-});
-
-const apiErrorCodeSchema: z.ZodType<ApiErrorCode> = z.enum([
-  "INVALID_PARAM",
-  "UPSTREAM_ERROR",
-  "RATE_LIMITED",
-  "INTERNAL",
-]);
-
-const apiErrorSchema: z.ZodType<ApiError> = z.object({
-  error: z.object({
-    code: apiErrorCodeSchema,
-    message: z.string(),
-  }),
-});
+import { ApiErrorSchema, NaverTrendResponseSchema } from "../schemas/naver-trend";
+import type { NaverTrendResponse, TimeUnit } from "../types/naver-trend";
 
 export interface NaverTrendQuery {
   keyword: string;
@@ -83,7 +46,7 @@ export function useNaverTrend() {
     const json: unknown = await res.json();
 
     if (!res.ok) {
-      const parsedError = apiErrorSchema.safeParse(json);
+      const parsedError = ApiErrorSchema.safeParse(json);
       if (!parsedError.success) {
         console.error("[useNaverTrend] error response did not match ApiError shape", parsedError.error, json);
         setState({
@@ -97,7 +60,7 @@ export function useNaverTrend() {
       return;
     }
 
-    const parsed = naverTrendResponseSchema.safeParse(json);
+    const parsed = NaverTrendResponseSchema.safeParse(json);
     if (!parsed.success) {
       console.error("[useNaverTrend] response did not match NaverTrendResponse contract", parsed.error, json);
       setState({

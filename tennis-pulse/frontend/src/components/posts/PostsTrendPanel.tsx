@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { usePosts } from "../../hooks/usePosts";
 import type { Post } from "../../types/posts";
+import { relativeFrom, toDateInputValue } from "../../utils/date";
 import { PostsTrendChart, type PostsTrendPoint } from "./PostsTrendChart";
 
 type RangePreset = "6m" | "1y" | "all" | "custom";
@@ -11,16 +12,6 @@ const RANGE_OPTIONS: { value: RangePreset; label: string }[] = [
   { value: "all", label: "전체" },
   { value: "custom", label: "직접 입력" },
 ];
-
-function toDateInputValue(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-function relativeFrom(monthsAgo: number): string {
-  const date = new Date();
-  date.setMonth(date.getMonth() - monthsAgo);
-  return toDateInputValue(date);
-}
 
 // posted_at(ISO date) 기준 월 단위 게시글 수 집계 — 계약 응답(Post[])을 차트용으로 가공.
 function aggregateByMonth(posts: Post[]): PostsTrendPoint[] {

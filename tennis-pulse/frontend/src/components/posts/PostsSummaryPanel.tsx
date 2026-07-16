@@ -1,19 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { usePostsSummary } from "../../hooks/usePostsSummary";
-
-function toDateInputValue(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-function defaultStartDate(): string {
-  const date = new Date();
-  date.setMonth(date.getMonth() - 3);
-  return toDateInputValue(date);
-}
+import { relativeFrom, toDateInputValue } from "../../utils/date";
 
 /** 기간 지정 게시글 요약(OpenAI) 패널. usePostsSummary 훅 반환 타입을 그대로 사용한다. */
 export function PostsSummaryPanel() {
-  const [from, setFrom] = useState(defaultStartDate);
+  const [from, setFrom] = useState(() => relativeFrom(3));
   const [to, setTo] = useState(() => toDateInputValue(new Date()));
   const { data, isLoading, error, fetchSummary } = usePostsSummary();
 
