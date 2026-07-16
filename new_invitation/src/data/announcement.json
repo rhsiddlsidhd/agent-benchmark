@@ -1,0 +1,14 @@
+[
+  {
+    "id": "welcome-discount",
+    "text": "🎉 신규 가입 시 모든 프리미엄 템플릿 3,000원 즉시 할인!",
+    "link": "/signup",
+    "isActive": true
+  },
+  {
+    "id": "review-event",
+    "text": "✍️ 정성스러운 후기를 남겨주시면 스타벅스 기프티콘을 드려요!",
+    "link": "/reviews",
+    "isActive": true
+  }
+]

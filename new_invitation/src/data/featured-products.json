@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "name": "클래식 화이트 프리미엄",
+    "price": "45,000",
+    "salePrice": "32,000",
+    "rating": 4.9,
+    "reviews": 128,
+    "image": "/assets/images/output.webp",
+    "badge": "BEST",
+    "color": "from-slate-50 to-slate-200"
+  },
+  {
+    "id": 2,
+    "name": "로맨틱 핑크 가든",
+    "price": "39,000",
+    "salePrice": "29,000",
+    "rating": 4.8,
+    "reviews": 85,
+    "image": "/assets/images/output.webp",
+    "badge": "NEW",
+    "color": "from-rose-50 to-pink-100"
+  },
+  {
+    "id": 3,
+    "name": "모던 미니멀 시그니처",
+    "price": "42,000",
+    "salePrice": "35,000",
+    "rating": 5.0,
+    "reviews": 210,
+    "image": "/assets/images/output.webp",
+    "badge": "BEST",
+    "color": "from-zinc-50 to-stone-100"
+  },
+  {
+    "id": 4,
+    "name": "빈티지 크림 헤리티지",
+    "price": "35,000",
+    "salePrice": "25,000",
+    "rating": 4.7,
+    "reviews": 64,
+    "image": "/assets/images/output.webp",
+    "badge": null,
+    "color": "from-amber-50 to-orange-50"
+  }
+]
