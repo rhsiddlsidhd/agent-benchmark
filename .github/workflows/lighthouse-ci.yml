@@ -1,0 +1,81 @@
+name: Lighthouse CI (new_invitation)
+
+on:
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - "new_invitation/**"
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: public
+            config: new_invitation/lighthouserc.public.js
+          - name: user
+            config: new_invitation/lighthouserc.user.js
+            emailSecret: TEST_USER_EMAIL
+            passwordSecret: TEST_USER_PASSWORD
+          - name: admin
+            config: new_invitation/lighthouserc.admin.js
+            emailSecret: TEST_ADMIN_EMAIL
+            passwordSecret: TEST_ADMIN_PASSWORD
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ENTRY_JWT_SECRET: ${{ secrets.ENTRY_JWT_SECRET }}
+      GMAIL_USER: ${{ secrets.GMAIL_USER }}
+      GMAIL_APP_KEY: ${{ secrets.GMAIL_APP_KEY }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      NEXT_PUBLIC_CLOUDINARY_BASE_URL: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_BASE_URL }}
+      NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET }}
+      NEXT_PUBLIC_KAKAO_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
+      KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+      SEOUL_PUBLIC_API_KEY: ${{ secrets.SEOUL_PUBLIC_API_KEY }}
+      SUBWAY_SEOUL_BASE_URL: ${{ secrets.SUBWAY_SEOUL_BASE_URL }}
+      NEXT_PUBLIC_DAUM_POSTCODE_URL: ${{ secrets.NEXT_PUBLIC_DAUM_POSTCODE_URL }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+      DEPLOYMENT_BASE_URL: ${{ secrets.DEPLOYMENT_BASE_URL }}
+      NEXT_PUBLIC_SAMPLE_USERID: ${{ secrets.NEXT_PUBLIC_SAMPLE_USERID }}
+      POST_ONE_API_KEY: ${{ secrets.POST_ONE_API_KEY }}
+      NEXT_PUBLIC_POST_ONE_STORE_ID: ${{ secrets.NEXT_PUBLIC_POST_ONE_STORE_ID }}
+      NEXT_PUBLIC_POST_ONE_CHANNELKEY: ${{ secrets.NEXT_PUBLIC_POST_ONE_CHANNELKEY }}
+      NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID }}
+      NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID }}
+      # user/admin job 전용 (puppeteerScript 로그인에 사용, public job은 비어있어도 무관)
+      LHCI_TEST_EMAIL: ${{ matrix.emailSecret && secrets[matrix.emailSecret] || '' }}
+      LHCI_TEST_PASSWORD: ${{ matrix.passwordSecret && secrets[matrix.passwordSecret] || '' }}
+      # npm ci 때 puppeteer가 자체 브라우저를 받지 않도록 스킵 (ubuntu-latest 내장 Chrome을 대신 씀)
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
+      # puppeteerScript가 require('puppeteer')를 찾을 수 있도록 new_invitation의 node_modules를 추가 탐색 경로로 등록
+      NODE_PATH: ${{ github.workspace }}/new_invitation/node_modules
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: new_invitation
+        run: npm ci
+
+      - name: Build
+        working-directory: new_invitation
+        run: npm run build
+
+      - name: Run Lighthouse CI (${{ matrix.name }})
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ${{ matrix.config }}
+          uploadArtifacts: true
+          artifactName: lighthouse-results-${{ matrix.name }}
+          temporaryPublicStorage: true
