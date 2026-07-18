@@ -1,29 +1,19 @@
-name: Lighthouse CI (new_invitation)
+name: Lighthouse Timeline (new_invitation)
 
 on:
-  pull_request:
+  push:
     branches:
       - dev
     paths:
       - "new_invitation/**"
+      - "!new_invitation/lighthouse-history.json"
+
+permissions:
+  contents: write
 
 jobs:
-  lighthouse:
+  audit:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: public
-            config: new_invitation/lighthouserc.public.js
-          - name: user
-            config: new_invitation/lighthouserc.user.js
-            emailSecret: TEST_USER_EMAIL
-            passwordSecret: TEST_USER_PASSWORD
-          - name: admin
-            config: new_invitation/lighthouserc.admin.js
-            emailSecret: TEST_ADMIN_EMAIL
-            passwordSecret: TEST_ADMIN_PASSWORD
     env:
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -49,14 +39,12 @@ jobs:
       NEXT_PUBLIC_POST_ONE_CHANNELKEY: ${{ secrets.NEXT_PUBLIC_POST_ONE_CHANNELKEY }}
       NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID }}
       NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID }}
-      # user/admin job 전용 (puppeteerScript 로그인에 사용, public job은 비어있어도 무관)
-      LHCI_TEST_EMAIL: ${{ matrix.emailSecret && secrets[matrix.emailSecret] || '' }}
-      LHCI_TEST_PASSWORD: ${{ matrix.passwordSecret && secrets[matrix.passwordSecret] || '' }}
-      # npm ci 때 puppeteer가 자체 브라우저를 받지 않도록 스킵 (ubuntu-latest 내장 Chrome을 대신 씀)
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+      TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+      AUDIT_BASE_URL: http://localhost:3000
       PUPPETEER_SKIP_DOWNLOAD: "true"
-      PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
-      # puppeteerScript가 require('puppeteer')를 찾을 수 있도록 new_invitation의 node_modules를 추가 탐색 경로로 등록
-      NODE_PATH: ${{ github.workspace }}/new_invitation/node_modules
     steps:
       - uses: actions/checkout@v7
 
@@ -72,10 +60,40 @@ jobs:
         working-directory: new_invitation
         run: npm run build
 
-      - name: Run Lighthouse CI (${{ matrix.name }})
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          configPath: ${{ matrix.config }}
-          uploadArtifacts: true
-          artifactName: lighthouse-results-${{ matrix.name }}
-          temporaryPublicStorage: true
+      - name: Start server
+        working-directory: new_invitation
+        run: |
+          npm run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/ > /dev/null && exit 0
+            sleep 2
+          done
+          echo "서버가 30번 재시도 후에도 안 떠서 중단함"
+          exit 1
+
+      - name: Run audit
+        id: audit
+        working-directory: new_invitation
+        run: node scripts/lighthouse-audit/run-audit.js
+
+      - name: Commit history
+        working-directory: new_invitation
+        run: |
+          if git diff --quiet -- lighthouse-history.json; then
+            echo "변경 없음, 커밋 스킵"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add lighthouse-history.json
+
+          FAILED="${{ steps.audit.outputs.failed }}"
+          if [ -n "$FAILED" ]; then
+            MSG="chore: lighthouse 감사 기록 갱신 (실패: $FAILED) [skip ci]"
+          else
+            MSG="chore: lighthouse 감사 기록 갱신 [skip ci]"
+          fi
+
+          git commit -m "$MSG"
+          git push
