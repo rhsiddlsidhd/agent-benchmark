@@ -107,6 +107,119 @@ src/components/      atoms → molecules → organisms (Atomic Design)
   └─ GuestBookClientSection → createGuestbook (이름/메시지/비밀번호/공개여부)
 ```
 
+**커플/유저 — 인증(로그인/회원가입/계정 복구)** (JWT 이중 토큰: REFRESH 쿠키 + ACCESS는 응답 바디로만 전달):
+
+```
+[LoginEntryButton 등 보호 라우트 진입 버튼] (전역)
+  └─ useEntry(nextPath).handleEntry()
+       → POST /api/auth/entry?next={nextPath}
+            └─ entryToken 발급(ENTRY) → token 쿠키 삭제 → entry 쿠키 설정(maxAge=600s)
+       → router.push(nextPath)
+
+[/login] ── 미들웨어: token 쿠키 있으면 → '/' 리다이렉트(중복 로그인 차단), entry 쿠키 없으면 → '/' 리다이렉트("관문" 강제)
+  └─ LoginForm
+       → loginUser(action) → getUser({email}) → comparePasswords(bcrypt)
+            ├─ [불일치] "이메일 또는 비밀번호가 일치하지 않습니다." (401)
+            └─ [일치] refreshJWT 발급(REFRESH, remember 여부로 만료 조정) → setCookie('token')
+                 → accessJWT 발급(ACCESS, 쿠키 아닌 응답 바디로만 전달)
+       → setToken(zustand auth.store) → router.push('/')
+
+[/signup] ── 미들웨어: token 쿠키 있으면 → '/' 리다이렉트
+  └─ SignupForm → signupUser(action)
+       → checkEmailDuplicate()
+            ├─ [중복] "이미 존재하는 이메일 입니다." (409)
+            └─ [통과] hashPassword(bcrypt) → createUser() — 가입 후 자동 로그인 없음(수동 로그인 필요)
+
+[/find-id] ── 미들웨어: token 쿠키 있으면 → '/' 리다이렉트
+  └─ FindIdForm → findUserEmail(action) → getUserEmail({name, phone}) → 일치 시 이메일 반환/노출
+
+[/find-pw] ── 미들웨어: token 쿠키 있으면 → '/' 리다이렉트
+  └─ ForgotPasswordForm → requestPasswordReset(action)
+       → checkEmailDuplicate() → [미가입] "등록되지 않은 이메일입니다." (400)
+       → entryToken 발급(ENTRY) → createChangePWDomain(token)
+            ├─ [NODE_ENV=development] `http://localhost:3000/change-pw?t={token}`
+            └─ [그 외 — 배포 환경 포함] '' (빈 문자열)
+       → sendEmail({email, path}) — nodemailer(Gmail SMTP), 링크 10분 TTL 안내 문구 포함
+
+[/change-pw?t={entryToken}] ── 미들웨어: token 쿠키 있으면 → '/' 리다이렉트, searchParams.t 없으면 → '/' 리다이렉트
+  └─ UpdatePasswordForm → updateUserPassword(action)
+       → decrypt(token, type=ENTRY) → payload.id 없으면 401
+       → changePassword(payload.id, password) → bcrypt 해싱 후 저장
+       → deleteCookie('userEmail') (언마운트 시 DELETE /api/auth/cookie로 재시도)
+       → router.push('/login')
+
+[세션 부트스트랩] (모든 페이지, AuthButtons → useAuth())
+  └─ useSWR('/api/auth/me') → getAuth(): REFRESH 쿠키 검증 → getUser() → ACCESS 재발급(응답만, 쿠키 갱신 없음)
+       ├─ [세션 있음] setToken(zustand)
+       └─ [세션 없음] clearAuth()
+
+[인증 필요 API 호출] (fetcher(), auth:true)
+  └─ Authorization: Bearer {ACCESS} 첨부 → 401 응답 시
+       → refreshAccessToken(): POST /api/auth/refresh(REFRESH 쿠키) → 새 ACCESS 발급 → zustand 갱신 → 원 요청 재시도
+            └─ [REFRESH도 만료/무효] deleteCookie('token') + clearAuth() (자동 로그아웃)
+```
+
+**하객 — 청첩장 열람 & 방명록** (`(preview)/preview/[id]`, 비로그인 접근):
+
+```
+[/preview/[id]] (하객, 비로그인, ISR revalidate=300)
+  └─ getCoupleInfoById(id) — 없으면 notFound()
+  └─ getActiveOrderInfoByCoupleInfoId(id) — CONFIRMED/COMPLETED Order만 조회, 없으면 features:[], productId:null
+       → getThemeByProductId(productId) — PRODUCT_THEME_MAP 하드코딩 매핑(특정 productId 1건 → 'blossom'), 미매핑 시 'default'
+       → activeFeatures.includes('HORIZONTAL_SLIDE') 등으로 섹션별 프리미엄 기능 on/off
+  └─ GuestBookClientSection(id)
+       → useSWR('/api/guestbook?id={id}') → GET → getGuestbookService(id) — password 필드 제외 조회
+  └─ GuestBookModal (WRITE_GUESTBOOK | DELETE_GUESTBOOK | VIEW_CONTACT, zustand guestbook.modal.store로 타입 분기)
+
+[방명록 작성] CreateGuestbookForm(payload.id)
+  └─ createGuestbook(action)
+       → GuestbookSchema 검증(author 1~20자, password 4~20자, message 1~500자)
+       → hashPassword(bcrypt) → createGuestbookService()
+       → revalidatePath('/preview/[id]') → closeModal() → router.refresh()
+
+[방명록 삭제] DeleteGuestbookForm(payload=guestbookId)
+  └─ deleteGuestbookAction(action)
+       → 스키마 검증(password, guestbookId, coupleInfoId, productId 모두 필수)
+       → getPrivateGuestbookService(guestbookId) → comparePasswords(bcrypt)
+            ├─ [불일치] "비밀번호가 일치하지 않습니다." (401)
+            └─ [일치] deleteGuestbookService() → revalidatePath('/preview/[id]')
+```
+
+**관리자 — 어드민 접근/권한(RBAC)** (`(admin)/admin`):
+
+```
+[/admin/*] ── 미들웨어: token 쿠키 없으면 → '/' 리다이렉트, 있으면 decrypt(REFRESH) → payload.role !== 'ADMIN'이면 → '/' 리다이렉트
+  └─ AdminLayout(SidebarProvider) → SidebarNavItem(type=ADMIN)
+  └─ [/admin/dashboard] — 통계 카드(TODO: 하드코딩된 mock 값, 실제 집계 쿼리 미연결 — 코드 확인됨)
+  └─ [/admin/products] — getAllProductsService() 목록 렌더(페이지 레벨 role 재검증 없음, 미들웨어에만 의존)
+  └─ [/admin/products/new], [/admin/premium-features/new] — 등록 폼
+       ├─ createProductAction: getCookie('token') → decrypt(REFRESH) → getUserById().role !== 'ADMIN'이면 403(액션 레벨 이중 방어)
+       └─ createPremiumFeatureAction: 위와 동일한 이중 방어 로직 없음(미들웨어 보호에만 의존)
+  └─ [/admin/products, _components/ProductEditDialog] → updateProductAction / updateProductStatusAction / deleteProductAction — 모두 액션 레벨 role 이중 검증 포함
+  └─ [/admin/premium-features, _components] → updatePremiumFeatureAction — 액션 레벨 role 검증 없음
+  └─ [/admin/orders], [/admin/users], [/admin/settings] — 빈 컴포넌트(`<div></div>`)만 반환, 미구현
+```
+
+**단순 CRUD 라우트** (상세 시퀀스 대신 라우트/가드만 정리):
+
+| 라우트 | 미들웨어 가드 | 비고 |
+|--------|---------------|------|
+| `/order` | 보호(token 필요) | 내 주문 목록 — `getOrdersByUserId(userId)`, force-dynamic |
+| `/order/edit?q={coupleInfoId}` | 보호(token 필요) | `CoupleInfoForm(type=edit)` 재사용 — `q` 없으면 `throw new HTTPError`(400), `GET /api/couple-info?q=`(Bearer 인증)로 기존 데이터 조회 |
+| `/profile` | 보호(token 필요) — 미들웨어 + 페이지 자체에서도 `getCookie`/`decrypt` 이중 확인(REFRESH 무효 시 `redirect('/login')`) | `BasicInfoForm`, `ChangePasswordForm` |
+| `/products?category={category}` | 비보호(공개) | `category` 파라미터 필수 — 없거나 `'all'`이거나 미유효 카테고리면 `notFound()`(전체 목록 뷰 없음) |
+| `/products/[id]` | 비보호(공개) | SSG(`revalidate 3600`) + `generateStaticParams`로 전체 상품 사전 생성, `getPremiumFeatureService` 병행 조회 |
+| `/reviews` | 비보호(공개) | (TODO: 실제 리뷰 기능 미구현 — "공사중"(Hammer 아이콘) 플레이스홀더 페이지만 존재, 코드 확인됨) |
+
+**유틸리티 API** (페이지 플로우에 속하지 않는 단독 Route Handler):
+
+| API | 미들웨어 가드 | 비고 |
+|-----|---------------|------|
+| `GET /api/banks` | 없음 | PortOne 은행 코드 목록 프록시 |
+| `GET /api/subway` | 없음 | 핸들러 본문 없음(`export const GET = async () => {}`) — 응답을 반환하지 않는 미구현 상태 |
+| `GET /api/kakaomap?address=` | 없음 | Kakao 로컬 주소 검색 API 프록시(예식장 주소 좌표 변환) |
+| `POST /api/upload/signature` | 미들웨어 matcher 미포함 — 라우트 자체에서 REFRESH 쿠키 검증 | Cloudinary 클라이언트 직접 업로드용 서명 발급 |
+
 ### 4.2 에러/엣지케이스 처리 정책
 
 - 비즈니스/시스템 에러 구분, 유저 피드백은 `sonner`(Toast) 우선 사용 (GEMINI.md).
@@ -122,6 +235,17 @@ src/components/      atoms → molecules → organisms (Atomic Design)
 | CoupleInfo 고아 데이터 | `src/components/organisms/CoupleInfoForm.tsx` | CoupleInfo가 Order보다 먼저 생성되는 구조 — 결제 미완료 시 정리되지 않고 남음 |
 | 비로그인 구매 시도 무설명 리다이렉트 | `src/middleware.ts`, `ProductOptions.tsx` | `/couple-info` 진입 시 토큰 없으면 안내 없이 `/`로 리다이렉트, 로그인 후 원래 상품으로 복귀하는 경로 없음 |
 | `/payment` 잘못된 접근 시 unhandled Error | `src/app/(main)/(checkout)/payment/page.tsx` | `q` 파라미터 없으면 `notFound()`/`redirect()`가 아닌 plain `throw new Error` — 기본 에러 바운더리로 노출 |
+
+**인증/방명록/어드민 플로우에서 발견된 미처리 엣지케이스** (코드 조사로 확인, 추측 배제):
+
+| 케이스 | 위치 | 현상 |
+|--------|------|------|
+| 비밀번호 재설정 링크 운영환경 미발급 | `src/actions/requestPasswordReset.ts` (`createChangePWDomain`) | `NODE_ENV !== 'development'`면 `path=''`(빈 문자열)로 메일 발송 — 운영 환경에서 비밀번호 재설정 기능이 사실상 동작하지 않음 |
+| 고아 쿠키(`userEmail`) 정리 로직만 존재 | `src/lib/cookies/type.ts`, `src/actions/updateUserPassword.ts`, `src/app/api/auth/cookie/route.ts` | `CookieName`에 `'userEmail'`이 정의되고 두 지점에서 `deleteCookie('userEmail')`을 호출하지만, `setCookie('userEmail', ...)` 호출 지점이 코드베이스에 없음 |
+| 방명록 작성 후 목록 미즉시 반영 가능 | `src/actions/createGuestbook.ts`, `src/components/organisms/(preview)/GuestBookClientSection.tsx` | 작성 성공 시 `router.refresh()`만 호출 — 목록은 `useSWR` 캐시(`mutate` 미호출)로 유지되어 새 항목이 즉시 반영되지 않을 수 있음 |
+| 방명록 삭제 시 `productId` 상시 누락 가능 | `src/components/organisms/DeleteGuestbookForm.tsx`, `src/actions/deleteGuestBookAction.ts` | `productId`를 URL searchParams `?product=`에서 읽으나, `/preview/[id]` 진입 경로 어디서도 해당 쿼리를 설정하지 않아 항상 빈 값 — zod 스키마가 `productId`를 필수로 요구해 삭제 요청이 400으로 실패할 수 있음 |
+| 프리미엄 기능 CRUD 액션 권한 이중검증 누락 | `src/actions/createPremiumFeatureAction.ts`, `src/actions/updatePremiumFeatureAction.ts` | 같은 그룹의 `createProductAction`/`updateProductAction`/`deleteProductAction`/`updateProductStatusAction`과 달리 쿠키·토큰 디코딩 및 `role==='ADMIN'` 검증 없이 서비스 계층을 직접 호출(미들웨어 라우트 보호에만 의존) |
+| 어드민 하위 페이지 3곳 미구현 | `src/app/(main)/(admin)/admin/orders/page.tsx`, `.../users/page.tsx`, `.../settings/page.tsx` | RBAC 통과 후에도 빈 `<div></div>`만 반환 |
 
 ## 5. 모듈/서비스 상세 (Module/Service Details)
 
