@@ -18,7 +18,11 @@ async function loadHistory() {
 
 function hasRecord(history, { commit, page, formFactor }) {
   return history.some(
-    (r) => r.commit === commit && r.page === page && r.formFactor === formFactor,
+    (r) =>
+      r.commit === commit &&
+      r.page === page &&
+      r.formFactor === formFactor &&
+      r.status !== "failed",
   );
 }
 
