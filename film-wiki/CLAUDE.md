@@ -1,6 +1,6 @@
 > Git 전략의 범용 원칙(prefix taxonomy, 자동배포 브랜치 직접 push 금지 등)은 Global CLAUDE.md(`~/.claude/CLAUDE.md`, `~/.claude/docs/GIT.md`)에 있음. 이 프로젝트는 `main`이 Vercel 자동배포 대상이라, 그 원칙의 구체 구현으로 `dev`를 스테이징 브랜치로 둔다 — 브랜치 흐름: `<prefix>/*` → `dev` → `main`. `main`은 GitHub 브랜치 보호(ruleset `protect-main`)로 PR 없는 직접 push가 차단됨 — 로컬 스크립트 기반 릴리스 절차(`release-to-main.sh`)는 폐기.
 
-@docs/conventions/00_NAMING.md
+> 파일/폴더 네이밍 규칙: Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`
 
 ## Commands
 

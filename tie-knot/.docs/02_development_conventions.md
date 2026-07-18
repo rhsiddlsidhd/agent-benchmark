@@ -18,8 +18,8 @@
 ## 3. 컴포넌트 설계 및 스타일링
 
 ### Atomic Design 원칙
-- 컴포넌트는 `atoms`, `molecules`, `organisms`, `layout`으로 계층화하여 관리합니다.
-- 각 계층의 정의는 `01_component_architecture.md`를 참조하십시오.
+- 컴포넌트는 `atoms`, `molecules`, `organisms` 3단계로 계층화하여 관리합니다(`layout`은 별도 계층이 아니라 organisms/molecules로 흡수됨).
+- 각 계층의 정의는 `src/components/CLAUDE.md`(및 하위 `atoms`/`molecules`/`organisms` CLAUDE.md)를 참조하십시오.
 
 ### Tailwind CSS 및 Framer-motion
 - **스타일링**: Tailwind CSS를 기본으로 사용하며, 복잡한 조건부 클래스는 `cn()` 유틸리티 함수를 활용합니다.

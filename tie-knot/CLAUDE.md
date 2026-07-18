@@ -9,7 +9,7 @@
 
 이 프로젝트의 모든 폴더 구조와 네이밍 규칙은 `.docs/` 및 `docs/` 폴더 내에 표준화되어 있습니다.
 
-- **컴포넌트 설계 규칙 (Atomic SSOT)**: [01. 컴포넌트 아키텍처 규칙](./.docs/01_component_architecture.md)
+- **컴포넌트 설계 규칙**: [`src/components/CLAUDE.md`](./src/components/CLAUDE.md)(및 `atoms`/`molecules`/`organisms` 하위 CLAUDE.md)
 - **개발 컨벤션**: [02. 개발 컨벤션](./.docs/02_development_conventions.md)
 
 ### 📌 핵심 명령어 및 가이드

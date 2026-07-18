@@ -27,7 +27,7 @@ Next.js App Router 진입점 — 페이지/레이아웃/에러 경계. Route Han
       ├── index.ts
       └── useDiscoverInfinite.ts
   ```
-  파일명 케이스는 `CLAUDE.md`의 "네이밍 컨벤션" 섹션을 따른다.
+  파일명 케이스는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`를 따른다.
 
 ## Critical Conventions
 

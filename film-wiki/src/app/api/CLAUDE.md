@@ -13,7 +13,7 @@ src/app/api/discover/
     ├── DiscoverResponse.ts
     └── DiscoverErrorResponse.ts
 ```
-파일명 케이스는 `CLAUDE.md`의 "네이밍 컨벤션" 섹션을 따른다. `_types/`는 `src/app/CLAUDE.md`의 배럴(`index.ts`) + 파일당 export 1개 규칙을 그대로 따른다.
+파일명 케이스는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`를 따른다. `_types/`는 `src/app/CLAUDE.md`의 배럴(`index.ts`) + 파일당 export 1개 규칙을 그대로 따른다.
 
 ## Critical Conventions
 - 파라미터 검증(파싱 실패/필수값 누락)을 외부 API 호출 이후에 하지 않는다 — 호출 전에 끝내고 실패 시 외부 API를 호출하지 않은 채 400을 바로 반환한다(불필요한 외부 호출·요청 한도 소모 방지).
