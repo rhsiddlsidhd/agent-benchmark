@@ -45,6 +45,7 @@ jobs:
       TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
       AUDIT_BASE_URL: http://localhost:3000
       PUPPETEER_SKIP_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
     steps:
       - uses: actions/checkout@v7
 
