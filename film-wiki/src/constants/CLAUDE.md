@@ -13,7 +13,7 @@ src/constants/
 ```
 
 ## Critical Conventions
-- 파일명/export 식별자 케이스는 `CLAUDE.md`의 "네이밍 컨벤션" 섹션(파일명 camelCase, export는 리터럴=SCREAMING_SNAKE_CASE/프리셋 객체=camelCase 판단 기준 포함)을 따른다.
+- 파일명/export 식별자 케이스는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`(파일명 kebab-case, export 식별자 케이스 판단 기준 포함)를 따른다.
 - 파일당 export 1개 원칙(`src/app/CLAUDE.md`)을 따른다.
 - 개별 파일을 직접 import하지 않는다 — 배럴을 통해서만 import한다(`src/utils`/`src/hooks`/`src/components/ui` 규칙과 동일).
 - 단일 라우트에서만 쓰는 상수는 여기 두지 않는다 — 해당 라우트의 `_constants/`에 남긴다(2개 이상 라우트가 실제로 import할 때만 승격).

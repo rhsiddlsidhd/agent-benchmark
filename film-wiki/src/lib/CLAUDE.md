@@ -26,7 +26,7 @@ src/lib/
 ## Critical Conventions
 - 파일명/export 식별자 케이스는 `CLAUDE.md`의 "네이밍 컨벤션" 섹션을 따른다.
 - 파일명에 라이브러리명을 그대로 쓰지 않는다(`motion.ts` 금지) — 역할(role) 명사로 짓는다(`framer-motion/preset.ts`). 컴포넌트/훅은 예외로 CLAUDE.md 아티팩트별 케이스를 따른다.
-- 외부 API 응답 타입처럼 `interface`/`type` export가 여러 개면 한 파일에 몰아넣지 않는다 — `{외부라이브러리}/types/{TypeName}.ts`로 타입 1개당 파일 1개, 00_NAMING.md의 "타입/인터페이스=PascalCase" 규칙을 그대로 따른다. 이 예외는 `types/` 하위에만 적용되고, `client.ts`(함수 모음)·`errors.ts`(에러 클래스+가드) 등 lib의 다른 파일에는 "파일당 export 1개" 원칙을 강제하지 않는다.
+- 외부 API 응답 타입처럼 `interface`/`type` export가 여러 개면 한 파일에 몰아넣지 않는다 — `{외부라이브러리}/types/{TypeName}.ts`로 타입 1개당 파일 1개, "타입/인터페이스=PascalCase" 규칙(Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`)을 그대로 따른다. 이 예외는 `types/` 하위에만 적용되고, `client.ts`(함수 모음)·`errors.ts`(에러 클래스+가드) 등 lib의 다른 파일에는 "파일당 export 1개" 원칙을 강제하지 않는다.
 - `{외부라이브러리}/types/`는 `index.ts` 배럴로 재export한다 — 소비 측은 개별 파일이 아니라 `{외부라이브러리}/types`(배럴) 경로로 import한다(`src/utils`/`src/hooks` 배럴 규칙과 동일).
 
 ## Gotchas
