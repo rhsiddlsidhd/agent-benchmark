@@ -23,4 +23,3 @@ src/components/ui/
 ## 관련 문서
 
 - 상위 3분류 기준: `src/components/CLAUDE.md`
-- 파일명 케이스: `docs/conventions/00_FILE_CONVENTIONS.md`

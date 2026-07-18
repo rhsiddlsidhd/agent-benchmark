@@ -22,4 +22,4 @@ src/utils/
 
 ## 관련 문서
 
-- 파일명 케이스: `docs/conventions/00_FILE_CONVENTIONS.md`
+- 파일명 케이스: Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`
