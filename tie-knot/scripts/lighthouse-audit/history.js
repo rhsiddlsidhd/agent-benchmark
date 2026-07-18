@@ -1,12 +1,15 @@
 const fs = require("fs/promises");
 const path = require("path");
 
-const HISTORY_PATH = path.join(__dirname, "../../lighthouse-history.json");
+const HISTORY_PATH = path.join(__dirname, "../../lighthouse-history.ndjson");
 
 async function loadHistory() {
   try {
     const raw = await fs.readFile(HISTORY_PATH, "utf8");
-    return JSON.parse(raw);
+    return raw
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
   } catch (e) {
     if (e.code === "ENOENT") return [];
     throw e;
@@ -20,7 +23,8 @@ function hasRecord(history, { commit, page, formFactor }) {
 }
 
 async function saveHistory(history) {
-  await fs.writeFile(HISTORY_PATH, JSON.stringify(history, null, 2) + "\n", "utf8");
+  const content = history.map((record) => JSON.stringify(record)).join("\n") + "\n";
+  await fs.writeFile(HISTORY_PATH, content, "utf8");
 }
 
 module.exports = { HISTORY_PATH, loadHistory, hasRecord, saveHistory };
