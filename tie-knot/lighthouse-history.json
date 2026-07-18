@@ -1,0 +1,686 @@
+[
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "home",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.91,
+      "accessibility": 0.89,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 3413.4012000000002,
+      "fcp": 913.6432,
+      "tbt": 79,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 1649.9422725875152
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "home",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.89,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 772.4997750000001,
+      "fcp": 254.5713,
+      "tbt": 0,
+      "cls": 0.0000768412396742153,
+      "speedIndex": 588.9246473991524
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "reviews",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.96,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2591.5002500000005,
+      "fcp": 913.9353000000001,
+      "tbt": 111,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 913.9353000000001
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "reviews",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 608.3029999999998,
+      "fcp": 255.1889,
+      "tbt": 0,
+      "cls": 0.000075615049679414,
+      "speedIndex": 320.41138366666394
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "products-list",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.93,
+      "accessibility": 0.95,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 3071.4594999999995,
+      "fcp": 913.0427999999999,
+      "tbt": 115.00000000000068,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 913.0427999999999
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "products-list",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.95,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 682.3928999999999,
+      "fcp": 253.5713,
+      "tbt": 0,
+      "cls": 0.000075615049679414,
+      "speedIndex": 322.2444199166523
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "product-detail",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.93,
+      "accessibility": 0.9,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 3019.640849999999,
+      "fcp": 912.3241,
+      "tbt": 129.5810249999995,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 912.3241
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "product-detail",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.9,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 677.9004,
+      "fcp": 254.99740000000003,
+      "tbt": 0,
+      "cls": 0.002080596272350215,
+      "speedIndex": 254.99740000000003
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "preview",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.96,
+      "accessibility": 0.86,
+      "best-practices": 0.73,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2671.9829999999997,
+      "fcp": 915.8255999999999,
+      "tbt": 78,
+      "cls": 0,
+      "speedIndex": 1383.765258133022
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "preview",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.85,
+      "best-practices": 0.73,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 636.299725,
+      "fcp": 256.1651,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 479.0583393939738
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "signup",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.93,
+      "accessibility": 0.99,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 3180.6438,
+      "fcp": 912.0802000000001,
+      "tbt": 76.00000000000045,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 944.4619722325494
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "signup",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.99,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 645.5534999999999,
+      "fcp": 250.4986,
+      "tbt": 0,
+      "cls": 0.000075615049679414,
+      "speedIndex": 326.3595561976943
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "find-id",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.98,
+      "accessibility": 0.99,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2278.5677499999997,
+      "fcp": 911.4271000000001,
+      "tbt": 86.99999999999909,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 911.4271000000001
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "find-id",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.99,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 649.7402999999999,
+      "fcp": 256.5801,
+      "tbt": 0,
+      "cls": 0.000075615049679414,
+      "speedIndex": 256.5801
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "find-pw",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.98,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2269.6063500000005,
+      "fcp": 912.3003000000001,
+      "tbt": 94.5,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 912.3003000000001
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "find-pw",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 661.0034999999999,
+      "fcp": 252.46640000000002,
+      "tbt": 0,
+      "cls": 0.000075615049679414,
+      "speedIndex": 252.46640000000002
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "login",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.92,
+      "accessibility": 0.99,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 3332.1188999999995,
+      "fcp": 910.9159999999999,
+      "tbt": 88,
+      "cls": 0.0003179381896655262,
+      "speedIndex": 934.1669985783942
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "login",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.99,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 675.9859000000001,
+      "fcp": 253.2668,
+      "tbt": 0,
+      "cls": 0.000075615049679414,
+      "speedIndex": 333.62820907780997
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "profile",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.96,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2613.1259999999997,
+      "fcp": 911.9639999999999,
+      "tbt": 103,
+      "cls": 0,
+      "speedIndex": 911.9639999999999
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "profile",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 638.4005999999997,
+      "fcp": 255.51819999999998,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 292.45407341666754
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "order",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.96,
+      "accessibility": 0.92,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2322.7632000000003,
+      "fcp": 911.9912999999999,
+      "tbt": 139,
+      "cls": 0,
+      "speedIndex": 911.9912999999999
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "order",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.92,
+      "best-practices": 0.96,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 604.05525,
+      "fcp": 253.83499999999998,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 940.5128409166397
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "couple-info",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.88,
+      "accessibility": 0.92,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 3179.886,
+      "fcp": 949.9967999999999,
+      "tbt": 267.0000000000002,
+      "cls": 0.00004512589728698335,
+      "speedIndex": 1205.1401808171804
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "couple-info",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.92,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 698.4348,
+      "fcp": 262.247,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 376.97217839024665
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-dashboard",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.94,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2946.9000000000005,
+      "fcp": 913.8094000000001,
+      "tbt": 108,
+      "cls": 0,
+      "speedIndex": 913.8094000000001
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-dashboard",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 664.13,
+      "fcp": 256.8815,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 256.8815
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-orders",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.97,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2156.6035,
+      "fcp": 911.2908,
+      "tbt": 133,
+      "cls": 0,
+      "speedIndex": 911.2908
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-orders",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 0.99,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 857.8078000000004,
+      "fcp": 258.058,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 258.058
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-premium-features",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.97,
+      "accessibility": 0.92,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2462.1132,
+      "fcp": 914.1132,
+      "tbt": 104.50000000000091,
+      "cls": 0,
+      "speedIndex": 914.1132
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-premium-features",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.92,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 666.4885999999999,
+      "fcp": 253.7373,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 253.7373
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-products",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.95,
+      "accessibility": 0.95,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 2732.1802500000003,
+      "fcp": 912.8721,
+      "tbt": 138.99999999999955,
+      "cls": 0,
+      "speedIndex": 912.8721
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-products",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 1,
+      "accessibility": 0.95,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 640.0718999999999,
+      "fcp": 256.1201,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 256.1201
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-settings",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.98,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 1964.2455999999997,
+      "fcp": 914.2456,
+      "tbt": 128.5,
+      "cls": 0,
+      "speedIndex": 914.2456
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-settings",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 0.99,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 858.9621999999999,
+      "fcp": 256.4937,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 256.4937
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-users",
+    "formFactor": "mobile",
+    "scores": {
+      "performance": 0.92,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 3237.7858999999994,
+      "fcp": 911.1905999999999,
+      "tbt": 130,
+      "cls": 0,
+      "speedIndex": 911.1905999999999
+    }
+  },
+  {
+    "date": "2026-07-18T01:54:43.554Z",
+    "commit": "cb057b5185e05a4ae666d0ebfa0dc57d892ea86a",
+    "page": "admin-users",
+    "formFactor": "desktop",
+    "scores": {
+      "performance": 0.99,
+      "accessibility": 0.94,
+      "best-practices": 1,
+      "seo": 1
+    },
+    "webVitals": {
+      "lcp": 833.386,
+      "fcp": 257.9995,
+      "tbt": 0,
+      "cls": 0,
+      "speedIndex": 257.9995
+    }
+  }
+]
