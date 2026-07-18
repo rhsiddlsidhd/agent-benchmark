@@ -1,12 +1,8 @@
 name: Lighthouse Audit (tie-knot)
 
 on:
-  push:
-    branches:
-      - dev
-    paths:
-      - "tie-knot/**"
-      - "!tie-knot/lighthouse-history.json"
+  schedule:
+    - cron: "0 15 * * *" # 매일 00:00 KST
   workflow_dispatch: {}
 
 permissions:
@@ -49,6 +45,8 @@ jobs:
       PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: dev
 
       - uses: actions/setup-node@v7
         with:
@@ -83,9 +81,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add lighthouse-history.json
+          git add lighthouse-history.ndjson
 
-          if git diff --cached --quiet -- lighthouse-history.json; then
+          if git diff --cached --quiet -- lighthouse-history.ndjson; then
             echo "변경 없음, 커밋 스킵"
             exit 0
           fi
@@ -98,4 +96,4 @@ jobs:
           fi
 
           git commit -m "$MSG"
-          git push
+          git push origin HEAD:dev
