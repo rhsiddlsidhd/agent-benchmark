@@ -7,6 +7,7 @@ on:
     paths:
       - "new_invitation/**"
       - "!new_invitation/lighthouse-history.json"
+  workflow_dispatch: {}
 
 permissions:
   contents: write
