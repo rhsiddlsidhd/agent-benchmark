@@ -1,0 +1,30 @@
+[
+  {
+    "id": "wedding",
+    "label": "모바일 청첩장",
+    "iconName": "Heart",
+    "href": "/products?category=wedding",
+    "color": "bg-pink-100 text-pink-600"
+  },
+  {
+    "id": "thank-you",
+    "label": "감사장",
+    "iconName": "Gift",
+    "href": "/products?category=thank-you",
+    "color": "bg-blue-100 text-blue-600"
+  },
+  {
+    "id": "first-birthday",
+    "label": "돌잔치",
+    "iconName": "Star",
+    "href": "/products?category=first-birthday",
+    "color": "bg-yellow-100 text-yellow-600"
+  },
+  {
+    "id": "reviews",
+    "label": "고객후기",
+    "iconName": "MessageSquare",
+    "href": "/reviews",
+    "color": "bg-green-100 text-green-600"
+  }
+]

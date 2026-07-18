@@ -1,0 +1,101 @@
+name: Lighthouse Audit (tie-knot)
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - "tie-knot/**"
+      - "!tie-knot/lighthouse-history.json"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ENTRY_JWT_SECRET: ${{ secrets.ENTRY_JWT_SECRET }}
+      GMAIL_USER: ${{ secrets.GMAIL_USER }}
+      GMAIL_APP_KEY: ${{ secrets.GMAIL_APP_KEY }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      NEXT_PUBLIC_CLOUDINARY_BASE_URL: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_BASE_URL }}
+      NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET }}
+      NEXT_PUBLIC_KAKAO_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
+      KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+      SEOUL_PUBLIC_API_KEY: ${{ secrets.SEOUL_PUBLIC_API_KEY }}
+      SUBWAY_SEOUL_BASE_URL: ${{ secrets.SUBWAY_SEOUL_BASE_URL }}
+      NEXT_PUBLIC_DAUM_POSTCODE_URL: ${{ secrets.NEXT_PUBLIC_DAUM_POSTCODE_URL }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+      DEPLOYMENT_BASE_URL: ${{ secrets.DEPLOYMENT_BASE_URL }}
+      NEXT_PUBLIC_SAMPLE_USERID: ${{ secrets.NEXT_PUBLIC_SAMPLE_USERID }}
+      POST_ONE_API_KEY: ${{ secrets.POST_ONE_API_KEY }}
+      NEXT_PUBLIC_POST_ONE_STORE_ID: ${{ secrets.NEXT_PUBLIC_POST_ONE_STORE_ID }}
+      NEXT_PUBLIC_POST_ONE_CHANNELKEY: ${{ secrets.NEXT_PUBLIC_POST_ONE_CHANNELKEY }}
+      NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID }}
+      NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+      TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+      AUDIT_BASE_URL: http://localhost:3000
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: tie-knot
+        run: npm ci
+
+      - name: Build
+        working-directory: tie-knot
+        run: npm run build
+
+      - name: Start server
+        working-directory: tie-knot
+        run: |
+          npm run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/ > /dev/null && exit 0
+            sleep 2
+          done
+          echo "서버가 30번 재시도 후에도 안 떠서 중단함"
+          exit 1
+
+      - name: Run audit
+        id: audit
+        working-directory: tie-knot
+        run: node scripts/lighthouse-audit/run-audit.js
+
+      - name: Commit history
+        working-directory: tie-knot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add lighthouse-history.json
+
+          if git diff --cached --quiet -- lighthouse-history.json; then
+            echo "변경 없음, 커밋 스킵"
+            exit 0
+          fi
+
+          FAILED="${{ steps.audit.outputs.failed }}"
+          if [ -n "$FAILED" ]; then
+            MSG="chore: lighthouse 감사 기록 갱신 (실패: $FAILED) [skip ci]"
+          else
+            MSG="chore: lighthouse 감사 기록 갱신 [skip ci]"
+          fi
+
+          git commit -m "$MSG"
+          git push

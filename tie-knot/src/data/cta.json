@@ -1,0 +1,13 @@
+{
+  "badge": "지금 시작하면 프리미엄 50% 할인 혜택",
+  "title": "당신의 특별한 날,\n지금 바로 준비하세요",
+  "description": "5분이면 충분합니다. 신용카드도 필요 없어요.\n지금 바로 무료로 시작해보세요.",
+  "primaryAction": {
+    "label": "무료로 시작하기",
+    "href": "/signup"
+  },
+  "secondaryAction": {
+    "label": "상담 문의하기",
+    "href": "/contact"
+  }
+}

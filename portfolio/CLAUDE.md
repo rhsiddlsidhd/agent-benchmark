@@ -1,0 +1,96 @@
+# CLAUDE.md — portfolio
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+> Git 전략의 범용 원칙(prefix taxonomy, 자동배포 브랜치 직접 push 금지 등)은 Global CLAUDE.md(`~/.claude/CLAUDE.md`, `~/.claude/docs/GIT.md`)에 있음. 이 프로젝트는 `main`이 Vercel 자동배포 대상이라, 그 원칙의 구체 구현으로 `dev`를 스테이징 브랜치로 둔다 — 브랜치 흐름: `<prefix>/*` → `dev` → `main`. `main`은 GitHub 브랜치 보호(ruleset `protect-main`)로 PR 없는 직접 push가 차단됨.
+
+## Commands
+
+프론트엔드 명령은 루트(`portfolio/`)에 `package.json`이 있어 여기서 바로 실행한다. `backend/`(Python)는 별도 디렉토리에서 실행.
+
+**루트** (React 19 + Vite, Node/TS)
+```bash
+npm install          # 최초 1회
+npm run dev           # Vite 개발 서버
+npm run build          # tsc -b (app/node/api 3개 tsconfig 참조 전부 타입체크) && vite build
+npm run lint            # oxlint
+npm run preview          # 빌드 결과 로컬 프리뷰
+```
+- 단일 파일/참조만 타입체크하려면 `npx tsc -p tsconfig.app.json --noEmit` (또는 `tsconfig.api.json`)처럼 개별 프로젝트를 지정한다.
+- 테스트 러너는 구성돼 있지 않다.
+
+**backend/** (Python 3.10, 크롤러 — 배치/수동 실행 전용, HTTP로 노출 안 됨)
+```bash
+source .venv/bin/activate   # 기존 venv 사용, 또는 python -m venv .venv 로 새로 생성
+pip install -r requirements.txt
+python main.py               # SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 필요 (.env, .env.example 참조)
+```
+- 테스트 러너/린터는 구성돼 있지 않다.
+
+## Architecture
+
+`backend/`(선택적, 크롤러) + 루트(Vercel 배포 루트) 구조. 데이터 접근은 전부 Vercel 서버리스 함수(`api/`) 경유로 통일한다. 배경/결정 근거는 `docs/planning/00_PRD.md`·`docs/planning/01_ARCHITECTURE.md`·`docs/planning/02_ADR.md` 참고.
+
+```
+backend/ (Python, 배치 크롤러 — 상시 배포 안 됨)
+  crawler/service.py  ─UPSERT─▶  Supabase(posts, idxno PK)
+
+portfolio/ (Vercel 배포 루트)
+  src/  (React SPA, 클라이언트)
+    hooks/use{도메인}.ts  ──fetch──▶  same-origin /api/*
+    components/{도메인}/   (Recharts)
+    types/{도메인}.ts      (계약 타입 + zod 검증)
+  services/{도메인}.ts   ← ⚠ 서버 시크릿 참조, 클라이언트 코드에서 import 금지(src 밖이라 tsconfig.app.json 대상에서 자동 제외)
+  api/  (Vercel Serverless Functions, 파일기반 라우팅 /api/{도메인})
+    posts.ts / naver-trend.ts / summary.ts  → services/*, src/types/* 를 import
+      ├─ /api/posts        ─▶ Supabase(posts) 전체 조회
+      ├─ /api/naver-trend   ─▶ 네이버 데이터랩 프록시
+      └─ /api/summary        ─▶ Supabase(date+title only, posts와 service 공유) + OpenAI 요약
+```
+
+- **계약 우선(contract-first)**: 엔드포인트 구현 전 `docs/api/{도메인}.md`에 계약(파라미터/응답타입/에러shape)을 먼저 확정한다. 각 레이어 세부 컨벤션은 계층별 `CLAUDE.md`(`backend/CLAUDE.md`, `src/CLAUDE.md`, `api/CLAUDE.md`, `services/CLAUDE.md`)에 있다.
+- **tennispeople.kr 크롤러 파싱 관련 함정**: `backend/CLAUDE.md`의 Gotchas 참고.
+- **인증 없음**: 모든 API는 공개 read-only. 네이버/Supabase(service role)/OpenAI 크레덴셜은 서버리스 함수 런타임에서만 읽는다 — `VITE_` 접두사 env var는 클라이언트 번들에 노출되므로 사용 금지.
+
+## Structure (루트)
+
+```
+portfolio/
+├── src/       # React SPA(클라이언트) — tsconfig.app.json(DOM lib)
+├── api/       # Vercel Serverless Functions(controller) — tsconfig.api.json(node lib)
+└── services/  # 서버 전용 비즈니스 로직 — tsconfig.api.json(node lib), ⚠ src/에서 import 금지
+```
+
+- 타입체크는 `tsconfig.json`이 참조하는 3개 프로젝트(`tsconfig.app.json`/`tsconfig.api.json`/`tsconfig.node.json`)로 분리돼있다 — `src/types/`는 물리적으로 `src/` 밑에 있지만 컴파일 경계는 `tsconfig.api.json`(node 타입, DOM lib 없음) 쪽에 포함된다. 이유: 계약 타입은 클라이언트(`src/hooks`)와 서버(`api/`, `services/`) 양쪽이 공유해서 import하므로 DOM 전용 타입에 묶이면 안 됨
+
+## Critical Convention (루트)
+
+- 새 파일을 만들거나 기존 파일을 옮길 때 대상 폴더의 네이밍 케이스만 맞추고 넘어가지 않는다 — 옮기기/생성 전에 그 폴더 `CLAUDE.md`의 Scope 정의와 실제로 성격이 맞는지 먼저 확인한다. 이유: 이름만 규칙에 맞고 내용(props 타입, 책임 등)이 그 폴더 정의와 안 맞으면 그 폴더가 존재하는 경계 자체가 무의미해짐(예: `ui/`에 도메인 타입 props 받는 컴포넌트를 이름만 범용으로 지어 넣는 경우)
+- 성격이 대상 폴더 정의와 안 맞으면 그대로 두지 않는다 — 후보가 될 다른 레이어들(`src/{하위}`, `api/`, `services/` 등)의 `CLAUDE.md`를 전체 통독해 비교하고 가장 맞는 곳으로 옮긴다. 키워드 grep 매칭 결과만으로 "관련 규정 없음"이라 결론짓지 않는다 — 규칙이 다른 표현(예: provider 대신 "외부 상태관리 라이브러리")으로 적혀 있을 수 있다. 이유: grep은 정확한 단어가 일치할 때만 걸려서, 표현만 다르고 실제론 해당하는 규칙을 놓칠 수 있음
+- 어느 레이어 정의와도 안 맞으면 기존 폴더에 임의로 끼워넣지 않는다 — 새 폴더를 만들거나 사용자에게 확인한다. 이유: 안 맞는 곳에 끼워넣으면 그 폴더 Scope 경계가 실제 내용물과 어긋나기 시작해 문서 신뢰도가 깨짐
+
+## 관련 문서 (루트)
+
+- 파일/폴더 네이밍 규칙: `docs/conventions/00_FILE_CONVENTIONS.md`
+- 클라이언트 레이어: `src/CLAUDE.md`
+- 서버리스 함수(controller): `api/CLAUDE.md`
+- 비즈니스 로직(서버 전용): `services/CLAUDE.md`
+
+## 하네스: portfolio 개발 오케스트레이션
+
+**목표:** backend·frontend 기능 요청을 intake→planner→api-spec→backend/frontend→qa 6개 에이전트로 도메인 단위 게이팅하며 계약 어긋남 없이 완료한다.
+
+**트리거:** backend/frontend/api 어디든 손대는 기능 추가·수정·버그수정 요청 시 `portfolio-orchestrator` 스킬을 사용하라. 단순 질문(코드 설명, 파일 조회 등)은 직접 응답 가능.
+
+**변경 이력:**
+| 날짜 | 변경 내용 | 대상 | 사유 |
+|------|----------|------|------|
+| 2026-07-13 | 초기 구성 (5에이전트 + 4스킬 + 오케스트레이터) | 전체 | HARNESS.md 설계 검토 완료 후 최초 구축 |
+| 2026-07-14 | intake 에이전트 추가(6에이전트 체제), `00_request.yaml`→`01_plan.yaml` 파이프라인 도입, `source_requests`를 `source_request_ids` 참조 방식으로 전환 | 전체 | 원본 요청의 모호함이 planner 이후 단계까지 전파되던 구멍 발견 — 명확화 전담 단계 분리 |
+| 2026-07-14 | `01_plan.yaml`의 `language` 필드를 `path`(물리경로)로 대체 — planner가 Layer 성격/Convention 대조로 경로까지 결정, 언어는 backend agent가 진입 후 스스로 확인. `py-impl`/`ts-impl`(언어별)을 `script-impl`/`api-impl`(흐름별, 언어 무관)로 재구성 | planner.md, backend.md, frontend.md, SKILL.md, script-impl/, api-impl/ | 절차를 가르는 진짜 축은 언어가 아니라 흐름(스크립트/API)이라는 설계 오류 발견 — 언어는 각 흐름 내 문법 디테일로 재배치 |
+| 2026-07-14 | API 계약 문서 경로(`spec_path`) 취득 방식을 "오케스트레이터가 네이밍 규칙으로 계산"에서 "api-spec agent가 완료보고에 실제 경로 명시 → 오케스트레이터가 그대로 기록"으로 변경. `frontend/src/CLAUDE.md`의 잘못된 대안 경로(`../api/docs`)도 제거해 `docs/api/*.md`로 통일 | planner.md, api-spec.md, SKILL.md, 01-plan-example.yaml, frontend/src/CLAUDE.md | 오케스트레이터가 경로를 추측하면 `output_path` 커스텀 지정 시 실제 파일과 어긋날 수 있음 — "판단 로직 없음" 원칙에도 위배 |
+| 2026-07-14 | 루트 `HARNESS.md`와 `references/`(초안 자료) 삭제 — 전부 실제 `.claude/agents/`, `.claude/skills/`로 대체 완료. `SKILL.md`의 "외부설정 체크리스트 취합 규칙" 섹션도 삭제 — Vercel Root Directory 등 1회성 프로젝트 부트스트랩 항목은 오케스트레이터가 매 요청마다 추적할 일이 아니라 사용자가 사전에 처리하는 전제조건으로 재정의, Phase4의 기존 "외부설정 필요사항 취합" 한 줄로 충분 | HARNESS.md(삭제), references/(삭제), SKILL.md | 초안 참조 파일들이 실제 구현으로 완전 대체됨. 체크리스트 취합 규칙은 상태추적 장치까지 설계하다 과설계로 판단해 축소 |
+| 2026-07-14 | worktree 격리 전략 도입 — 격리 단위는 domain(팀모드 `type_source`가 파일 경로 참조라 phase 단위로 쪼개면 깨짐), domain이 2개 이상일 때만 생성, 브랜치명은 새 prefix 발명 없이 작업 브랜치 접미사 결합(`{작업브랜치}-{domain}`), merge-back은 QA 통과 후에만 + 오케스트레이터가 순차 수행, 정리 트리거는 `docs/GIT_STRATEGY.md`의 "PR 머지 완료" 전제와 별개로 "로컬 merge-back 완료"임을 명시, Phase 0에 orphan worktree 체크 추가. Phase 1에 브랜치 준비 단계 추가 | SKILL.md | film-wiki `dev-orchestrator`의 worktree 전략 리뷰에서 발견된 두 문제(GIT_STRATEGY prefix 표에 없는 `worktree/` prefix 발명, PR-머지 전제인 정리 절차를 로컬 merge 직후 재사용하는 전제 불일치) 재발 방지 + 도메인 병렬 실행 시 격리 없이 같은 작업 디렉토리를 공유하던 구조 개선. 최초 설계였던 "작업 브랜치 하위 nest"(`{작업브랜치}/{domain}`)는 dry-run 중 git ref 충돌로 실패 확인돼(`refs/heads/{작업브랜치}`가 이미 리프로 존재하면 그 하위를 디렉토리로 못 씀) 접미사 결합으로 교정 |
+| 2026-07-14 | worktree 전략 실라이브 검증(3도메인 실제 실행)에서 발견된 6개 결함 수정: (1) 레포 루트가 portfolio 상위 모노레포라 agent 작업 디렉토리는 `{worktree}/portfolio`여야 함 (2) `_workspace/`가 미커밋이라 worktree 안에 없어 `request_path`는 절대경로 필수 (3) `git worktree remove`는 심볼릭 링크 때문에 거의 항상 `--force` 필요 (4) merge 기본 커밋 메시지가 commit-msg 훅(prefix 검증)에 걸려 `-m` 명시 필수 (5) node_modules 심볼릭 링크가 `npm install` 중 끊겨 merge-back 후 메인에서 재설치 필요 (6) merge 충돌을 전부 "planner 재실행"으로 처리하던 정책을 완화 — 공유 파일(App.tsx)에 각자 추가만 하는 기계적 충돌은 그 자리서 직접 해결(`docs/GIT_STRATEGY.md`의 "충돌 해결은 feat→dev 단계에서" 원칙과 합치), 의미적 충돌만 재계획 대상으로 좁힘 | SKILL.md | 문서만으로는 못 잡는 실제 git/npm/모노레포 동작 특성 — dry-run(장난감 repo)과 달리 실제 레포 구조(모노레포, 미커밋 workspace, 심볼릭 링크)에서만 드러남 |
+| 2026-07-14 | Phase 4에 `.env.example` 생성 절차 추가 — 취합한 외부설정 키를 agent `path` 레이어 기준(`backend/` vs `frontend/`)으로 나눠 `{layer}/.env.example`에 반영, `frontend/.env.example`엔 "서버 전용, VITE_ 금지" 주석 고정. 전역 `.env*` 차단 훅(`~/.claude/settings.json` PreToolUse)에 `.env.example` 예외 추가(실제 시크릿 파일은 계속 차단) | SKILL.md, `~/.claude/settings.json`(전역, 프로젝트 외부) | 리포트 텍스트로만 남기던 외부설정 체크리스트를 실제 파일로 고정해 다음 세션/사람이 바로 참조 가능하게 함 |
+| 2026-07-16 | `frontend/` 하위 전체(`src/`, `api/`, `services/` 예정, 설정 파일)를 `portfolio/` 루트로 평탄화 — Vercel 배포 루트가 `frontend/`가 아니라 `portfolio/` 자체가 됨. `frontend/CLAUDE.md`(Scope/Structure/Critical Convention/관련 문서)를 이 파일에 병합, `frontend/docs/conventions/`를 `docs/conventions/`로 병합. 하네스 내 `frontend/` 경로 참조(`.claude/agents/`, `.claude/skills/`, 레이어별 `CLAUDE.md`)를 전부 루트 기준으로 수정 | CLAUDE.md, src/**/CLAUDE.md, .claude/agents/backend.md, .claude/skills/frontend-impl/SKILL.md, .claude/skills/portfolio-orchestrator/SKILL.md, 01-plan-example.yaml | `frontend/` 한 겹만 남기고 `backend/`는 아직 안 만들어진 상태라 중간 계층이 실익 없이 경로만 늘림 — 실제 `backend/` 구현 시점에 모노레포 배치를 다시 검토 |
