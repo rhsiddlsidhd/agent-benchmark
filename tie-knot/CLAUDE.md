@@ -1,6 +1,6 @@
-# GEMINI Project Overview
+# CLAUDE Project Overview
 
-이 문서는 Gemini CLI가 프로젝트의 기술 스택과 규칙을 파악하기 위한 핵심 설정 파일입니다.
+이 문서는 Claude Code가 프로젝트의 기술 스택과 규칙을 파악하기 위한 핵심 설정 파일입니다.
 **여기에 기술된 규칙은 모든 AI 스킬의 기본 가이드보다 우선순위가 높습니다.**
 
 ## 🔍 프로젝트 핵심 규칙 및 컨벤션
