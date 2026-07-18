@@ -1,12 +1,12 @@
-name: Lighthouse Timeline (new_invitation)
+name: Lighthouse Audit (tie-knot)
 
 on:
   push:
     branches:
       - dev
     paths:
-      - "new_invitation/**"
-      - "!new_invitation/lighthouse-history.json"
+      - "tie-knot/**"
+      - "!tie-knot/lighthouse-history.json"
   workflow_dispatch: {}
 
 permissions:
@@ -55,15 +55,15 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        working-directory: new_invitation
+        working-directory: tie-knot
         run: npm ci
 
       - name: Build
-        working-directory: new_invitation
+        working-directory: tie-knot
         run: npm run build
 
       - name: Start server
-        working-directory: new_invitation
+        working-directory: tie-knot
         run: |
           npm run start &
           for i in $(seq 1 30); do
@@ -75,11 +75,11 @@ jobs:
 
       - name: Run audit
         id: audit
-        working-directory: new_invitation
+        working-directory: tie-knot
         run: node scripts/lighthouse-audit/run-audit.js
 
       - name: Commit history
-        working-directory: new_invitation
+        working-directory: tie-knot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

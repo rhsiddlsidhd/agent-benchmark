@@ -4,8 +4,6 @@
 
 원하는 템플릿을 선택하고 커플 정보를 입력해 모바일 청첩장을 제작·공유할 수 있는 풀스택 이커머스 플랫폼
 
-➡️ [배포 링크](https://new-invitation-5dib.vercel.app/) | [GitHub](https://github.com/rhsiddlsidhd/new_invitation)
-
 ---
 
 ## 📌 프로젝트 개요
