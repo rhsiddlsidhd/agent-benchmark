@@ -57,13 +57,33 @@ async function main() {
           }
         }
 
-        const { scores, webVitals } = medianOfRuns(lhrList);
-        history.push({ date, commit, page: route.key, formFactor, scores, webVitals });
+        const { scores, webVitals, lighthouseVersion } = medianOfRuns(lhrList);
+        history.push({
+          date,
+          commit,
+          page: route.key,
+          formFactor,
+          status: "success",
+          scores,
+          webVitals,
+          lighthouseVersion,
+        });
         succeeded++;
         console.log(`완료: ${route.key} [${formFactor}]`);
       } catch (e) {
         failed.push(`${route.key} (${formFactor})`);
         console.error(`::warning::${route.key} [${formFactor}] 감사 실패 — ${e.message}`);
+        history.push({
+          date,
+          commit,
+          page: route.key,
+          formFactor,
+          status: "failed",
+          error: e.message,
+          scores: null,
+          webVitals: null,
+          lighthouseVersion: null,
+        });
       }
     }
   }

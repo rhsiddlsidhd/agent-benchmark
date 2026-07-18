@@ -21,7 +21,7 @@ function extractFromLhr(lhr) {
     webVitals[metricKey] = audit ? audit.numericValue : null;
   }
 
-  return { scores, webVitals };
+  return { scores, webVitals, lighthouseVersion: lhr.lighthouseVersion };
 }
 
 function median(numbers) {
@@ -56,7 +56,7 @@ function medianOfRuns(lhrList) {
     webVitals[metricKey] = round(value, DECIMALS_BY_METRIC[metricKey]);
   }
 
-  return { scores, webVitals };
+  return { scores, webVitals, lighthouseVersion: extracted[0] ? extracted[0].lighthouseVersion : null };
 }
 
 module.exports = { extractFromLhr, medianOfRuns };
