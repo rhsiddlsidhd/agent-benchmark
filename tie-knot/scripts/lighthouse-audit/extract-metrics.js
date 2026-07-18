@@ -32,6 +32,15 @@ function median(numbers) {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
+// cls는 ms가 아니라 0~1 근처 unitless 값이라 정수로 반올림하면 정보가 다 날아감
+const DECIMALS_BY_METRIC = { lcp: 0, fcp: 0, tbt: 0, cls: 3, speedIndex: 0 };
+
+function round(value, decimals) {
+  if (value === null) return null;
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
 /** 여러 번(runs) 감사한 lhr 배열을 받아 지표별 median으로 합친다. */
 function medianOfRuns(lhrList) {
   const extracted = lhrList.map(extractFromLhr);
@@ -43,7 +52,8 @@ function medianOfRuns(lhrList) {
 
   const webVitals = {};
   for (const metricKey of Object.keys(WEB_VITAL_AUDITS)) {
-    webVitals[metricKey] = median(extracted.map((e) => e.webVitals[metricKey]));
+    const value = median(extracted.map((e) => e.webVitals[metricKey]));
+    webVitals[metricKey] = round(value, DECIMALS_BY_METRIC[metricKey]);
   }
 
   return { scores, webVitals };
