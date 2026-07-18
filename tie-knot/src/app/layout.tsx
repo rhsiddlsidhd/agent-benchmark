@@ -11,7 +11,7 @@ const BASEURL =
     : process.env.DEPLOYMENT_BASE_URL;
 
 export const metadata: Metadata = {
-  title: "Home - New Invitation",
+  title: "Home - Tie Knot",
   description: "모바일 청첩장을 쉽고 빠르게 만들어드립니다.",
   metadataBase: new URL(BASEURL),
   keywords: [
@@ -25,22 +25,22 @@ export const metadata: Metadata = {
     "next.js",
   ],
   authors: [
-    { name: "New Invitation", url: "https://new-invitation-pi.vercel.app" },
+    { name: "Tie Knot", url: "https://tie-knot-pi.vercel.app" },
   ],
-  creator: "New Invitation",
-  publisher: "New Invitation",
+  creator: "Tie Knot",
+  publisher: "Tie Knot",
 
   openGraph: {
-    title: "New Invitation",
+    title: "Tie Knot",
     description: "모바일 청첩장을 쉽고 빠르게 만들어드립니다.",
     images: ["/wedding-1850.jpg"],
-    siteName: "New Invitation",
+    siteName: "Tie Knot",
     type: "website",
-    url: "https://new-invitation-pi.vercel.app",
+    url: "https://tie-knot-pi.vercel.app",
   },
   twitter: {
     card: "summary_large_image",
-    title: "New Invitation",
+    title: "Tie Knot",
     description: "모바일 청첩장을 쉽고 빠르게 만들어드립니다.",
     images: ["/wedding-1850.jpg"],
     creator: "@your_twitter_handle",
