@@ -1,32 +1,38 @@
-# CLAUDE.md — src/app/api/
+# src/app/api
 
-> Last updated: 2026-07-18
+> Last updated: 2026-07-19
 
 ## Scope
 
-- **Next.js Route Handler(`route.ts`).** 외부/내부 요청을 받아 검증 → `src/services/`(DB 접근) 또는 `src/lib/`(외부 연동) 호출 → `src/api/response.ts`/`src/api/error.ts`로 응답 매핑만 담당한다. 도메인 UI는 다루지 않는다.
+Next.js Route Handler(`route.ts`) 전용 규칙. 공식 문서(Next.js 15, App Router) 기준으로 정의하며, 현재 작성된 코드의 스타일은 기준에 포함하지 않는다.
 
 ## Structure
 
 ```
 src/app/api/
-├── products/route.ts        # GET — apiSuccess/handleRouteError 사용
-├── auth/refresh/route.ts       # POST — 쿠키+토큰 갱신, 실패 시 쿠키 삭제 후 handleRouteError
-└── upload/signature/route.ts     # 공용 계약 미사용(Gotchas 참고)
+├── auth/{cookie,entry,logout,me,refresh,verify}/route.ts
+├── banks/route.ts
+├── couple-info/route.ts
+├── guestbook/route.ts
+├── kakaomap/route.ts
+├── order/create/route.ts
+├── payment/complete/route.ts
+├── premium-features/route.ts
+├── products/route.ts
+├── products/[id]/like/route.ts
+├── subway/route.ts
+└── upload/signature/route.ts
 ```
 
 ## Critical Convention
 
-- 파라미터 검증(파싱 실패/필수값 누락)을 외부 API 호출 이전에 끝낸다 — 실패 시 외부 API를 호출하지 않은 채 바로 에러 반환한다.
-- 응답은 반드시 `src/api/response.ts`의 `apiSuccess()`(성공)와 `src/api/error.ts`의 `handleRouteError()`(실패)를 거친다 — `NextResponse.json(...)`을 직접 만들지 않는다(Gotchas — 이미 어긴 사례 있음).
-- `catch`에서 타입 가드 없이 모든 에러를 동일 취급하지 않는다 — `HTTPError`는 그 안의 상태코드로 매핑하고, 그 외 예상 못한 에러는 그대로 500 처리에 위임한다(`handleRouteError`가 이미 이 로직을 담당).
+- `route.ts`와 동일한 라우트 세그먼트에 `page.tsx`를 두지 않는다 — Next.js 공식 문서: Route Handler는 `page.js`와 같은 라우트 세그먼트 레벨에 공존할 수 없다.
+- HTTP 메서드 핸들러를 `GET`/`POST`/`PUT`/`PATCH`/`DELETE`/`HEAD`/`OPTIONS` 이외 이름으로 export하지 않는다 — Route Handler는 이 이름의 export만 요청 라우팅에 사용한다(공식 지원 메서드 목록).
+- 핸들러 함수를 `Response`(또는 `NextResponse`) 반환 없이 끝내지 않는다 — Route Handler는 반드시 응답을 반환해야 하는 계약이며, 위반 시 런타임 에러가 발생한다.
+- Next.js 15 이상에서 동적 세그먼트의 `params`를 동기 값처럼 구조분해하지 않는다 — `params`는 `Promise<{...}>` 타입이므로 `await params`로 풀어 써야 한다.
+- `next/headers`의 `cookies()`/`headers()`를 동기 함수처럼 호출하지 않는다 — Next.js 15부터 두 함수 모두 비동기이므로 `await cookies()`/`await headers()`로 사용한다.
+- GET 이외의 메서드(POST/PUT/PATCH/DELETE)에 캐싱 옵트인(`export const dynamic = 'force-static'`)을 적용하지 않는다 — 공식 문서: GET을 제외한 나머지 메서드는 같은 파일에 캐시되는 GET과 나란히 있어도 캐시되지 않는다.
 
 ## Gotchas
 
-- `upload/signature/route.ts` — `src/api/response.ts`/`error.ts`를 전혀 안 쓰고 `NextResponse.json({ error: string }, { status })`를 직접 만든다. 에러 shape도 다른 라우트(`{ success: false, error: { message, code } }`)와 달리 `{ error: string }`뿐이라 클라이언트 쪽 공용 에러 처리(`handleClientError`)와 안 맞을 수 있다 — 공용 계약으로 맞추는 리팩토링 대상(추후 진행 예정).
-
-## 관련 문서
-
-- 응답/에러 계약: `src/api/CLAUDE.md`
-- 호출 대상 비즈니스 로직: `src/services/CLAUDE.md`
-- 호출 대상 외부 연동: `src/lib/CLAUDE.md`
+- 없음.

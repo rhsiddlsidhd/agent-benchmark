@@ -1,32 +1,28 @@
-# CLAUDE.md — src/actions/
+# src/actions
 
-> Last updated: 2026-07-18
+> Last updated: 2026-07-19
 
 ## Scope
 
-- **Server Actions(`"use server"`) — 폼 제출 등 클라이언트에서 트리거하는 데이터 변경(CUD).** 고정 절차: `validateAndFlatten(schema, data)`(`src/lib/validation/CLAUDE.md`)로 zod 검증 → `src/services/`/`src/lib/` 호출 → `src/api/response.ts`의 `success()`로 감싸 반환, 실패 시 `src/api/error.ts`의 `handleActionError()`로 위임.
+Server Actions(`"use server"`) 전용 규칙. 공식 문서(Next.js 15, App Router) 기준으로 정의하며, 현재 작성된 코드의 스타일은 기준에 포함하지 않는다.
 
 ## Structure
 
 ```
 src/actions/
-├── loginUser.ts             # Action 접미사 없음(Gotchas 참고)
-├── createOrderAction.ts        # Action 접미사 있음(다수 패턴)
-└── ...                           # 도메인 동작당 파일 1개
+├── {create|update|delete}{Domain}Action.ts   # 예: createProductAction.ts
+└── {domain동사}.ts                            # 예: loginUser.ts, signupUser.ts
 ```
 
 ## Critical Convention
 
-- 파일 최상단에 `"use server"`를 명시한다.
-- 파일명은 `{동사}{Entity}Action.ts`로 짓는다(다수 패턴, Gotchas 참고).
-- 함수 시그니처는 `(_prev, formData: FormData) => Promise<APIResponse<T>>` 형태로 고정한다(`useActionState`와 짝) — 검증 실패/비즈니스 로직 실패 모두 throw 후 최상위 `catch`에서 `handleActionError(e)`로 처리한다, 개별적으로 에러 shape을 직접 만들지 않는다.
+- Server Action 파일에 `"use server"` 지시어 없이 서버 전용 함수를 export하지 않는다 — 이 지시어가 파일(또는 함수) 최상단에 있어야 React/Next가 해당 함수를 Server Action으로 인식한다.
+- `redirect()`를 try/catch 블록 안에서 호출하지 않는다 — 공식 문서: `redirect`는 내부적으로 에러를 throw해 동작하므로 반드시 try/catch 밖에서 호출해야 한다. try 안에서 호출하면 catch가 리다이렉트 신호를 삼켜 리다이렉트가 동작하지 않는다.
+- Server Action 내부에서 인증/권한 검증을 생략하지 않는다 — 공식 문서: Server Action은 공개 API 엔드포인트와 동일한 보안 고려가 필요하므로, 데이터 변경 전 반드시 세션/역할을 검증한다.
+- mutation 이후 관련 캐시를 갱신하지 않고 끝내지 않는다 — 공식 문서 패턴: `revalidatePath`/`revalidateTag`로 변경된 데이터가 노출되는 경로를 명시적으로 갱신한다.
+- Client Component에서 직접 호출할 Server Action을 컴포넌트 파일 안에 인라인으로 정의하지 않는다 — Client Component는 `"use server"`가 선언된 별도 파일의 export만 import해 호출할 수 있다(인라인 함수 레벨 `"use server"`는 Server Component 전용).
+- `useActionState`로 연결되는 액션의 인자 순서를 `(prevState, formData)` 밖으로 바꾸지 않는다 — 이 훅의 계약이 이 순서를 요구한다.
 
 ## Gotchas
 
-- 파일명 네이밍 불일치: `createCoupleInfoAction`/`updateProductStatusAction`/`createProductAction`/`createPremiumFeatureAction`/`deleteProductAction`/`updateProductAction`/`createOrderAction`/`updatePremiumFeatureAction`/`updateCoupleInfoAction`/`deleteGuestBookAction`(10개, `Action` 접미사 있음) vs `loginUser`/`signupUser`/`findUserEmail`/`createGuestbook`/`requestPasswordReset`/`updateUserPassword`(6개, 없음). 다수 패턴(`Action` 접미사)이 새 파일의 기준 — 코드 리팩토링은 추후 진행 예정.
-
-## 관련 문서
-
-- 응답/에러 계약: `src/api/CLAUDE.md`
-- 검증 스키마: `src/schemas/CLAUDE.md`
-- 호출 대상 비즈니스 로직: `src/services/CLAUDE.md`
+- 없음.
