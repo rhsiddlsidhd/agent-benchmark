@@ -4,7 +4,7 @@ import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import AutoCompleteList from "@/components/molecules/AutoCompleteList";
 import { Command, CommandInput } from "@/components/atoms/command";
 import { Button } from "@/components/atoms/button";
-import useSuggestProducts from "@/hooks/useSuggestProducts";
+import { useSuggestProducts } from "@/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,12 +17,12 @@ import { useState } from "react";
 
 import { useProductFilter } from "@/context/productFilter/reducer";
 import { Product } from "@/services/product.service";
+import { PremiumFeature } from "@/services/premiumFeature.service";
 import {
   SubCategory,
   ProductCategory,
   getSubCategoryOptions,
-} from "@/utils/category";
-import usePremiumFeature from "@/hooks/usePremiumFeatures";
+} from "@/utils";
 
 import {
   PRODUCT_SORT_OPTIONS,
@@ -31,18 +31,19 @@ import {
   PRODUCT_SORT_KEYS,
   PRODUCT_PRICE_KEYS,
   ProductSortType,
-} from "@/constants/product";
-import { TypographyMuted, TypographySmall } from "@/components/atoms/typoqraphy";
+} from "@/constants";
+import { TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 export function ProductFilters({
   data,
   category,
+  premiumFeatures,
 }: {
   data: Product[];
   category: ProductCategory;
+  premiumFeatures: PremiumFeature[];
 }) {
   const [state, dispatch] = useProductFilter();
-  const { premiumFeatures } = usePremiumFeature();
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
   const { suggestions } = useSuggestProducts({
     data,

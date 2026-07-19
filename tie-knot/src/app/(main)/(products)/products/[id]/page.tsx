@@ -1,7 +1,7 @@
 export const revalidate = 3600;
 
 import { ProductFeatures } from "@/components/organisms/ProductFeatures";
-import { ProductSummary } from "@/components/organisms/ProductSummary";
+import { ProductSummary } from "./_components";
 import { getPremiumFeatureService } from "@/services/premiumFeature.service";
 import { getAllProductsService, getProductService } from "@/services/product.service";
 import { notFound } from "next/navigation";

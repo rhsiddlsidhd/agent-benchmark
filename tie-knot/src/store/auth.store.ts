@@ -1,9 +1,8 @@
 import { UserRole } from "@/models/user.model";
-import { AuthSession } from "@/types/auth";
+import { AuthSession } from "@/types";
 import { create } from "zustand";
 
 export type AuthState = {
-  token: string | null;
   isAuth: boolean;
   role: UserRole | "GUEST";
   email: string | null;
@@ -11,27 +10,24 @@ export type AuthState = {
 };
 
 type AuthAction = {
-  setToken: (session: AuthSession) => void;
+  setSession: (session: AuthSession) => void;
   clearAuth: () => void;
 };
 
 const useAuthStore = create<AuthState & AuthAction>((set) => ({
-  token: null,
   isAuth: false,
   role: "GUEST",
   email: null,
   userId: null,
-  setToken: ({ token, role, email, userId }) =>
+  setSession: ({ role, email, userId }) =>
     set(() => ({
-      token,
-      isAuth: !!token,
-      role: token ? role : "GUEST",
+      isAuth: true,
+      role,
       email,
       userId,
     })),
   clearAuth: () =>
     set(() => ({
-      token: null,
       isAuth: false,
       role: "GUEST",
       email: null,

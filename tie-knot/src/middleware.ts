@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { decrypt } from "@/lib/token";
+import { decrypt } from "@/lib/jose";
 
 /**
  * 특정 도메인 접속 시 권한 체크

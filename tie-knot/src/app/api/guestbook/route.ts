@@ -1,6 +1,5 @@
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
-import { HTTPError } from "@/types/error";
+import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
+import { HTTPError } from "@/types";
 import { getGuestbookService } from "@/services/guestbook.service";
 import { IGuestbook } from "@/models/guestbook.model";
 import { NextRequest } from "next/server";
@@ -13,8 +12,8 @@ export const GET = async (
     if (!id) throw new HTTPError("coupleInfoId가 필요합니다.", 400);
 
     const guestbooks = await getGuestbookService(id);
-    return apiSuccess(guestbooks);
+    return apiOk(guestbooks);
   } catch (e) {
-    return handleRouteError(e);
+    return apiFail(e);
   }
 };

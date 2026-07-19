@@ -1,1 +1,1 @@
-export type CookieName = "token" | "entry" | "userEmail";
+export type CookieName = "token" | "access" | "entry" | "userEmail";

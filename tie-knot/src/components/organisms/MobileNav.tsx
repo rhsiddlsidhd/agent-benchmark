@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Gem } from "lucide-react";
-import { MAIN_NAV_ITEMS } from "@/constants/navigation";
+import { MAIN_NAV_ITEMS } from "@/constants";
 import {
   Sheet,
   SheetContent,

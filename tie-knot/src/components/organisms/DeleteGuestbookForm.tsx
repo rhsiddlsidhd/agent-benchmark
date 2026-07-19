@@ -1,6 +1,3 @@
-"use client";
-
-import { deleteGuestbookAction } from "@/actions/deleteGuestBookAction";
 import Alert from "@/components/molecules/Alert";
 import { Button } from "@/components/atoms/button";
 import {
@@ -11,46 +8,35 @@ import {
   DialogTitle,
 } from "@/components/atoms/dialog";
 
-import TextField from "@/components/organisms/fields/TextField";
-import { APIResponse } from "@/types/error";
+import TextField from "@/components/molecules/TextField";
+import { APIResponse } from "@/types";
+import { getFieldError } from "@/utils";
 
-import { useParams, useSearchParams } from "next/navigation";
-import React, { useActionState, useEffect } from "react";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
-import { toast } from "sonner";
-import { useGuestbookModalStore } from "@/store/guestbook.modal.store";
+interface DeleteGuestbookFormProps {
+  guestbookId: string;
+  coupleInfoId: string | string[] | undefined;
+  productId: string | null;
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string }> | null;
+}
 
-const DeleteGuestbookForm = ({ payload }: { payload: string }) => {
-  const params = useParams();
-  const query = useSearchParams();
-  console.log(params);
-  console.log("query", query.get("product"));
-  const closeModal = useGuestbookModalStore((state) => state.closeModal);
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string }>,
-    FormData
-  >(deleteGuestbookAction, null);
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.success === true) {
-      toast(state.data.message);
-      closeModal();
-    } else {
-      if (!hasFieldErrors(state.error)) {
-        toast.error(state.error.message);
-      }
-    }
-  }, [state, closeModal]);
-
+export function DeleteGuestbookForm({
+  guestbookId,
+  coupleInfoId,
+  productId,
+  action,
+  pending,
+  state,
+}: DeleteGuestbookFormProps) {
   const passwordError = getFieldError(state, "password");
 
   return (
     <form action={action} className="space-y-4">
       <DialogHeader>
-        <input name={"guestbookId"} defaultValue={payload} hidden />
-        <input name={"coupleInfoId"} defaultValue={params.id} hidden />
-        <input name={"productId"} defaultValue={query.get("product")} hidden />
+        <input name="guestbookId" defaultValue={guestbookId} hidden />
+        <input name="coupleInfoId" defaultValue={coupleInfoId} hidden />
+        <input name="productId" defaultValue={productId ?? undefined} hidden />
         <DialogTitle>비밀번호 확인</DialogTitle>
 
         <DialogDescription>
@@ -73,6 +59,4 @@ const DeleteGuestbookForm = ({ payload }: { payload: string }) => {
       </DialogFooter>
     </form>
   );
-};
-
-export default DeleteGuestbookForm;
+}

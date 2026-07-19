@@ -6,9 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import Grid from "@/components/layout/Grid";
+import Grid from "@/components/atoms/grid";
 import { Package, DollarSign, ShoppingCart, Users } from "lucide-react";
-import { TypographyMuted, TypographySmall } from "@/components/atoms/typoqraphy";
+import { TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 export default function AdminDashboard() {
   const stats = [

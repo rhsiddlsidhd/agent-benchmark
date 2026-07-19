@@ -7,10 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import { TypographyH1, TypographyH3, TypographyMuted } from "@/components/atoms/typoqraphy";
-import ProductThumbnail from "@/components/molecules/ProductThumbnail";
-import { getCookie } from "@/lib/cookies/get";
-import { decrypt } from "@/lib/token";
+import { TypographyH1, TypographyH3, TypographyMuted } from "@/components/atoms/typography";
+import CloudImage from "@/components/molecules/CloudImage";
+import { getCookie } from "@/lib/cookies";
+import { decrypt } from "@/lib/jose";
 import { getOrdersByUserId } from "@/services/order.service";
 import {
   Edit,
@@ -25,8 +25,8 @@ import React from "react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { IOrder } from "@/models/order.model";
-import { PayMethod } from "@/models/payment";
-import PaymentButton from "@/components/molecules/PaymentButton";
+import { PayMethod } from "@/models/payment.model";
+import { PaymentButton } from "./_components";
 
 type OrderStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
 
@@ -113,7 +113,7 @@ const Page = async () => {
                         </div>
                         <div className="flex items-start gap-4">
                           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg">
-                            <ProductThumbnail
+                            <CloudImage
                               src={product.thumbnail ?? "#"}
                               alt={product.title}
                               sizes="128px"

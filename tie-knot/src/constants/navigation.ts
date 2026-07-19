@@ -1,7 +1,7 @@
-import openApp from "@/utils/openApp";
+import { openApp } from "@/utils";
 import { LayoutDashboard, User, ShoppingBag } from "lucide-react";
 
-export const NAVIGATION_BUTTONS = [
+export const navigationButtons = [
   {
     name: "네이버지도",
     path: "navermap.webp",

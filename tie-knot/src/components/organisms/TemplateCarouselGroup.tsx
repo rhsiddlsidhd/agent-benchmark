@@ -7,7 +7,7 @@ import {
 } from "@/components/atoms/carousel";
 import React from "react";
 import { ProductCard } from "./ProductCard";
-import { TypographyH2, TypographyP } from "@/components/atoms/typoqraphy";
+import { TypographyH2, TypographyP } from "@/components/atoms/typography";
 import { ProductJSON } from "@/models/product.model";
 
 interface TemplateCarouselGroupProps {

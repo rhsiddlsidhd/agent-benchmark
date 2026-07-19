@@ -1,9 +1,9 @@
 "use client";
-import { PAGE_TITLE } from "@/constants/page";
-import { isPageTitle } from "@/utils/page";
+import { PAGE_TITLE } from "@/constants";
+import { isPageTitle } from "@/utils";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 
 const PageTitle = () => {
   const pathname = usePathname();

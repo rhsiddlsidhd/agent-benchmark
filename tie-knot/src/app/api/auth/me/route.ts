@@ -1,15 +1,14 @@
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
+import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
 import { getAuth } from "@/services/auth.service";
-import { AuthSession } from "@/types/auth";
+import { AuthSession } from "@/types";
 
 export const GET = async (): Promise<
   APIRouteResponse<AuthSession | null>
 > => {
   try {
     const session = await getAuth();
-    return apiSuccess(session);
+    return apiOk(session);
   } catch (e) {
-    return handleRouteError(e);
+    return apiFail(e);
   }
 };

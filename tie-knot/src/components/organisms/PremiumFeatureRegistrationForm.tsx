@@ -1,25 +1,23 @@
-"use client";
-
-import { createPremiumFeatureAction } from "@/actions/createPremiumFeatureAction";
 import Alert from "@/components/molecules/Alert";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Textarea } from "@/components/atoms/textarea";
-import { TypographyMuted } from "@/components/atoms/typoqraphy";
-import { useActionState, useEffect } from "react";
-import { getFieldError } from "@/utils/error";
-import { APIResponse } from "@/types/error";
+import { TypographyMuted } from "@/components/atoms/typography";
+import { getFieldError } from "@/utils";
+import { APIResponse } from "@/types";
 
-const PremiumFeatureRegistrationForm = () => {
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string }>,
-    FormData
-  >(createPremiumFeatureAction, null);
-  useEffect(() => {
-    if (state && state.success && state.data) alert(state.data.message);
-  }, [state]);
+interface PremiumFeatureRegistrationFormProps {
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string }> | null;
+}
 
+export function PremiumFeatureRegistrationForm({
+  action,
+  pending,
+  state,
+}: PremiumFeatureRegistrationFormProps) {
   const codeError = getFieldError(state, "code");
   const labelError = getFieldError(state, "label");
   const descriptionError = getFieldError(state, "description");
@@ -101,6 +99,4 @@ const PremiumFeatureRegistrationForm = () => {
       </div>
     </form>
   );
-};
-
-export default PremiumFeatureRegistrationForm;
+}

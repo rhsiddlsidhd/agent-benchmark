@@ -6,17 +6,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import { TypographyH3 } from "@/components/atoms/typoqraphy";
+import { TypographyH3 } from "@/components/atoms/typography";
 
-import BankField from "@/components/organisms/fields/BankField";
-import TextField from "@/components/organisms/fields/TextField";
+import BankField from "@/components/molecules/BankField";
+import TextField from "@/components/molecules/TextField";
 import type { ICoupleInfo } from "@/models/coupleInfo.model";
+import type { Banks } from "@/app/api/banks/route";
 
 type CoupleInfoSectionProps = {
   data?: Pick<ICoupleInfo, "groom" | "bride">;
+  banks?: Banks;
 };
 
-export function CoupleInfoSection({ data }: CoupleInfoSectionProps) {
+export function CoupleInfoSection({ data, banks }: CoupleInfoSectionProps) {
   return (
     <Card>
       <CardHeader>
@@ -56,6 +58,7 @@ export function CoupleInfoSection({ data }: CoupleInfoSectionProps) {
               id="groom"
               defaultBankName={data?.groom?.bankName}
               defaultAccountNumber={data?.groom?.accountNumber}
+              banks={banks}
             />
           </div>
 
@@ -91,6 +94,7 @@ export function CoupleInfoSection({ data }: CoupleInfoSectionProps) {
               id="bride"
               defaultBankName={data?.bride?.bankName}
               defaultAccountNumber={data?.bride?.accountNumber}
+              banks={banks}
             />
           </div>
         </div>

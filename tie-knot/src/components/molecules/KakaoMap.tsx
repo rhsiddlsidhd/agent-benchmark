@@ -1,4 +1,4 @@
-import useKakaoLoader from "@/lib/kakao/useKakaoLoader";
+import useKakaoLoader from "@/lib/kakao";
 import React, { useEffect, useState } from "react";
 import { Map, MapMarker } from "react-kakao-maps-sdk";
 import { MapPin } from "lucide-react";
@@ -16,12 +16,12 @@ const KakaoMap = ({ address }: { address: string }) => {
       try {
         const res = await fetch(`/api/kakaomap?address=${address}`);
 
-        const data = await res.json();
-        if (!res.ok || data.errorType) {
-          throw new Error(data.message);
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error?.message ?? "서버 오류가 발생하였습니다.");
         }
 
-        const { x, y } = data.documents[0];
+        const { x, y } = json.data.documents[0];
         setGeoState({ lat: y, lng: x });
       } catch (e) {
         const message =

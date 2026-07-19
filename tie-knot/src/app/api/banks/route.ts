@@ -1,5 +1,4 @@
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
+import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
 
 /**
  * data
@@ -19,8 +18,8 @@ export const GET = async (): Promise<APIRouteResponse<Banks>> => {
   try {
     const res = await fetch("https://api.portone.io/banks");
     const data: Banks = await res.json();
-    return apiSuccess(data);
+    return apiOk(data);
   } catch (error) {
-    return handleRouteError(error);
+    return apiFail(error);
   }
 };

@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import PortOne from "@portone/browser-sdk/v2";
-import { PayStatus } from "@/models/payment";
-import { fetcher } from "@/api/fetcher";
+import { PayStatus } from "@/models/payment.model";
+import { apiRequest } from "@/api/apiRequest";
 import { toast } from "sonner";
-import type { CreateOrderResult } from "@/actions/createOrderAction";
+import type { CreateOrderResult } from "@/actions/createOrder";
 
 const storeId = process.env.NEXT_PUBLIC_POST_ONE_STORE_ID;
 const channelKey = process.env.NEXT_PUBLIC_POST_ONE_CHANNELKEY;
@@ -71,9 +71,8 @@ export function usePortOnePayment({ onSuccess, onError }: UsePortOnePaymentOptio
           return;
         }
 
-        const result = await fetcher<{ status: PayStatus }>(
+        const result = await apiRequest<{ status: PayStatus }>(
           "/api/payment/complete",
-          { auth: true },
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

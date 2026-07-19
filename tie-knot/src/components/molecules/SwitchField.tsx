@@ -1,8 +1,8 @@
 import { Switch } from "@/components/atoms/switch";
 import { Label } from "@radix-ui/react-label";
 import React, { useState } from "react";
-import { TypographyMuted } from "@/components/atoms/typoqraphy";
-import { FieldBase } from "@/types/field";
+import { TypographyMuted } from "@/components/atoms/typography";
+import { FieldBase } from "@/types";
 
 type SwitchFieldProps = Omit<FieldBase, "defaultValue"> & {
   message?: string;

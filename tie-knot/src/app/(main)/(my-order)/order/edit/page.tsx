@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { HTTPError } from "@/types/error";
-import { CoupleInfoForm } from "@/components/organisms/CoupleInfoForm";
-import { getCookie } from "@/lib/cookies/get";
-import { decrypt } from "@/lib/token";
+import { HTTPError } from "@/types";
+import { CoupleInfoForm } from "./_components";
+import { getCookie } from "@/lib/cookies";
+import { decrypt } from "@/lib/jose";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -24,7 +24,7 @@ const Page = async ({
   const { payload } = await decrypt({ token: cookie.value, type: "REFRESH" });
   if (!payload.id) return redirect("/login");
 
-  return <CoupleInfoForm type={"edit"} />;
+  return <CoupleInfoForm />;
 };
 
 export default Page;

@@ -1,7 +1,7 @@
 import { ProductModel, ProductJSON, ProductDB } from "@/models/product.model";
 import { ProductDto } from "@/schemas/product.schema";
-import { dbConnect } from "@/utils/mongodb";
-import { calculatePrice } from "@/utils/price";
+import { dbConnect } from "@/lib/mongodb";
+import { calculatePrice } from "@/utils";
 import mongoose, { Types } from "mongoose";
 
 // Product 타입을 export (다른 파일에서 사용)

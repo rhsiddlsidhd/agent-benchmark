@@ -1,7 +1,7 @@
 export const revalidate = 3600;
 
 import { StartActionCTA } from "@/components/organisms/StartActionCTA";
-import { Footer } from "@/components/layout/Footer";
+import { Footer } from "./_components";
 import { EcommerceHero } from "@/components/organisms/EcommerceHero";
 import { LiveDemoSection } from "@/components/organisms/LiveDemoSection";
 import {
@@ -10,7 +10,7 @@ import {
   Product,
 } from "@/services/product.service";
 import React from "react";
-import { TypographyH2, TypographyP } from "@/components/atoms/typoqraphy";
+import { TypographyH2, TypographyP } from "@/components/atoms/typography";
 import { TemplateCarouselGroup } from "@/components/organisms/TemplateCarouselGroup";
 
 const page = async () => {

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/atoms/card";
 import { Smartphone, Share2, Palette, Zap, Heart, Globe } from "lucide-react";
 import React from "react";
-import { TypographyH2, TypographyP, TypographyH3 } from "@/components/atoms/typoqraphy";
+import { TypographyH2, TypographyP, TypographyH3 } from "@/components/atoms/typography";
 
 const features = [
   {

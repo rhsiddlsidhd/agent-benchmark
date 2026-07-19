@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/atoms/card";
 import { Check } from "lucide-react";
-import { TypographyH2, TypographyP, TypographyMuted, TypographySmall } from "@/components/atoms/typoqraphy";
+import { TypographyH2, TypographyP, TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 const plans = [
   {

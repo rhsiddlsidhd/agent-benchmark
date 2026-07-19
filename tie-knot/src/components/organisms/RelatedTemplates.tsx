@@ -1,5 +1,5 @@
-import Grid from "@/components/layout/Grid";
-import { TypographyH2 } from "@/components/atoms/typoqraphy";
+import Grid from "@/components/atoms/grid";
+import { TypographyH2 } from "@/components/atoms/typography";
 
 export function RelatedTemplates() {
   // const filtered = relatedTemplates.filter((t) => t.id !== currentTemplateId);

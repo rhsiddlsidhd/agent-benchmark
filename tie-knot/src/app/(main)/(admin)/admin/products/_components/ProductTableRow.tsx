@@ -1,11 +1,11 @@
 import { Eye, Heart, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/atoms/badge";
 import { Product } from "@/services/product.service";
-import ProductThumbnail from "@/components/molecules/ProductThumbnail";
-import ProductTableRowAction from "@/components/organisms/ProductTableRowAction";
-import ProductTableRowSelect from "@/components/organisms/ProductTableRowSelect";
-import { productCategoryLabels, subCategoryLabels, ProductCategory, SubCategory } from "@/utils/category";
-import { TypographyMuted, TypographySmall } from "@/components/atoms/typoqraphy";
+import CloudImage from "@/components/molecules/CloudImage";
+import ProductTableRowAction from "./ProductTableRowAction";
+import ProductTableRowSelect from "./ProductTableRowSelect";
+import { productCategoryLabels, subCategoryLabels, ProductCategory, SubCategory } from "@/utils";
+import { TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 export interface ProductTableRowProps {
   product: Product;
@@ -16,7 +16,7 @@ export function ProductTableRow({ product }: ProductTableRowProps) {
     <tr className="hover:bg-muted/50 transition-colors">
       <td className="px-4 py-3">
         <div className="relative h-16 w-16 overflow-hidden rounded">
-          <ProductThumbnail
+          <CloudImage
             src={product.thumbnail}
             sizes="128px"
             alt={`${product.title} 이미지`}

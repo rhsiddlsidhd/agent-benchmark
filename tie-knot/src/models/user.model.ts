@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Types, Model } from "mongoose";
 export type UserRole = "USER" | "ADMIN";
 export interface BaseUser {
   email: string;
@@ -7,17 +7,15 @@ export interface BaseUser {
   password: string;
 }
 
-interface UserModel extends BaseUser {
+export interface IUser extends BaseUser {
+  _id: Types.ObjectId;
   role: UserRole;
   isDelete: boolean;
-}
-
-export interface UserDocument extends UserModel, Document {
   createdAt: Date;
   updatedAt: Date;
 }
 
-const userSchema = new Schema<UserDocument>(
+const userSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
@@ -29,7 +27,6 @@ const userSchema = new Schema<UserDocument>(
   { timestamps: true },
 );
 
-const User: Model<UserDocument> =
-  mongoose.models.User || mongoose.model<UserDocument>("User", userSchema);
-
-export default User;
+export const UserModel =
+  (mongoose.models.User as Model<IUser>) ||
+  mongoose.model<IUser>("User", userSchema);

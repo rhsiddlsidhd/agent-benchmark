@@ -1,6 +1,5 @@
 "use client";
 
-import useSWR from "swr";
 import {
   initialFilterState,
   ProductFilterProvider,
@@ -9,33 +8,30 @@ import React from "react";
 import { ProductFilters } from "@/components/organisms/ProductFilters";
 import { ProductGrid } from "@/components/organisms/ProductGrid";
 import { Product } from "@/services/product.service";
-import { fetcher } from "@/api/fetcher";
-import { ProductCategory } from "@/utils/category";
+import { PremiumFeature } from "@/services/premiumFeature.service";
+import { ProductCategory } from "@/utils";
+
+interface ProductCatalogProps {
+  products: Product[];
+  category: ProductCategory;
+  premiumFeatures: PremiumFeature[];
+}
 
 const ProductCatalog = ({
   products,
   category,
-}: {
-  products: Product[];
-  category: ProductCategory;
-}) => {
-  // 쿼리 파라미터가 포함된 useSWR 키 설정
-  const { data } = useSWR<Product[]>(
-    `/api/products?category=${category}`,
-    fetcher,
-    {
-      fallbackData: products,
-      revalidateOnMount: false,
-      revalidateIfStale: false,
-    },
-  );
-
+  premiumFeatures,
+}: ProductCatalogProps) => {
   return (
     <ProductFilterProvider initialValue={initialFilterState}>
       {/* Filters */}
-      <ProductFilters data={data ?? []} category={category} />
+      <ProductFilters
+        data={products}
+        category={category}
+        premiumFeatures={premiumFeatures}
+      />
       {/* Product Grid */}
-      <ProductGrid data={data ?? []} />
+      <ProductGrid data={products} />
     </ProductFilterProvider>
   );
 };

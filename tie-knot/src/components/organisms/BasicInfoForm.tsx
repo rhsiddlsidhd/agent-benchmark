@@ -7,9 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import TextField from "@/components/organisms/fields/TextField";
+import TextField from "@/components/molecules/TextField";
 import clsx from "clsx";
-import { TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyMuted } from "@/components/atoms/typography";
 import { Save } from "lucide-react";
 import React, { useState } from "react";
 

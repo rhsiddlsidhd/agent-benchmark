@@ -1,6 +1,6 @@
 import { CoupleInfoModel, ICoupleInfo } from "@/models/coupleInfo.model";
 import { CoupleInfoSchemaDto } from "@/schemas/coupleInfo.schema";
-import { dbConnect } from "@/utils/mongodb";
+import { dbConnect } from "@/lib/mongodb";
 
 import mongoose from "mongoose";
 

@@ -87,7 +87,7 @@ export const getPremiumFeatureService = async (
 ### 문제 상황
 
 - **서비스 함수의 반환 타입**: `Promise<PremiumFeature[]>` 로 명시되어 있습니다. 이 타입은 `_id`가 `string`이어야 합니다.
-- **Mongoose의 반환 타입**: `FeatureModel.find()`는 `FeatureDoc[]`을 반환합니다. 이 타입은 `_id`가 `ObjectId`입니다.
+- **Mongoose의 반환 타입**: `FeatureModel.find()`는 `IFeature[]`을 반환합니다. 이 타입은 `_id`가 `ObjectId`입니다.
 - **TypeScript의 관점**: `feature.toJSON()`이 런타임에 타입을 바꾸는 것을 정적으로 알 수 없으므로, `ObjectId` 타입을 `string` 타입에 할당할 수 없다는 에러를 발생시킵니다.
 
 ### 해결 방법: 타입 단언 (Type Assertion)

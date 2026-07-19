@@ -1,19 +1,19 @@
-import { HTTPError } from "@/types/error";
-import User, { BaseUser, UserDocument } from "@/models/user.model";
+import { HTTPError } from "@/types";
+import { UserModel, BaseUser, IUser } from "@/models/user.model";
 
 import bcrypt from "bcryptjs";
-import { dbConnect } from "@/utils/mongodb";
+import { dbConnect } from "@/lib/mongodb";
 // 유저 생성
-export const createUser = async (user: BaseUser): Promise<UserDocument> => {
+export const createUser = async (user: BaseUser): Promise<IUser> => {
   await dbConnect();
-  const newUser = await new User(user).save();
+  const newUser = await new UserModel(user).save();
   return newUser;
 };
 
 // 이메일 중복 확인
 export const checkEmailDuplicate = async (email: string): Promise<boolean> => {
   await dbConnect();
-  const exists = await User.exists({ email });
+  const exists = await UserModel.exists({ email });
   return !!exists;
 };
 
@@ -26,15 +26,15 @@ export const getUserEmail = async ({
   phone: string;
 }): Promise<string> => {
   await dbConnect();
-  const user = await User.findOne({ name, phone }).lean<BaseUser>();
+  const user = await UserModel.findOne({ name, phone }).lean<BaseUser>();
   if (!user) throw new HTTPError("유저를 찾을 수가 없습니다.", 404);
   return user.email;
 };
 
 // 유저 ID로 유저 찾기
-export const getUserById = async (id: string): Promise<UserDocument> => {
+export const getUserById = async (id: string): Promise<IUser> => {
   await dbConnect();
-  const user = await User.findById(id).lean<UserDocument>();
+  const user = await UserModel.findById(id).lean<IUser>();
   if (!user) throw new HTTPError("유저를 찾을 수가 없습니다.", 404);
   return user;
 };
@@ -50,7 +50,7 @@ export const changePassword = async (
   const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
   // 비밀번호 업데이트
-  const userBeforeUpdate = await User.findOneAndUpdate(
+  const userBeforeUpdate = await UserModel.findOneAndUpdate(
     { email, isDelete: false },
     { password: hashedNewPassword },
   );

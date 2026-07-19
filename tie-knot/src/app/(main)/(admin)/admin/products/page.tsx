@@ -4,8 +4,8 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { getAllProductsService } from "@/services/product.service";
-import { ProductTableRow } from "./_components/ProductTableRow";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { ProductTableRow } from "./_components";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 
 const tableColums = [
   "썸네일",

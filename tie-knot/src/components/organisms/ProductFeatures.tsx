@@ -2,7 +2,7 @@ import { Card } from "@/components/atoms/card";
 import { PremiumFeature } from "@/services/premiumFeature.service";
 import clsx from "clsx";
 import { Check, Palette, Type, Settings, FileText } from "lucide-react";
-import { TypographyH2, TypographyH3, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH2, TypographyH3, TypographyMuted } from "@/components/atoms/typography";
 
 interface ProductFeaturesProps {
   options: PremiumFeature[];

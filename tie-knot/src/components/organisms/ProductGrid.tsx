@@ -1,10 +1,10 @@
-import Grid from "@/components/layout/Grid";
+import Grid from "@/components/atoms/grid";
 import { ProductCard } from "@/components/organisms/ProductCard";
 
-import useVisibleProducts from "@/hooks/useVisibleProducts";
+import { useVisibleProducts } from "@/hooks";
 import { useProductFilter } from "@/context/productFilter/reducer";
 import { Product } from "@/services/product.service";
-import { TypographyMuted, TypographyP } from "../atoms/typoqraphy";
+import { TypographyMuted, TypographyP } from "../atoms/typography";
 import { PackageOpen } from "lucide-react";
 
 export function ProductGrid({ data }: { data: Product[] }) {

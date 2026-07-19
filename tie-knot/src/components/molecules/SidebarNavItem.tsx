@@ -1,7 +1,7 @@
 "use client";
-import { ALL_NAVIGATE_ITEMS, SubmenuParentTitle } from "@/constants/sidebar";
+import { allNavigateItems, SubmenuParentTitle } from "@/constants";
 import { cn } from "@/lib/utils";
-import { isSubmenuParentTitle } from "@/utils/sidebar";
+import { isSubmenuParentTitle } from "@/utils";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,7 +26,7 @@ export default function SidebarNavItem({
     );
   };
 
-  const data = ALL_NAVIGATE_ITEMS[type];
+  const data = allNavigateItems[type];
 
   return (
     <nav className="flex-1 overflow-y-auto">

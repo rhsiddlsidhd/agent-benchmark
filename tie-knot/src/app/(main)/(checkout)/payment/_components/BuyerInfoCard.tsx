@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import TextField from "@/components/organisms/fields/TextField";
+import TextField from "@/components/molecules/TextField";
 import type { BuyerInfo } from "@/schemas/order.schema";
 
 interface BuyerInfoCardProps {

@@ -12,7 +12,7 @@ const useFetchCoupleInfo = () => {
 
   const { data, error, isLoading, mutate } = useSWR(
     swrKey,
-    (url: string) => fetcher<ICoupleInfo>(url, { auth: true }),
+    (url: string) => fetcher<ICoupleInfo>(url),
     {
       // 수정 페이지에 최적화된 옵션
       revalidateOnFocus: false, // 탭 전환 시 재검증 방지

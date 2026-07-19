@@ -1,18 +1,14 @@
-"use client";
-
 import { Sparkles } from "lucide-react";
+import Link from "next/link";
 import { Product } from "@/services/product.service";
 
-import { calculatePrice } from "@/utils/price";
-import { useRouter } from "next/navigation";
-import { SubCategory, subCategoryLabels } from "@/utils/category";
+import { calculatePrice } from "@/utils";
+import { SubCategory, subCategoryLabels } from "@/utils";
 import { Badge } from "../atoms/badge";
-import { TypographyMuted } from "../atoms/typoqraphy";
+import { TypographyMuted } from "../atoms/typography";
 import CloudImage from "../molecules/CloudImage";
 
 export function ProductCard({ product }: { product: Product }) {
-  const router = useRouter();
-
   const finalPrice =
     product.discount?.value > 0
       ? calculatePrice(product.price, product.discount)
@@ -26,10 +22,8 @@ export function ProductCard({ product }: { product: Product }) {
     : null;
 
   return (
-    <article
-      className="group relative cursor-pointer"
-      onClick={() => router.push(`/products/${product._id}`)}
-    >
+    <Link href={`/products/${product._id}`}>
+      <article className="group relative cursor-pointer">
       {/* Image — the card itself */}
       <div className="relative aspect-3/4 overflow-hidden rounded-2xl bg-neutral-100">
         {/* Thumbnail with zoom on hover */}
@@ -102,6 +96,7 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
       </div>
-    </article>
+      </article>
+    </Link>
   );
 }

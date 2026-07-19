@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ImageListPayload } from "@/types/image";
+import { ImageListPayload } from "@/types";
 
 export type ImageItem =
   | { type: "existing"; id: string; preview: string; originalUrl: string }

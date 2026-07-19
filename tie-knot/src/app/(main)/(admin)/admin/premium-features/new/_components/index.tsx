@@ -1,0 +1,1 @@
+export { PremiumFeatureRegistrationForm } from "./PremiumFeatureRegistrationForm";

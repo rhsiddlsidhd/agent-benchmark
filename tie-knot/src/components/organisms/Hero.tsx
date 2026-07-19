@@ -2,7 +2,7 @@ import Image from "next/image";
 import React from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/atoms/button";
-import { TypographySmall } from "@/components/atoms/typoqraphy";
+import { TypographySmall } from "@/components/atoms/typography";
 
 const keyBenefits = ["신용카드 없이 시작", "5분 만에 완성", "무제한 공유"];
 

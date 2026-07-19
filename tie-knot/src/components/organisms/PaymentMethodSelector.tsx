@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import { PayMethod } from "@/models/payment";
+import { PayMethod } from "@/models/payment.model";
 import { ArrowRightLeft, CreditCard, Landmark, Phone } from "lucide-react";
 import React from "react";
 import RadioField, {

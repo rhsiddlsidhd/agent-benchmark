@@ -6,13 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import { formatPriceWithComma } from "@/utils/price";
-import ProductThumbnail from "@/components/molecules/ProductThumbnail";
-import { DELIVERY_FEE } from "@/constants/price";
+import { formatPriceWithComma } from "@/utils";
+import CloudImage from "@/components/molecules/CloudImage";
+import { DELIVERY_FEE } from "@/constants";
 
-import { useCheckoutData } from "@/hooks/useCheckoutData";
+import { useCheckoutData } from "@/hooks";
 import { SelectFeatureDto } from "@/schemas/order.schema";
-import { TypographyH3, TypographyMuted, TypographyP, TypographySmall } from "@/components/atoms/typoqraphy";
+import { TypographyH3, TypographyMuted, TypographyP, TypographySmall } from "@/components/atoms/typography";
 
 
 export const OrderSummary = () => {
@@ -56,7 +56,7 @@ export const OrderSummary = () => {
         <CardContent className="space-y-4">
           <div className="flex gap-4">
             <div className="bg-muted relative h-24 w-20 shrink-0 overflow-hidden rounded-lg">
-              <ProductThumbnail src={thumbnail} sizes="80px" />
+              <CloudImage src={thumbnail} sizes="80px" />
             </div>
             <div className="min-w-0 flex-1">
               <TypographyH3 className="mb-1 truncate font-medium">

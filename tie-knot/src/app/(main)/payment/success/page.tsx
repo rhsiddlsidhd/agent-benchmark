@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import { TypographyH1, TypographyMuted, TypographySmall } from "@/components/atoms/typoqraphy";
+import { TypographyH1, TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";

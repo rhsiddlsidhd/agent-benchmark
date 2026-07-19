@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { CheckoutItem } from "@/types/checkout";
+import { CheckoutItem } from "@/types";
 
 interface OrderState {
   order: CheckoutItem | null;
