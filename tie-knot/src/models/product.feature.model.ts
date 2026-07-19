@@ -1,8 +1,9 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Types, Model } from "mongoose";
 
 // toJSON() 반환 타입 정의
 
-export interface FeatureDoc extends Document {
+export interface IFeature {
+  _id: Types.ObjectId;
   code: string;
   label: string; // 관리자/프론트용 이름
   description?: string; // 기능 설명
@@ -12,7 +13,7 @@ export interface FeatureDoc extends Document {
   updatedAt: Date;
 }
 
-const featureSchema = new Schema<FeatureDoc>(
+const featureSchema = new Schema<IFeature>(
   {
     code: { type: String, required: true, unique: true },
     label: { type: String, required: true },
@@ -25,6 +26,6 @@ const featureSchema = new Schema<FeatureDoc>(
   },
 );
 
-export const FeatureModel: Model<FeatureDoc> =
-  mongoose.models.Feature ||
-  mongoose.model<FeatureDoc>("Feature", featureSchema);
+export const FeatureModel =
+  (mongoose.models.Feature as Model<IFeature>) ||
+  mongoose.model<IFeature>("Feature", featureSchema);

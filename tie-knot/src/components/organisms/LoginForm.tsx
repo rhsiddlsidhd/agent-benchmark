@@ -1,54 +1,26 @@
-"use client";
-
-import type React from "react";
-import { useActionState, useEffect } from "react";
-
 import Link from "next/link";
 import { Globe } from "lucide-react";
 
-import { useRouter } from "next/navigation";
-import useAuthStore from "@/store/auth.store";
-
 import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 
 import { Checkbox } from "@/components/atoms/checkbox";
-import { loginUser } from "@/actions/loginUser";
 import { Label } from "@/components/atoms/label";
-import { toast } from "sonner";
-import { APIResponse } from "@/types/error";
-import { UserRole } from "@/models/user.model";
-import TextField from "@/components/organisms/fields/TextField";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
+import TextField from "@/components/molecules/TextField";
 
-export function LoginForm() {
-  const router = useRouter();
-  const [state, action, pending] = useActionState<
-    APIResponse<{ token: string; role: UserRole; email: string; userId: string }>,
-    FormData
-  >(loginUser, null);
-  const setToken = useAuthStore((state) => state.setToken);
+interface LoginFormProps {
+  action: (formData: FormData) => void;
+  pending: boolean;
+  emailError?: string;
+  passwordError?: string;
+}
 
-  useEffect(() => {
-    if (!state) return;
-    if (state.success === true) {
-      setToken({
-        token: state.data.token,
-        role: state.data.role,
-        email: state.data.email,
-        userId: state.data.userId,
-      });
-      return router.push("/");
-    } else {
-      if (!hasFieldErrors(state.error)) {
-        toast.error(state.error.message);
-      }
-    }
-  }, [state, setToken, router]);
-
-  const emailError = getFieldError(state, "email");
-  const passwordError = getFieldError(state, "password");
-
+export function LoginForm({
+  action,
+  pending,
+  emailError,
+  passwordError,
+}: LoginFormProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center lg:text-left">

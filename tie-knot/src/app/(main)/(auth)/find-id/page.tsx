@@ -1,4 +1,4 @@
-import { FindIdForm } from "@/components/organisms/FindIdForm";
+import { FindIdForm } from "./_components";
 
 export default function FindIdPage() {
   return <FindIdForm />;

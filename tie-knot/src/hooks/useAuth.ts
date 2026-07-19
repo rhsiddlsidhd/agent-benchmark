@@ -3,11 +3,11 @@
 import useSWR from "swr";
 import { useEffect } from "react";
 import useAuthStore from "@/store/auth.store";
-import { AuthSession } from "@/types/auth";
+import { AuthSession } from "@/types";
 import { fetcher } from "@/api/fetcher";
 
 export function useAuth() {
-  const setToken = useAuthStore((state) => state.setToken);
+  const setSession = useAuthStore((state) => state.setSession);
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   const { data: session, isLoading } = useSWR<AuthSession | null>(
@@ -18,11 +18,11 @@ export function useAuth() {
 
   useEffect(() => {
     if (session) {
-      setToken(session);
+      setSession(session);
     } else if (session === null) {
       clearAuth();
     }
-  }, [session, setToken, clearAuth]);
+  }, [session, setSession, clearAuth]);
 
   return { isLoading };
 }

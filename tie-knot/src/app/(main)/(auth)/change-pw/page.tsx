@@ -1,4 +1,4 @@
-import UpdatePasswordForm from "@/components/organisms/UpdatePasswordForm";
+import { UpdatePasswordForm } from "./_components";
 import React, { Suspense } from "react";
 
 const ResetPassword = () => {

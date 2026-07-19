@@ -1,4 +1,4 @@
-import Header from "@/components/layout/Header";
+import { Header } from "./_components";
 import React from "react";
 import { Toaster } from "sonner";
 import { AnnouncementBar } from "@/components/molecules/AnnouncementBar";

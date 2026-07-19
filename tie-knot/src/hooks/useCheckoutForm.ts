@@ -1,9 +1,9 @@
 import { useState, startTransition } from "react";
 import type React from "react";
 import { toast } from "sonner";
-import { validateAndFlatten } from "@/lib/validation/validateAndFlatten";
+import { validateAndFlatten } from "@/utils";
 import { BuyerInfo, BuyerInfoSchema } from "@/schemas/order.schema";
-import { CheckoutItem } from "@/types/checkout";
+import { CheckoutItem } from "@/types";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 interface UseCheckoutFormOptions {

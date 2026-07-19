@@ -1,5 +1,5 @@
-import { SubCategory } from "@/utils/category";
-import { ProductPriceType, ProductSortType } from "@/constants/product";
+import { SubCategory } from "@/utils";
+import { ProductPriceType, ProductSortType } from "@/constants";
 
 export type ProductFilterState = {
   keyword: string;

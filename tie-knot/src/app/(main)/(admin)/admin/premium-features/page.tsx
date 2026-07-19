@@ -2,15 +2,15 @@ export const revalidate = 600;
 
 import { Badge } from "@/components/atoms/badge";
 import { Card, CardContent } from "@/components/atoms/card";
-import Grid from "@/components/layout/Grid";
-import PremiumFeatureCardAction from "@/components/organisms/PremiumFeatureCardAction";
+import Grid from "@/components/atoms/grid";
+import { PremiumFeatureCardAction } from "./_components";
 import { getAllPremiumFeatureService } from "@/services/premiumFeature.service";
 import {
   TypographyH1,
   TypographyH3,
   TypographyLarge,
   TypographyMuted,
-} from "@/components/atoms/typoqraphy";
+} from "@/components/atoms/typography";
 
 export default async function PremiumFeaturesPage() {
   const features = await getAllPremiumFeatureService();

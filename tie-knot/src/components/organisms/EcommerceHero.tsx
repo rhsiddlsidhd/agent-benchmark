@@ -12,8 +12,8 @@ import { Button } from "@/components/atoms/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import promotions from "@/data/promotions.json";
-import { useIntervalIndex } from "@/hooks/useIntervalIndex";
-import { TypographyH2, TypographySmall } from "@/components/atoms/typoqraphy";
+import { useIntervalIndex } from "@/hooks";
+import { TypographyH2, TypographySmall } from "@/components/atoms/typography";
 
 // 아이콘 매핑 객체
 const ICON_MAP: Record<string, React.ElementType> = {

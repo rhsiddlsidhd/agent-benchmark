@@ -1,28 +1,26 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ShoppingCart, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import StatusSelect from "@/components/molecules/StatusSelect";
-import { useOrderStore } from "@/store/order.store";
 import { Product } from "@/services/product.service";
 import { PremiumFeature } from "@/services/premiumFeature.service";
-import { CheckoutItem } from "@/types/checkout";
+import { CheckoutItem } from "@/types";
 import { SelectFeatureDto } from "@/schemas/order.schema";
-import { calculatePrice, formatPriceWithComma } from "@/utils/price";
+import { calculatePrice, formatPriceWithComma } from "@/utils";
 
 const ProductOptions = ({
   product,
   options,
+  onPurchase,
 }: {
   product: Product;
   options: PremiumFeature[];
+  onPurchase: (checkoutData: CheckoutItem) => void;
 }) => {
-  const router = useRouter();
-  const setOrder = useOrderStore((state) => state.setOrder);
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
 
   const optionsMap = useMemo(() => {
@@ -103,15 +101,8 @@ const ProductOptions = ({
       selectedFeatures: selectedOptionsDetails,
     };
 
-    setOrder(checkoutData);
-    router.push("/couple-info");
-  }, [
-    product,
-    discountedPrice,
-    selectedOptionsDetails,
-    router,
-    setOrder,
-  ]);
+    onPurchase(checkoutData);
+  }, [product, discountedPrice, selectedOptionsDetails, onPurchase]);
 
   return (
     <div>

@@ -11,11 +11,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/atoms/collapsible";
-import BankField from "@/components/organisms/fields/BankField";
-import TextField from "@/components/organisms/fields/TextField";
+import BankField from "@/components/molecules/BankField";
+import TextField from "@/components/molecules/TextField";
 import { ChevronDown } from "lucide-react";
-import { TypographyH3, TypographySmall } from "@/components/atoms/typoqraphy";
+import { TypographyH3, TypographySmall } from "@/components/atoms/typography";
 import type { ICoupleInfo } from "@/models/coupleInfo.model";
+import type { Banks } from "@/app/api/banks/route";
 
 import { useState } from "react";
 
@@ -28,9 +29,10 @@ const PARENTS: { id: ParentRole; title: string }[] = [
 
 type ParentsInfoSectionProps = {
   data?: Pick<ICoupleInfo, "groom" | "bride">;
+  banks?: Banks;
 };
 
-export function ParentsInfoSection({ data }: ParentsInfoSectionProps) {
+export function ParentsInfoSection({ data, banks }: ParentsInfoSectionProps) {
   const [groomParentsOpen, setGroomParentsOpen] = useState(false);
   const [brideParentsOpen, setBrideParentsOpen] = useState(false);
 
@@ -83,6 +85,7 @@ export function ParentsInfoSection({ data }: ParentsInfoSectionProps) {
                         defaultAccountNumber={
                           data?.groom?.[parent.id]?.accountNumber
                         }
+                        banks={banks}
                       />
                     </div>
                   </div>
@@ -135,6 +138,7 @@ export function ParentsInfoSection({ data }: ParentsInfoSectionProps) {
                         defaultAccountNumber={
                           data?.bride?.[parent.id]?.accountNumber
                         }
+                        banks={banks}
                       />
                     </div>
                   </div>

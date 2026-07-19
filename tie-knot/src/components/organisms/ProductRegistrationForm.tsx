@@ -1,12 +1,9 @@
 "use client";
 
 import type React from "react";
-import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Image from "next/image";
 import { UploadCloud, X } from "lucide-react";
-import { toast } from "sonner";
-import { createProductAction } from "@/actions/createProductAction";
 import type { PremiumFeature } from "@/services/premiumFeature.service";
 import Alert from "@/components/molecules/Alert";
 import {
@@ -19,28 +16,30 @@ import {
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
 import { Textarea } from "@/components/atoms/textarea";
-import SelectField from "@/components/organisms/fields/SelectField";
+import SelectField from "@/components/molecules/SelectField";
 import { Switch } from "@/components/atoms/switch";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Label } from "@/components/atoms/label";
-import { getCategoryOptions, getSubCategoryOptions, ProductCategory } from "@/utils/category";
-import { getFieldError } from "@/utils/error";
-import { APIResponse } from "@/types/error";
-import { TypographyMuted, TypographyH4 } from "@/components/atoms/typoqraphy";
+import { getCategoryOptions, getSubCategoryOptions, ProductCategory } from "@/utils";
+import { getFieldError } from "@/utils";
+import { APIResponse } from "@/types";
+import { TypographyMuted, TypographyH4 } from "@/components/atoms/typography";
 
 interface ProductRegistrationFormProps {
   premiumFeatures: PremiumFeature[];
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string }> | null;
+  onCancel: () => void;
 }
 
 export function ProductRegistrationForm({
   premiumFeatures,
+  action,
+  pending,
+  state,
+  onCancel,
 }: ProductRegistrationFormProps) {
-  const router = useRouter();
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string }>,
-    FormData
-  >(createProductAction, null);
-
   const [isPremium, setIsPremium] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>("invitation");
   const [isFeature, setIsFeature] = useState(false);
@@ -50,14 +49,6 @@ export function ProductRegistrationForm({
   const [previewPreview, setPreviewPreview] = useState<string | null>(null);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [discountType, setDiscountType] = useState<"rate" | "amount">("rate");
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.success) {
-      toast.success(state.data.message);
-      router.push("/admin/products");
-    }
-  }, [state, router]);
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -418,7 +409,7 @@ export function ProductRegistrationForm({
       </div>
 
       <div className="flex justify-end gap-4 pt-4">
-        <Button type="button" variant="outline" onClick={() => router.push("/admin/products")}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           취소
         </Button>
         <Button type="submit" className="min-w-30" disabled={pending}>

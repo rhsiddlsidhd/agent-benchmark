@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { HTTPError } from "@/types/error";
-import { CoupleInfoForm } from "@/components/organisms/CoupleInfoForm";
-import { getCookie } from "@/lib/cookies/get";
-import { decrypt } from "@/lib/token";
+import { HTTPError } from "@/types";
+import { CoupleInfoForm } from "./_components";
+import { getCookie } from "@/lib/cookies";
+import { decrypt } from "@/lib/jose";
 import React from "react";
 
 const page = async () => {
@@ -16,7 +16,7 @@ const page = async () => {
 
   if (!payload.id) throw new HTTPError("유효하지 않은 토큰입니다.", 401);
 
-  return <CoupleInfoForm type={"create"} />;
+  return <CoupleInfoForm />;
 };
 
 export default page;

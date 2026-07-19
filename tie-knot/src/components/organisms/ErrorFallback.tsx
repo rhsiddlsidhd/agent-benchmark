@@ -3,9 +3,9 @@
 import { Button } from "@/components/atoms/button";
 import { Card } from "@/components/atoms/card";
 import { AlertCircle, ArrowLeft, RotateCcw } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import React from "react";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 
 interface ErrorFallbackProps {
   error: Error & { digest?: string };
@@ -24,8 +24,6 @@ export default function ErrorFallback({
   backPath = "/",
   backLabel = "홈으로 돌아가기",
 }: ErrorFallbackProps) {
-  const router = useRouter();
-
   return (
     <div className="flex h-screen items-center justify-center p-4">
       <Card className="w-full max-w-lg border-red-100 shadow-lg">
@@ -69,14 +67,11 @@ export default function ErrorFallback({
               <RotateCcw className="mr-2 h-4 w-4" />
               다시 시도
             </Button>
-            <Button
-              onClick={() => router.push(backPath)}
-              variant="outline"
-              size="lg"
-              className="w-full"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {backLabel}
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link href={backPath}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {backLabel}
+              </Link>
             </Button>
           </div>
         </div>

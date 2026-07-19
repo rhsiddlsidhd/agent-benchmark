@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import React from "react";
-import ProductThumbnail from "@/components/molecules/ProductThumbnail";
+import CloudImage from "@/components/molecules/CloudImage";
 import { Button } from "@/components/atoms/button";
 
 interface ImagePreviewItemProps {
@@ -21,7 +21,7 @@ export const ImagePreviewItem = ({
 }: ImagePreviewItemProps) => {
   return (
     <div className="border-border group relative aspect-square overflow-hidden rounded-lg border">
-      <ProductThumbnail src={preview} alt={`Preview ${id}`} sizes={sizes} />
+      <CloudImage src={preview} alt={`Preview ${id}`} sizes={sizes} />
       <Button
         type="button"
         variant="ghost"

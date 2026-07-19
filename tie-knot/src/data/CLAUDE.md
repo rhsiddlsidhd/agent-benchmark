@@ -15,9 +15,7 @@ src/data/
 ├── cta.json                  # 실사용 — StartActionCTA.tsx
 ├── announcement.json         # 실사용 — app/(main)/layout.tsx
 ├── promotions.json           # 실사용 — components/organisms/EcommerceHero.tsx
-├── categories.json           # 미사용(Gotchas 참고)
-├── featured-products.json    # 미사용, mock으로 보임(Gotchas 참고)
-└── subway.ts                 # 유일하게 JSON이 아니라 TS(Gotchas 참고)
+└── subway.json                # 실사용 — BasicInfoSection.tsx, app/api/subway/route.ts
 ```
 
 ## Critical Convention
@@ -26,8 +24,7 @@ src/data/
 
 ## Gotchas
 
-- `categories.json`, `featured-products.json` — 코드 어디서도 import 안 됨(grep 확인, 0곳). 특히 `featured-products.json`은 이미지가 4개 항목 전부 동일(`/assets/images/output.webp`)하고 가격/평점/리뷰수가 하드코딩돼있어 실제 Product 데이터 연동 전 placeholder로 만들어두고 방치된 것으로 보임 — 정식 콘텐츠 취급해서 계속 유지보수하지 않는다. 실제로 쓸 계획이면 연동 작업, 아니면 삭제 대상(둘 다 코드 리팩토링 범위라 지금은 안 건드림).
-- `subway.ts`만 JSON이 아니라 TS 배열(`MOC_SUBWAY_STATIONS`)로 돼있음 — Critical Convention 위반. `subway.json`으로 옮기거나, 로직(타입가드 등)이 붙을 계획이면 애초에 `constants/`로 재배치 검토(코드 리팩토링은 추후 진행 예정).
+- 없음.
 
 ## 관련 문서
 

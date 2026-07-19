@@ -1,9 +1,9 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Model } from "mongoose";
 import {
   ProductCategory,
   SubCategory,
   SUB_CATEGORY_MAP,
-} from "@/utils/category";
+} from "@/utils";
 
 export type { ProductCategory, SubCategory };
 export { SUB_CATEGORY_MAP };
@@ -49,7 +49,8 @@ export interface ProductDB {
   deletedAt?: Date;
 }
 
-export interface ProductDocument extends ProductDB, mongoose.Document {
+export interface IProduct extends ProductDB {
+  _id: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,7 +66,7 @@ export interface ProductJSON extends Omit<ProductDB, "likes" | "featureIds" | "d
   deletedAt?: string;
 }
 
-const productSchema = new Schema<ProductDocument>(
+const productSchema = new Schema<IProduct>(
   {
     authorId: { type: String, required: true },
     title: { type: String, required: true },
@@ -82,7 +83,7 @@ const productSchema = new Schema<ProductDocument>(
       type: String,
       required: true,
       validate: {
-        validator: function (this: ProductDocument, value: string) {
+        validator: function (this: IProduct, value: string) {
           const allowed = SUB_CATEGORY_MAP[this.category];
           return allowed?.includes(value as SubCategory) ?? false;
         },
@@ -119,9 +120,6 @@ const productSchema = new Schema<ProductDocument>(
   },
 );
 
-// 모델 컴파일 전 기존 모델 삭제 (개발 환경에서의 캐싱 에러 방지)
-if (mongoose.models.Product) {
-  delete mongoose.models.Product;
-}
-
-export const ProductModel = model<ProductDocument>("Product", productSchema);
+export const ProductModel =
+  (mongoose.models.Product as Model<IProduct>) ||
+  model<IProduct>("Product", productSchema);

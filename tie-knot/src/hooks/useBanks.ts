@@ -5,13 +5,10 @@ import { fetcher } from "@/api/fetcher";
 import { Banks } from "@/app/api/banks/route";
 
 export function useBanks() {
-  const { data, error, isLoading } = useSWR<{ items: Banks }>(
-    "/api/banks",
-    fetcher,
-  );
+  const { data, error, isLoading } = useSWR<Banks>("/api/banks", fetcher);
 
   return {
-    banks: data?.items,
+    banks: data,
     isLoading,
     isError: error,
   };

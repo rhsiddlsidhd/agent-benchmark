@@ -1,10 +1,9 @@
-import { APIRouteResponse } from "@/api/response";
-import { handleRouteError } from "@/api/error";
-import { HTTPError } from "@/types/error";
+import { APIRouteResponse, apiFail } from "@/api/response";
+import { HTTPError } from "@/types";
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { validateAndFlatten } from "@/lib/validation/validateAndFlatten";
-import { decrypt } from "@/lib/token";
+import { validateAndFlatten } from "@/utils";
+import { requireAuth } from "@/services/auth.service";
 
 const createOrderRequestSchema = z.object({
   productId: z.string().min(1, { message: "상품 ID가 필요합니다." }),
@@ -30,28 +29,7 @@ export const POST = async (
   req: NextRequest,
 ): Promise<APIRouteResponse<{ merchantUid: string; orderId: string }>> => {
   try {
-    // 인증 확인 - Authorization 헤더에서 토큰 추출
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.error("[Order Create] No auth header");
-      throw new HTTPError("로그인이 필요합니다.", 401);
-    }
-
-    const token = authHeader.substring(7); // "Bearer " 제거
-
-    let payload;
-    try {
-      const result = await decrypt({ token, type: "ACCESS" });
-      payload = result.payload;
-
-      if (!payload.id) {
-        console.error("[Order Create] No payload.id");
-        throw new HTTPError("유효하지 않은 토큰입니다.", 401);
-      }
-    } catch (decryptError) {
-      console.error("[Order Create] Decrypt failed:", decryptError);
-      throw new HTTPError("유효하지 않은 토큰입니다.", 401);
-    }
+    await requireAuth();
 
     const body = await req.json();
 
@@ -70,6 +48,6 @@ export const POST = async (
     // payment는 결제 완료 후 syncPayment로 생성됩니다.
     throw new HTTPError("이 API는 현재 사용할 수 없습니다.", 501);
   } catch (error) {
-    return handleRouteError(error);
+    return apiFail(error);
   }
 };

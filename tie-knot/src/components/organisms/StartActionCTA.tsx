@@ -4,7 +4,7 @@ import {
   TypographyH2,
   TypographyP,
   TypographySmall,
-} from "@/components/atoms/typoqraphy";
+} from "@/components/atoms/typography";
 
 export function StartActionCTA() {
   return (

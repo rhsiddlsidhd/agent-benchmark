@@ -1,13 +1,11 @@
 "use server";
 
-import { encrypt } from "@/lib/token";
-import { validateAndFlatten } from "@/lib/validation/validateAndFlatten";
-import { sendEmail } from "@/lib/email";
+import { encrypt } from "@/lib/jose";
+import { validateAndFlatten } from "@/utils";
+import { sendEmail } from "@/lib/nodemailer";
 import { emailSchema } from "@/schemas/email.schema";
-import { APIResponse, success } from "@/api/response";
+import { APIResponse } from "@/types";
 import { checkEmailDuplicate } from "@/services/user.service";
-import { handleActionError } from "@/api/error";
-import { HTTPError } from "@/types/error";
 
 const createChangePWDomain = (token: string): string => {
   return process.env.NODE_ENV === "development"
@@ -22,22 +20,34 @@ export const requestPasswordReset = async (
   // 이메일 비밀번호 재설정 링크 전송
   // nodeMailer 라이브러리 사용
 
-  try {
-    const data = {
-      email: formData.get("email") as string,
+  const data = {
+    email: formData.get("email") as string,
+  };
+
+  const parsed = validateAndFlatten(emailSchema, data);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: {
+        message: "입력 값을 확인해주세요.",
+        code: 400,
+        fieldErrors: parsed.error,
+      },
     };
+  }
+  const { email } = parsed.data;
 
-    const parsed = validateAndFlatten(emailSchema, data);
+  const isEmail = await checkEmailDuplicate(email);
 
-    if (!parsed.success) {
-      throw new HTTPError("입력 값을 확인해주세요.", 400, parsed.error);
-    }
-    const { email } = parsed.data;
+  if (!isEmail) {
+    return {
+      success: false,
+      error: { message: "등록되지 않은 이메일입니다.", code: 400 },
+    };
+  }
 
-    const isEmail = await checkEmailDuplicate(email);
-
-    if (!isEmail) throw new HTTPError("등록되지 않은 이메일입니다.", 400);
-
+  try {
     // entry token 발행 && createDomatin
     const entryToken = await encrypt({ id: email, type: "ENTRY" });
 
@@ -46,11 +56,14 @@ export const requestPasswordReset = async (
 
     await sendEmail({ email, path });
 
-    return success<{ message: string; email: string }>({
-      message: "이메일 발송에 성공하였습니다.",
-      email,
-    });
-  } catch (e) {
-    return handleActionError(e);
+    return {
+      success: true,
+      data: { message: "이메일 발송에 성공하였습니다.", email },
+    };
+  } catch {
+    return {
+      success: false,
+      error: { message: "서버 오류가 발생했습니다.", code: 500 },
+    };
   }
 };

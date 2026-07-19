@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
+import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
 import { getAllProductsService, Product } from "@/services/product.service";
 
 export const GET = async (
@@ -12,8 +11,8 @@ export const GET = async (
 
     const products = await getAllProductsService(category);
 
-    return apiSuccess(products);
+    return apiOk(products);
   } catch (error) {
-    return handleRouteError(error);
+    return apiFail(error);
   }
 };

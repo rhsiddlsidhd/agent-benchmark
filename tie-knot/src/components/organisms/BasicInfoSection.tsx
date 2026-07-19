@@ -7,12 +7,12 @@ import {
   CardTitle,
 } from "@/components/atoms/card";
 import { format } from "date-fns";
-import TextField from "@/components/organisms/fields/TextField";
-import AddressField from "@/components/organisms/fields/AddressField";
+import TextField from "@/components/molecules/TextField";
+import AddressField from "@/components/molecules/AddressField";
 import SwitchField from "@/components/molecules/SwitchField";
-import SelectField from "@/components/organisms/fields/SelectField";
-import DateField from "@/components/organisms/fields/DateField";
-import { MOC_SUBWAY_STATIONS } from "@/data/subway";
+import SelectField from "@/components/molecules/SelectField";
+import DateField from "@/components/molecules/DateField";
+import subwayStations from "@/data/subway.json";
 import type { ICoupleInfo } from "@/models/coupleInfo.model";
 
 type BasicInfoSectionProps = {
@@ -88,7 +88,7 @@ export function BasicInfoSection({ data }: BasicInfoSectionProps) {
           name="subway_station"
           placeholder="지하철역 선택"
           defaultValue={data && data.subwayStation}
-          data={MOC_SUBWAY_STATIONS}
+          data={subwayStations}
         >
           인근 지하철 역
         </SelectField>

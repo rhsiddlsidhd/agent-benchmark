@@ -1,4 +1,4 @@
-import { SignupForm } from "@/components/organisms/SignupForm";
+import { SignupForm } from "./_components";
 
 export default function SignupPage() {
   return <SignupForm />;

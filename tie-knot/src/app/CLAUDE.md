@@ -25,7 +25,7 @@ Next.js App Router 진입점 — 라우트 그룹(`(main)`, `(auth)`, `(checkout
 
 ## Critical Conventions
 
-- `layout.tsx`는 organisms(`Header`, `SidebarLayout`, 각종 Modal 등)와 molecules(`AnnouncementBar` 등)를 조립해 그 라우트 그룹의 페이지 셸(shell)을 구성한다 — 특정 페이지 하나에만 필요한 데이터 페칭/비즈니스 로직을 여기 두지 않는다(그건 `page.tsx`/`_hooks` 소관). 하위 라우트그룹으로 갈수록 셸이 누적된다(예: `(main)/layout.tsx`가 Header+공지바 셸을 깔면, 그 안의 `(admin)/admin/layout.tsx`가 사이드바 셸을 한 겹 더 얹음).
+- `layout.tsx`는 그 라우트 그룹의 페이지 셸(shell)을 구성한다 — 특정 페이지 하나에만 필요한 데이터 페칭/비즈니스 로직을 여기 두지 않는다(그건 `page.tsx`/`_hooks` 소관). 하위 라우트그룹으로 갈수록 셸이 누적된다(예: `(main)/layout.tsx`가 Header+공지바 셸을 깔면, 그 안의 `(admin)/admin/layout.tsx`가 사이드바 셸을 한 겹 더 얹음). 셸 전용 조각(`Header`/`AuthButtons`/`UserAccountNav`/`Footer`/`GuestbookModal`처럼 그 layout.tsx 하나만 쓰는 것)은 그 layout이 속한 라우트 그룹의 `_components/`에 둔다 — Zustand 구독 등 도메인 로직이 있어도 된다(라우트 그룹이 사실상의 소유자이므로). 여러 layout이 겹치는 셸 조각(예: `SidebarLayout`이 admin/my-order/my-profile 3곳에서 쓰이던 것)은 공용 컴포넌트로 승격하지 않고 각 `layout.tsx`가 직접 정의한다 — 지금은 내용이 같아 보여도 각 레이어가 독립적으로 진화할 수 있어서다.
 - 루트 `app/layout.tsx`만 metadata(SEO/OG/Twitter)·전역 CSS import·환경변수 검증을 담당한다 — 하위 `layout.tsx`에서 이걸 중복 정의하지 않는다.
 - `error.tsx`와 `not-found.tsx`를 혼용하지 않는다 — `error.tsx`는 fetch 실패/예외 경계, `not-found.tsx`는 존재하지 않는 리소스 전용이다. 현재는 라우트 개별이 아니라 **라우트 그룹 단위**로 배치돼있다(`(main)/error.tsx`, `(main)/(products)/error.tsx`, `(main)/(admin)/error.tsx`, 루트 `not-found.tsx`) — 그룹 내 여러 라우트가 에러 경계를 공유해도 되면 그룹 레벨, 특정 라우트만 다른 처리가 필요하면 그 라우트에 개별 배치한다.
 - `page.tsx`에 interface/순수함수/상수/서브 UI 컴포넌트/훅을 인라인으로 쌓지 않는다 — `_components`/`_types`/`_utils`/`_constants`/`_hooks`로 분리한다(새 라우트부터 적용, Gotchas 참고).
@@ -34,8 +34,9 @@ Next.js App Router 진입점 — 라우트 그룹(`(main)`, `(auth)`, `(checkout
 
 ## Gotchas
 
-- 기존 라우트는 대부분 `page.tsx`가 `src/components/organisms/{Name}Form.tsx`를 바로 import하는 얇은 래퍼다(예: `login/page.tsx` → `<LoginForm />`) — 라우트 전용 스테이징 없이 처음부터 전역 `src/components/organisms/`에 들어가 있다. 이 구조를 지금 되돌리지 않는다 — 새 라우트/새 기능부터 private 폴더 정책 적용.
-- `_components` private 폴더를 실제로 쓰는 라우트는 `payment/` 1곳뿐이고, 그마저도 `index.tsx` 배럴이 없다(개별 파일 3개만 있음) — 이 정책의 "정식 예시"가 아직 없다는 뜻, 다음에 이 폴더를 건드릴 때 배럴부터 채운다.
+- 기존 라우트는 대부분 `page.tsx`가 `src/components/organisms/{Name}Form.tsx`를 바로 import하는 얇은 래퍼다 — 라우트 전용 스테이징 없이 처음부터 전역 `src/components/organisms/`에 들어가 있다. 이 구조를 지금 일괄로 되돌리지 않는다 — 새 라우트/새 기능부터, 그리고 컨테이너/순수 분리 리팩토링 대상이 되는 라우트부터 순차 적용(`login/`이 첫 사례: `_components/LoginForm.tsx`(컨테이너)가 `organisms/LoginForm.tsx`(순수)를 감쌈, `src/components/organisms/CLAUDE.md` Gotchas 참고).
+- `_components` private 폴더는 이제 컨테이너/순수 분리가 끝난 라우트마다 있다(각각 `index.tsx` 배럴 완비) — 라우트 그룹 셸 전용(`(main)/`, `(preview)/`, `(admin)/admin/`)과 페이지 전용(`payment/`, `login/`, `signup/`, `find-id/`, `find-pw/`, `change-pw/`, `couple-info/`, `(my-order)/order/`, `(my-order)/order/edit/`, `(products)/products/`, `(products)/products/[id]/`, `(admin)/admin/products/`, `(admin)/admin/products/new/`, `(admin)/admin/premium-features/`, `(admin)/admin/premium-features/new/`, `(preview)/preview/[id]/`) 두 종류가 있다.
+- `_utils` private 폴더의 첫 실사용례가 생겼다 — `(preview)/preview/[id]/_utils/`(mapper 8개, `index.ts` 배럴 포함). 여전히 대부분의 라우트는 이 구조를 안 쓰지만(`_utils` 자체는 더 이상 "예제만 있고 실사용 없음" 상태 아님), 이 라우트 하나가 이 private 폴더군의 실제 동작 예시다.
 - `loading.tsx`는 프로젝트 전체에 0개 — 필요해지면 그때 이 문서에 기준을 추가한다(지금은 규정 안 함).
 - `layout.tsx` 함수명 케이스가 파일마다 다름 — 루트/`(admin)/admin`은 `RootLayout`/`AdminLayout`(PascalCase), `(main)`/`(auth)`/`(preview)`는 전부 소문자 `layout`. Next.js는 `export default`라 이름 자체가 동작에 영향 없지만, 새로 만들 때 아무거나 따르지 말고 PascalCase(`{Scope}Layout`)로 통일하는 걸 권장 — 기존 3개 리네임은 코드 리팩토링 범위라 지금은 안 건드림.
 

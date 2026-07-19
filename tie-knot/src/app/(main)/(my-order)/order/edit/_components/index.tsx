@@ -1,0 +1,1 @@
+export { CoupleInfoForm } from "./CoupleInfoForm";

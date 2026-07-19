@@ -1,13 +1,13 @@
 import { GuestbookModel, IGuestbook } from "@/models/guestbook.model";
-import { GuestBookType } from "@/schemas/guestbook.schema";
-import { dbConnect } from "@/utils/mongodb";
+import { GuestbookType } from "@/schemas/guestbook.schema";
+import { dbConnect } from "@/lib/mongodb";
 
 import mongoose from "mongoose";
 
 export const createGuestbookService = async ({
   data,
 }: {
-  data: GuestBookType;
+  data: GuestbookType;
 }) => {
   await dbConnect();
 

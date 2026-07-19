@@ -1,45 +1,27 @@
 "use client";
 
-import type React from "react";
-
-import { useActionState, useEffect, useState } from "react";
+import { useState } from "react";
 
 import Link from "next/link";
 import { Globe } from "lucide-react";
 
-import { useRouter } from "next/navigation";
-import { signupUser } from "@/actions/signupUser";
-
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Button } from "@/components/atoms/button";
 import { Label } from "@/components/atoms/label";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
-import TextField from "@/components/organisms/fields/TextField";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
-import { toast } from "sonner";
-import { APIResponse } from "@/types/error";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
+import TextField from "@/components/molecules/TextField";
+import { getFieldError } from "@/utils";
+import { APIResponse } from "@/types";
 
-export function SignupForm() {
-  const router = useRouter();
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string }>,
-    FormData
-  >(signupUser, null);
+interface SignupFormProps {
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string }> | null;
+}
 
+export function SignupForm({ action, pending, state }: SignupFormProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.success === true) {
-      alert(state.data.message);
-      router.push("/login");
-    } else {
-      if (!hasFieldErrors(state.error)) {
-        toast.error(state.error.message);
-      }
-    }
-  }, [state, router]);
 
   const nameError = getFieldError(state, "name");
   const emailError = getFieldError(state, "email");

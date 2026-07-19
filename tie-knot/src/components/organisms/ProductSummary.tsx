@@ -4,25 +4,28 @@ import { Share2 } from "lucide-react";
 import { useMemo } from "react";
 import { Badge } from "@/components/atoms/badge";
 import { Product } from "@/services/product.service";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 import {
   productCategoryLabels,
   subCategoryLabels,
   isProductCategory,
   SubCategory,
-} from "@/utils/category";
-import { calculatePrice } from "@/utils/price";
+} from "@/utils";
+import { calculatePrice } from "@/utils";
 import { PremiumFeature } from "@/services/premiumFeature.service";
-import ProductLikeBadge from "@/components/molecules/ProductLikeBadge";
+import { CheckoutItem } from "@/types";
+import { default as ProductLikeBadge } from "@/app/(main)/(products)/products/[id]/_components/ProductLikeBadge";
 import ProductOptions from "@/components/organisms/ProductOptions";
-import ProductThumbnail from "@/components/molecules/ProductThumbnail";
+import CloudImage from "@/components/molecules/CloudImage";
 
 export function ProductSummary({
   product,
   options,
+  onPurchase,
 }: {
   product: Product;
   options: PremiumFeature[];
+  onPurchase: (checkoutData: CheckoutItem) => void;
 }) {
   const discountedPrice = useMemo(() => {
     return calculatePrice(product.price, product.discount);
@@ -33,7 +36,7 @@ export function ProductSummary({
       <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
         {/* Left side - Thumbnail */}
         <div className="group bg-muted border-border relative aspect-square overflow-hidden rounded-2xl border shadow-lg">
-          <ProductThumbnail
+          <CloudImage
             src={product.thumbnail}
             alt={`${product.title} 상품 썸네일`}
           />
@@ -114,7 +117,7 @@ export function ProductSummary({
           </div>
 
           {/* Options */}
-          <ProductOptions product={product} options={options} />
+          <ProductOptions product={product} options={options} onPurchase={onPurchase} />
 
           {/* Additional Info */}
           <div className="bg-muted space-y-3 rounded-xl p-6">

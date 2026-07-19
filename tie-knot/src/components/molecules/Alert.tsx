@@ -1,6 +1,6 @@
 import React from "react";
-import { AlertProps, AlertType } from "@/types/alert";
-import { TypographyP } from "../atoms/typoqraphy";
+import { AlertProps, AlertType } from "@/types";
+import { TypographyP } from "../atoms/typography";
 const Alert = ({ type = "info", children }: AlertProps) => {
   const config: { [key in AlertType]: string } = {
     error: "bg-[#fee] text-red-700 ",

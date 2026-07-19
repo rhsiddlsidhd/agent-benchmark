@@ -3,23 +3,23 @@
 import type React from "react";
 import { useActionState, useEffect, useState } from "react";
 import { UploadCloud, X } from "lucide-react";
-import { updateProductAction } from "@/actions/updateProductAction";
+import { updateProduct } from "@/actions/updateProduct";
 import type { Product } from "@/services/product.service";
 import Alert from "@/components/molecules/Alert";
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
 import { Textarea } from "@/components/atoms/textarea";
-import SelectField from "@/components/organisms/fields/SelectField";
+import SelectField from "@/components/molecules/SelectField";
 import { Switch } from "@/components/atoms/switch";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Label } from "@/components/atoms/label";
-import usePremiumFeature from "@/hooks/usePremiumFeatures";
+import { usePremiumFeature } from "@/hooks";
 import Spinner from "@/components/molecules/Spinner";
-import ProductThumbnail from "@/components/molecules/ProductThumbnail";
-import { getCategoryOptions, getSubCategoryOptions, ProductCategory, SubCategory } from "@/utils/category";
+import CloudImage from "@/components/molecules/CloudImage";
+import { getCategoryOptions, getSubCategoryOptions, ProductCategory, SubCategory } from "@/utils";
 import { toast } from "sonner";
 import { useAdminModalStore } from "@/store/admin.modal.store";
-import { TypographyH4, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH4, TypographyMuted } from "@/components/atoms/typography";
 
 interface ProductEditDialogProps {
   product: Product;
@@ -27,7 +27,7 @@ interface ProductEditDialogProps {
 
 export function ProductEditDialog({ product }: ProductEditDialogProps) {
   const [state, action, pending] = useActionState(
-    updateProductAction.bind(null, product._id),
+    updateProduct.bind(null, product._id),
     null,
   );
   const closeModal = useAdminModalStore((state) => state.closeModal);
@@ -115,7 +115,7 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
             썸네일 이미지 *
           </Label>
           <div className="border-border group relative aspect-video w-full overflow-hidden rounded-lg border">
-            <ProductThumbnail
+            <CloudImage
               src={thumbnail || "/placeholder.svg"}
               sizes="490px"
               alt={`${product.title} 이미지`}

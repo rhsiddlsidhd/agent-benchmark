@@ -1,4 +1,4 @@
-import { SUBMENU_PARENT_TITLES, SubmenuParentTitle } from "@/constants/sidebar";
+import { SUBMENU_PARENT_TITLES, SubmenuParentTitle } from "@/constants";
 
 export const isSubmenuParentTitle = (
   title: string,

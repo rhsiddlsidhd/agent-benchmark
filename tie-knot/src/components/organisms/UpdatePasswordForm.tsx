@@ -1,53 +1,23 @@
-"use client";
-
-import { updateUserPassword } from "@/actions/updateUserPassword";
-import { fetcher } from "@/api/fetcher";
 import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
-import TextField from "@/components/organisms/fields/TextField";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
+import TextField from "@/components/molecules/TextField";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { useActionState, useEffect } from "react";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
-import { APIResponse } from "@/types/error";
-import { toast } from "sonner";
+import { getFieldError } from "@/utils";
+import { APIResponse } from "@/types";
 
-const deleteCookieToUserEmail = async (): Promise<void> => {
-  try {
-    await fetcher<void>("/api/auth/cookie", undefined, { method: "DELETE" });
-  } catch (error) {
-    console.debug("Cookie deletion failed during cleanup:", error);
-    return null;
-  }
-};
+interface UpdatePasswordFormProps {
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string }> | null;
+  token: string;
+}
 
-const UpdatePasswordForm = () => {
-  const router = useRouter();
-  const token = useSearchParams().get("t") ?? "";
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string }>,
-    FormData
-  >(updateUserPassword, null);
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.success === true) {
-      toast.message(state.data.message);
-      return router.push("/login");
-    } else {
-      if (!hasFieldErrors(state.error)) {
-        toast.error(state.error.message);
-        router.push("/login");
-      }
-    }
-  }, [state, router]);
-
-  useEffect(() => {
-    return () => {
-      deleteCookieToUserEmail();
-    };
-  }, []);
-
+export function UpdatePasswordForm({
+  action,
+  pending,
+  state,
+  token,
+}: UpdatePasswordFormProps) {
   const passwordError = getFieldError(state, "password");
   const confirmPasswordError = getFieldError(state, "confirmPassword");
 
@@ -84,6 +54,4 @@ const UpdatePasswordForm = () => {
       </div>
     </div>
   );
-};
-
-export default UpdatePasswordForm;
+}

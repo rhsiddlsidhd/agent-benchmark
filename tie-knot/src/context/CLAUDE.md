@@ -30,3 +30,4 @@ src/context/
 ## 관련 문서
 
 - 전역 상태(Zustand)와의 경계: `src/store/CLAUDE.md` — 앱 전체 범위면 Context가 아니라 Zustand(`src/store/`)로 간다.
+- 상태 범위 확장 순서(로컬→Context→Zustand) 원칙: `src/CLAUDE.md`

@@ -1,35 +1,25 @@
-"use client";
-
-import type React from "react";
-import { useActionState, useEffect } from "react";
-
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
 
 import { Card } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import TextField from "@/components/organisms/fields/TextField";
-import { TypographyH1, TypographyLarge, TypographyMuted, TypographySmall } from "@/components/atoms/typoqraphy";
+import TextField from "@/components/molecules/TextField";
+import { TypographyH1, TypographyLarge, TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
-import { requestPasswordReset } from "@/actions/requestPasswordReset";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
-import { APIResponse } from "@/types/error";
+import { getFieldError } from "@/utils";
+import { APIResponse } from "@/types";
 
-export function ForgotPasswordForm() {
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string; email: string }>,
-    FormData
-  >(requestPasswordReset, null);
+interface ForgotPasswordFormProps {
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string; email: string }> | null;
+}
 
-  useEffect(() => {
-    if (!state || state.success === true) return;
-
-    if (!hasFieldErrors(state.error)) {
-      toast.error(state.error.message);
-    }
-  }, [state]);
-
+export function ForgotPasswordForm({
+  action,
+  pending,
+  state,
+}: ForgotPasswordFormProps) {
   const emailError = getFieldError(state, "email");
 
   if (state && state.success === true) {

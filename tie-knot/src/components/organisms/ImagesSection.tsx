@@ -6,10 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms/card";
-import ImageField from "@/components/organisms/fields/ImageField";
+import ImageField from "@/components/molecules/ImageField";
 import FormField from "@/components/molecules/FormField";
-import { TypographyMuted } from "@/components/atoms/typoqraphy";
-import type { useImageList } from "@/hooks/useImageList";
+import { TypographyMuted } from "@/components/atoms/typography";
+import type { useImageList } from "@/hooks";
 
 interface ImagesSectionProps {
   thumbnail: ReturnType<typeof useImageList>;

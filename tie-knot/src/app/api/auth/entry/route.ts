@@ -1,10 +1,8 @@
-import { encrypt } from "@/lib/token";
+import { encrypt } from "@/lib/jose";
 import { type NextRequest } from "next/server";
-import { setCookie } from "@/lib/cookies/set";
-import { HTTPError } from "@/types/error";
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
-import { deleteCookie } from "@/lib/cookies/delete";
+import { setCookie, deleteCookie } from "@/lib/cookies";
+import { HTTPError } from "@/types";
+import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
 
 // entry 토큰을 발행하고 지정된 경로로 401 리다이렉트
 
@@ -19,9 +17,9 @@ export const POST = async (
     await deleteCookie("token");
     await setCookie({ name: "entry", value: entryToken, maxAge: 600 });
 
-    return apiSuccess({ path });
+    return apiOk({ path });
   } catch (e) {
     console.error("entry token issue", e);
-    return handleRouteError(e);
+    return apiFail(e);
   }
 };

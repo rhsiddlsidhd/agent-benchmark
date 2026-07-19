@@ -1,45 +1,30 @@
-"use client";
-
 import { Button } from "@/components/atoms/button";
 import { DialogFooter } from "@/components/atoms/dialog";
 import { Input } from "@/components/atoms/input";
-import { TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyMuted } from "@/components/atoms/typography";
 
 import { Textarea } from "@/components/atoms/textarea";
-import type React from "react";
 
-import { useActionState, useEffect } from "react";
-import { toast } from "sonner";
 import { PremiumFeature } from "@/services/premiumFeature.service";
-import { updatePremiumFeatureAction } from "@/actions/updatePremiumFeatureAction";
 import Alert from "@/components/molecules/Alert";
 import { Label } from "@/components/atoms/label";
-import { APIResponse } from "@/types/error";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
-import TextField from "@/components/organisms/fields/TextField";
+import { APIResponse } from "@/types";
+import { getFieldError } from "@/utils";
+import TextField from "@/components/molecules/TextField";
+
+interface PremiumFeatureDialogProps {
+  premiumFeature: PremiumFeature;
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string }> | null;
+}
 
 export function PremiumFeatureDialog({
   premiumFeature: feature,
-}: {
-  premiumFeature: PremiumFeature;
-}) {
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string }>,
-    FormData
-  >(updatePremiumFeatureAction, null);
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.success === true) {
-      toast.success(state.data.message);
-      // For now, just toast. You might want to close the dialog or refresh data here.
-    } else {
-      if (!hasFieldErrors(state.error)) {
-        toast.error(state.error.message);
-      }
-    }
-  }, [state]);
-
+  action,
+  pending,
+  state,
+}: PremiumFeatureDialogProps) {
   const codeError = getFieldError(state, "code");
   const labelError = getFieldError(state, "label");
   const descriptionError = getFieldError(state, "description");

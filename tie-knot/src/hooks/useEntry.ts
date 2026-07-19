@@ -1,7 +1,7 @@
 "use client";
 
-import { handleClientError } from "@/api/error";
-import { fetcher } from "@/api/fetcher";
+import { handleClientError } from "@/utils";
+import { apiRequest } from "@/api/apiRequest";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -16,12 +16,9 @@ export const useEntry = (nextPath: string) => {
   const handleEntry = async () => {
     try {
       // Entry 토큰 발급 및 진입점 유효성 확인
-      await fetcher<{ path: string }>(
+      await apiRequest<{ path: string }>(
         `/api/auth/entry?next=${encodeURIComponent(nextPath)}`,
-        undefined,
-        {
-          method: "POST",
-        },
+        { method: "POST" },
       );
       
       // 토큰 발급 성공 시 목적지로 이동

@@ -4,9 +4,9 @@ import type React from "react";
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import PremiumFeatureRegistrationForm from "@/components/organisms/PremiumFeatureRegistrationForm";
+import { PremiumFeatureRegistrationForm } from "./_components";
 import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 import {
   Card,
   CardContent,

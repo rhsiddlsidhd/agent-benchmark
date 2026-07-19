@@ -1,34 +1,20 @@
-"use client";
-
-import { useActionState, useEffect } from "react";
-
 import Link from "next/link";
 import { Mail } from "lucide-react";
-import { toast } from "sonner";
 
-import { findUserEmail } from "@/actions/findUserEmail";
 import { Card } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyLarge, TypographyMuted } from "@/components/atoms/typoqraphy";
-import TextField from "@/components/organisms/fields/TextField";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
-import { APIResponse } from "@/types/error";
+import { TypographyH1, TypographyLarge, TypographyMuted } from "@/components/atoms/typography";
+import TextField from "@/components/molecules/TextField";
+import { getFieldError } from "@/utils";
+import { APIResponse } from "@/types";
 
-export function FindIdForm() {
-  const [state, action, pending] = useActionState<
-    APIResponse<{ email: string }>,
-    FormData
-  >(findUserEmail, null);
+interface FindIdFormProps {
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ email: string }> | null;
+}
 
-  useEffect(() => {
-    if (!state) return;
-    if (state.success === false) {
-      if (!hasFieldErrors(state.error)) {
-        toast.error(state.error.message);
-      }
-    }
-  }, [state]);
-
+export function FindIdForm({ action, pending, state }: FindIdFormProps) {
   const nameError = getFieldError(state, "name");
   const phoneError = getFieldError(state, "phone");
 

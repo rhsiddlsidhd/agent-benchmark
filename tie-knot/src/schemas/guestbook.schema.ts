@@ -17,4 +17,4 @@ export const GuestbookSchema = z.object({
   isPrivate: z.boolean(),
 });
 
-export type GuestBookType = z.infer<typeof GuestbookSchema>;
+export type GuestbookType = z.infer<typeof GuestbookSchema>;

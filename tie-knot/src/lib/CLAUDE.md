@@ -4,49 +4,40 @@
 
 ## Scope
 
-- **외부 라이브러리/시스템 경계를 감싸는 코드** — 암호화(bcrypt), 이미지 업로드(cloudinary), 쿠키(cookies), 이메일(email), 카카오맵(kakao), JWT(token), 스키마 검증(validation). side-effect나 설정/시크릿 참조가 있으면 여기, 순수 함수면 `src/utils/` 소관.
-- 폴더명은 연동 대상 단위 — `bcrypt`/`cloudinary`/`kakao`는 라이브러리명 그대로, `cookies`/`email`/`token`/`validation`은 그 라이브러리를 감싸는 개념명(내부적으로 각각 `next/headers`, `nodemailer`, JWT 인코딩, `zod` 사용).
+- **외부 라이브러리/시스템 경계를 감싸는 코드** — 암호화(bcrypt), 이미지 업로드(cloudinary), 쿠키(cookies), 이메일(nodemailer), 카카오맵(kakao), JWT(jose). 판단 기준은 "npm 패키지를 쓰느냐"가 아니라 **side-effect(I/O)·설정/시크릿 참조·외부 시스템과의 실제 통신 여부**다 — zod처럼 순수 계산만 하는 라이브러리는 npm 패키지여도 `src/utils/` 소관(`validateAndFlatten`이 실제로 여기서 옮겨간 사례, Gotchas 참고).
+- **폴더명은 연동 대상 라이브러리/서비스명 그대로 쓴다**(Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`의 lib 2단계 구조 — "개념명"이 아니라 "그 라이브러리 자체의 이름"이 원칙). `bcrypt`/`cloudinary`/`kakao`/`jose`가 이 원칙을 따른다 — JWT를 감싸는 폴더는 실제로 `jose` 패키지를 쓰므로 `token`이 아니라 `jose`, 이메일 발송은 `nodemailer` 패키지를 쓰므로 `email`이 아니라 `nodemailer`. **`cookies/`만 유일한 예외다** — 감싸는 대상이 설치형 npm 패키지가 아니라 Next.js 프레임워크 내장 API(`next/headers`의 `cookies()`)라서 "그 라이브러리 이름"에 대응하는 게 없다(`next`라고 하면 프레임워크 전체를 가리키는 셈이라 범위가 안 맞음) — 이 경우에 한해 개념명(`cookies`)을 그대로 쓴다.
 
 ## Structure
 
 ```
 src/lib/
 ├── bcrypt/
-│   └── index.ts          # hashPassword, comparePasswords
+│   ├── hash.ts             # hashPassword, comparePasswords — 실제 로직
+│   └── index.ts             # 배럴 — export * from "./hash"
 ├── cloudinary/
 │   ├── config.ts          # SDK 초기화
-│   ├── index.ts            # 업로드 함수(배럴 아님 — 실제 로직)
-│   └── type.ts              # 응답 타입
-├── cookies/
-│   ├── get.ts / set.ts / delete.ts   # 역할별 파일 분리
-│   └── type.ts
-├── email/
-│   ├── index.ts           # 배럴 — export * from "./nodemalier"
-│   └── nodemalier.ts       # 실제 구현
-├── kakao/
-│   └── useKakaoLoader.ts  # 카카오맵 SDK 초기화 훅
-├── token/
-│   ├── config.ts / encrypt.ts / decrypt.ts / type.ts
-│   └── index.ts            # 배럴 — export * from "./encrypt" 등
-├── validation/
-│   └── validateAndFlatten.ts
+│   ├── upload.ts            # 업로드 함수 — 실제 로직
+│   ├── type.ts               # 응답 타입
+│   └── index.ts               # 배럴 — export * from "./upload"
+├── ...                        # 폴더 1개 = 연동 대상 1개, 파일 개수 무관하게 index.ts는 항상 배럴
 └── utils.ts                 # shadcn cn() 헬퍼 — 유일한 flat 파일(예외)
 ```
 
 ## Critical Convention
 
 - 새 외부 연동을 기존 폴더에 얹지 않는다 — 폴더 1개당 연동 대상 1개(Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`의 lib 2단계 구조). 파일명에 폴더명(서비스명)을 반복하지 않는다.
-- 카카오맵처럼 특정 외부 SDK 초기화 전용 훅은 `src/hooks/`가 아니라 그 라이브러리 폴더에 둔다 — "훅이라는 형태"보다 "무엇을 감싸는가"가 배치 기준(`src/hooks/CLAUDE.md`와 짝).
 - `src/lib/utils.ts`(shadcn 표준 `cn()` 헬퍼)는 폴더 없는 flat 파일 예외로 유지한다 — shadcn CLI가 이 경로로 자동 생성하는 관례라 임의로 폴더화하지 않는다.
+- **`index.ts`는 폴더 안 파일 개수와 무관하게 항상 배럴이다 — 실제 로직을 `index.ts`에 직접 두지 않는다.** 파일이 하나뿐이어도 그 파일은 역할명으로 짓고(`bcrypt/hash.ts`, `mongodb/connect.ts`처럼), `index.ts`는 그 파일을 재export하는 배럴로 별도로 둔다. 이렇게 하면 소비처는 파일 개수·내부 구조와 무관하게 항상 `@/lib/{서비스}` 하나의 경로로만 import한다.
 
 ## Gotchas
 
-- `email/nodemalier.ts` — `nodemailer` 오타. 새 파일 추가 시 이 이름을 복사하지 않는다.
-- `cloudinary/index.ts`는 `token`/`email`의 `index.ts`와 다르게 배럴이 아니라 실제 업로드 로직 파일이다 — 새 폴더 만들 때 이 예외를 따라하지 않는다(배럴이 기본 패턴).
-- 폴더명이 전부 kebab-case로 우연히 일치하지만(단어 하나짜리라) 실제로는 "라이브러리명 그대로" vs "개념명" 두 성격이 섞여 있다 — 새 폴더 이름 정할 때 어느 쪽인지 먼저 판단한다.
+- 이 폴더 전체를 위 두 규칙(폴더명=라이브러리명 그대로, `index.ts`=항상 배럴)에 맞게 정리 완료 — `token/`→`jose/`, `email/`→`nodemailer/` 리네임(+ 오타 파일 `nodemalier.ts`→`send.ts`), `bcrypt/index.ts`→`hash.ts`+배럴, `mongodb/index.ts`→`connect.ts`+배럴, `cloudinary/index.ts`→`upload.ts`+배럴, `kakao/`에도 배럴 추가(`useKakaoLoader.ts`는 React 훅이라 `use` 접두사 이름 그대로 유지, 배럴만 얹음). `cookies/`도 배럴이 없어서 추가. 결과적으로 모든 폴더가 `@/lib/{서비스}` 하나의 경로로만 import된다.
+- `validation/validateAndFlatten.ts`는 삭제됐다 — zod만 쓰는 순수 함수(side-effect/시크릿/외부 통신 없음)라 애초에 이 폴더 자격이 없었다. `src/utils/validate-and-flatten.ts`로 이동, 소비처 18곳 전부 `@/utils`로 갱신.
+- `cloudinary/config.ts`가 cloudinary SDK를 초기화하지만 실제로는 `upload.ts`가 SDK 대신 REST API를 직접 `fetch`로 호출한다 — `config.ts`를 아무도 import하지 않는 죽은 초기화 코드로 보인다(오늘 건드리지 않음, 확인 필요).
 
 ## 관련 문서
 
 - 파일명/식별자 케이스 일반 규칙: Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`
 - 순수 함수와의 경계: `src/utils/CLAUDE.md`
-- 외부 SDK 초기화 훅과의 경계: `src/hooks/CLAUDE.md`
+- 외부 SDK 초기화 훅 배치 경계(카카오맵 등): `src/CLAUDE.md`
+- 배치 경계 상대측: `src/hooks/CLAUDE.md`

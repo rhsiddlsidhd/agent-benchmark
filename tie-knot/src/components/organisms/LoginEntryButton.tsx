@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
-import { useEntry } from "@/hooks/useEntry";
+import { useEntry } from "@/hooks";
 
 /**
  * 로그인 페이지로 진입하기 위한 Entry 토큰을 발급받고 이동을 처리하는 버튼

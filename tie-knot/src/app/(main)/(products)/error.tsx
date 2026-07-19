@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/atoms/button";
 import { Card } from "@/components/atoms/card";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

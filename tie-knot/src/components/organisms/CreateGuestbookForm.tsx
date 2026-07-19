@@ -1,6 +1,3 @@
-"use client";
-import React, { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms/button";
 import {
   DialogClose,
@@ -9,54 +6,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/atoms/dialog";
-import TextField from "@/components/organisms/fields/TextField";
+import TextField from "@/components/molecules/TextField";
 import SwitchField from "@/components/molecules/SwitchField";
-import { createGuestbook } from "@/actions/createGuestbook";
 import { cn } from "@/lib/utils";
-import { APIResponse } from "@/types/error";
-import { toast } from "sonner";
-import { getFieldError, hasFieldErrors } from "@/utils/error";
-import { useGuestbookModalStore } from "@/store/guestbook.modal.store";
+import { APIResponse } from "@/types";
+import { getFieldError } from "@/utils";
 
-interface Payload {
-  id: string;
+interface CreateGuestbookFormProps {
+  coupleInfoId: string;
+  action: (formData: FormData) => void;
+  pending: boolean;
+  state: APIResponse<{ message: string }> | null;
 }
 
-const isPayload = (payload: unknown): payload is Payload => {
-  if (!payload) return false;
-  if (
-    typeof payload === "object" &&
-    "id" in payload &&
-    typeof payload.id === "string"
-  )
-    return true;
-  return false;
-};
-
-const CreateGuestbookForm = ({ payload }: { payload: unknown }) => {
-  const closeModal = useGuestbookModalStore((state) => state.closeModal);
-  const [state, action, pending] = useActionState<
-    APIResponse<{ message: string }>,
-    FormData
-  >(createGuestbook, null);
-  const router = useRouter();
-  const id = isPayload(payload) ? payload.id : null;
-  if (!id) throw new Error("CreateGuestbookForm payload is required");
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.success === true) {
-      toast.message(state.data.message);
-      console.log("왔다", state.data.message);
-      closeModal();
-      return router.refresh();
-    } else {
-      if (!hasFieldErrors(state.error)) {
-        toast.error(state.error.message);
-      }
-    }
-  }, [state, router, closeModal]);
-
+export function CreateGuestbookForm({
+  coupleInfoId,
+  action,
+  pending,
+  state,
+}: CreateGuestbookFormProps) {
   const authorError = getFieldError(state, "author");
   const passwordError = getFieldError(state, "password");
 
@@ -67,7 +35,7 @@ const CreateGuestbookForm = ({ payload }: { payload: unknown }) => {
         <DialogDescription>소중한 축하 메시지를 남겨주세요.</DialogDescription>
       </DialogHeader>
 
-      <input type="hidden" name="coupleInfoId" value={id} />
+      <input type="hidden" name="coupleInfoId" value={coupleInfoId} />
 
       <TextField
         name="author"
@@ -124,6 +92,4 @@ const CreateGuestbookForm = ({ payload }: { payload: unknown }) => {
       </DialogFooter>
     </form>
   );
-};
-
-export default CreateGuestbookForm;
+}

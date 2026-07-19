@@ -1,5 +1,5 @@
 import React from "react";
-import { formatDate, DateFormatType } from "@/utils/date";
+import { formatDate, DateFormatType } from "@/utils";
 
 interface DateDisplayProps {
   date: string;

@@ -4,34 +4,36 @@
 
 ## Scope
 
-- **Server Actions·API Routes·Client fetch 셋이 응답/에러를 만들 때 반드시 거쳐야 하는 계약 레이어로 설계됐다.** 이름만 보면 "클라이언트 전용"처럼 보이지만 아니다 — `error.ts` 자체 주석에 "Server Actions (handleActionError), API Routes (handleRouteError), Client Side (handleClientError)"라고 명시돼있다. 진짜 클라이언트 전용은 `fetcher.ts` 하나뿐이다.
-- **단, 이 레이어는 런타임에서 요청/응답을 실제로 가로채는 인터셉터가 아니다.** 미들웨어(Proxy, `src/CLAUDE.md` 참고)처럼 강제로 거치게 만드는 지점이 없고, 각 route.ts/action이 알아서 `apiSuccess`/`handleRouteError`/`handleActionError`를 호출해야만 일관성이 유지되는 **관례(convention) 기반 계약**이다. 이걸 안 지켜도 빌드도, 런타임도 안 막는다 — 실제로 이미 안 지킨 라우트가 2곳 있다(Gotchas 참고). 그래서 "중앙 핸들러"라고 부르려면 지금 구조로는 부족하고, HOF 래퍼(예: route.ts/action 본문을 감싸는 `withApiHandler`) 같은 강제 메커니즘이 있어야 이름값을 한다.
+- **Route Handler ↔ Client fetch 사이에서만 쓰는 공유 계약 + 클라이언트 fetch 중앙 처리.** Server Action은 이 폴더 소관이 아니다(공식 문서 근거는 Critical Convention 참고) — `src/actions/CLAUDE.md`가 별도로 다룬다.
+- `fetcher`는 **`useSWR`에 전달할 용도로만 좁힌다** — 시그니처는 `(url: string) => Promise<T>`(SWR fetcher 계약) 하나로 고정, 캐싱이 의미 있는 GET 조회 전용(`useBanks`/`useAuth`/`useFetchCoupleInfo`/`useProducts`/`GuestbookSection`). 캐싱 불필요한 mutation(POST/DELETE 등)은 `apiRequest`가 담당한다(Structure 참고) — `fetcher`에 `config`/`options` 인자를 얹어 두 역할을 겸하지 않는다.
+- `response.ts`의 응답 envelope(`success`/`data` 또는 `success`/`error`)은 공식 문서가 요구하는 게 아니라, `fetcher.ts`/`apiRequest.ts`가 라우트마다 다른 shape을 각각 파싱하지 않고 하나의 제네릭 로직으로 모든 응답을 처리하기 위해 이 프로젝트가 판단한 것이다 — Route Handler 자체는 공식 문서상 이 envelope 없이 `Response`만 반환해도 충분하다.
 
 ## Structure
 
 ```
 src/api/
-├── response.ts      # 응답 shape 빌더 — success/apiSuccess(성공), createErrorResponse/createApiErrorResponse/createClientErrorResponse(실패). types/error.ts의 타입 재export.
-├── error.ts           # 컨텍스트별 핸들러 — handleActionError(Server Action용)/handleRouteError(Route Handler용)/handleClientError(클라이언트용). 전부 response.ts 빌더에 위임만 함.
-└── fetcher.ts           # 클라이언트 전용 — 인증 토큰 주입 + 401 시 refresh 후 재시도 로직 포함한 fetch 래퍼.
+├── response.ts   # Route Handler 전용 응답 빌더 — apiOk(성공)/apiFail(실패), NextResponse.json으로 감쌈. fetcher/apiRequest가 파싱을 위해 의존하는 유일한 envelope.
+├── fetcher.ts    # useSWR 전용 — (url: string) => Promise<T>. response.ts envelope 파싱, 실패 시 HTTPError로 정규화해서 throw. 인증 쿠키는 동일 origin이라 브라우저가 자동으로 실어준다(수동 토큰 주입/401 refresh 로직 없음, Gotchas 참고).
+└── apiRequest.ts   # SWR 없이 직접 호출하는 mutation 요청 전용(POST/DELETE 등) — method/body 등 RequestInit을 받는다는 점 외엔 fetcher와 동일한 envelope 파싱.
 ```
-
-> 위 함수명(`apiSuccess`/`handleRouteError`/`handleActionError`/`handleClientError` 등)은 현재 구현 기준 이름일 뿐 고정된 계약이 아니다 — 리팩토링(예: HOF 래퍼 전환)으로 이름이 바뀌면 이 문서의 실제 식별자만 갱신한다. 이 문서가 지키려는 규칙의 본질은 "컨텍스트별 전용 빌더/핸들러를 거친다"는 것이지, 특정 함수명 자체가 아니다.
 
 ## Critical Convention
 
-- 새 컨텍스트(Server Action/Route Handler/Client fetch)에서 응답을 만들 때 `NextResponse.json(...)`이나 커스텀 shape을 직접 만들지 않는다 — `response.ts`의 빌더 + `error.ts`의 해당 컨텍스트 핸들러를 거친다(Gotchas — 이걸 안 지킨 실제 사례 있음).
-- `error.ts`/`response.ts`를 수정할 때 특정 컨텍스트(Action/Route/Client) 하나만 확인하고 끝내지 않는다 — 셋 다 같은 빌더에 의존하므로, 나머지 두 컨텍스트를 깨뜨리지 않는지 확인 후 커밋한다.
-- 이 계약이 강제되지 않는다는 전제로 리뷰한다 — 새 route.ts/action을 추가하는 PR에서는 `apiSuccess`/`handleRouteError`/`handleActionError` 호출 여부를 리뷰어가 직접 확인한다(자동 검증 없음, Scope 참고).
+- **Server Action은 이 계약 대상이 아니다.** 공식 문서(`node_modules/next/dist/docs/01-app/01-getting-started/10-error-handling.md`): "avoid using try/catch blocks and throw errors [for expected errors]. Instead, model expected errors as return values." — Server Action은 예상된 실패를 이 폴더의 envelope/클래스 없이 그 액션 전용 plain 객체로 직접 리턴한다(`src/actions/CLAUDE.md` 참고). 이 폴더의 타입/빌더를 Server Action에서 import하지 않는다.
+- Route Handler 응답은 `response.ts`의 `apiOk`/`apiFail`을 거친다 — `NextResponse.json(...)`/`Response.json(...)`을 route.ts 안에서 직접 만들지 않는다(공식 문서 자체는 `try/catch`+`Response` 직접 반환만 요구하지만, 이 프로젝트는 클라이언트 쪽 `fetcher.ts`/`apiRequest.ts` 둘 다 하나의 제네릭 로직으로 파싱하기 위해 envelope 통일이 필요, 위 Scope 참고).
+- `fetcher`/`apiRequest` 밖에서 client-side fetch를 직접 만들지 않는다 — envelope 파싱/에러 정규화가 이 둘에 집중돼있으므로, 우회하면 각자 다른 파싱 로직을 재구현하게 된다. `useSWR`과 조합하면 `fetcher`, 그 외 직접 호출은 `apiRequest`를 쓴다.
+- `response.ts`/`fetcher.ts`/`apiRequest.ts`를 고칠 때 나머지를 깨뜨리지 않는지 확인한다 — 셋 다 `response.ts`의 envelope shape을 그대로 전제하고 파싱한다.
 
 ## Gotchas
 
-- 폴더명이 `api`라 `app/api/`(Route Handler)나 "클라이언트 API 호출 코드"로 착각하기 쉽다 — 실제로는 세 컨텍스트 공용 계약 레이어다.
-- `app/api/upload/signature/route.ts`는 이 계약을 안 쓰고 `NextResponse.json({ error: string }, { status })`를 직접 만든다 — 다른 라우트의 에러 shape(`{ success: false, error: { message, code } }`)과 달라 `handleClientError`가 이 라우트 응답은 못 알아본다.
-- `app/api/kakaomap/route.ts`도 이 계약을 안 쓴다 — `Response.json(data)`를 그냥 반환하고 try/catch 자체가 없어서 실패 시 shape이 아예 없다.
+- 폴더명이 `api`라 `app/api/`(Route Handler)나 "클라이언트 API 호출 코드 전반"으로 착각하기 쉽다 — 실제로는 Route Handler·Client fetch 둘 사이의 계약 + 클라이언트 중앙 fetch 핸들러다. Server Action은 명시적으로 제외.
+- `error.ts` 삭제 완료 — `handleActionError`/`handleRouteError`/`handleClientError` 3개가 이름 규칙도 서로 안 맞고(각각 `createErrorResponse`/`createApiErrorResponse`/`createClientErrorResponse`로 위임하는데 접두어가 제각각) 실질 로직 없이 `response.ts`로 위임만 하는 통과 계층이었다. `handleRouteError`→`response.ts`의 `apiFail`로 흡수(이름도 통일), `handleActionError`는 Server Action 스코프 밖이라 삭제(액션은 이제 plain 객체 직접 리턴), `handleClientError`(상태코드별 UI 분기 로직)는 응답 shape 빌더와 성격이 달라(UI 판단 로직) `src/utils/error.ts`로 이동(`ProductLikeBadge.tsx`/`useEntry.ts`/`usePremiumFeatures.ts` 3곳 모두 `@/utils`에서 import).
+- `HTTPError` 클래스(`src/types/error.ts`)는 이 폴더(Route/fetch 경계) + 서비스 레이어 전용으로 스코프가 좁혀졌다 — Server Action은 자기 자신의 검증 실패를 이 클래스로 throw하지 않지만(위 Critical Convention), 서비스 함수가 이미 이 클래스를 던지는 경우는 액션이 `try/catch`+`instanceof HTTPError`로 받아서 리턴값으로 번역한다(`src/actions/CLAUDE.md` Gotchas 참고).
+- `fetcher.ts`에서 `config`/`options` 인자를 받아 mutation 호출까지 겸하던 걸 `apiRequest.ts`로 분리 완료. 기존 SWR 없이 `fetcher`를 직접 호출하던 5곳은 둘로 갈렸다: 진짜 mutation 4곳(`UpdatePasswordForm`/`ProductLikeBadge`/`usePortOnePayment`/`useEntry`)은 `apiRequest`로 전환, 사실은 캐싱이 의미 있는 GET인데 `useSWR` 없이 수동 구현돼 있던 `usePremiumFeatures.ts`는 `useSWR`+`fetcher`로 전환(수동 `loading`/`useEffect` 상태 관리 제거됨).
+- **access token 전달 방식을 Bearer 헤더에서 httpOnly 쿠키로 전환 완료** — 상세 트레이드오프는 `src/CLAUDE.md` 참고. `fetcher`/`apiRequest` 둘 다 더 이상 토큰을 다루지 않는다(쿠키가 동일 origin이라 자동으로 실림) — `useAuthStore`에도 `token` 필드가 없다.
 
 ## 관련 문서
 
-- 이 계약을 쓰는 Server Actions: `src/actions/CLAUDE.md`
+- 이 계약에서 제외된 Server Actions: `src/actions/CLAUDE.md`
 - 이 계약을 쓰는 Route Handlers: `src/app/api/CLAUDE.md`
 - 응답/에러 타입 원본: `src/types/CLAUDE.md`(`types/error.ts`)

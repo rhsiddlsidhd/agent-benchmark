@@ -14,8 +14,6 @@ src/schemas/
 ├── index.ts               # 배럴 아님 — zod 전역 설정(Gotchas 참고)
 ├── login.schema.ts          # 다른 스키마(PWSchema) 조합
 ├── pw.schema.ts
-├── register.schema.ts
-├── product.schema.ts
 └── ...                        # 도메인당 파일 1개
 ```
 
@@ -27,7 +25,7 @@ src/schemas/
 
 ## Gotchas
 
-- `index.ts`가 다른 폴더(`lib/token`, `lib/email`)의 `index.ts`와 다르게 **배럴이 아니다** — `z.config(z.locales.ko())`로 zod 에러 메시지를 한국어로 바꾸는 전역 side-effect 설정 파일이다. 이 파일이 실제로 import되는 지점(앱 진입점 등)을 확인하지 않고 "당연히 배럴이겠거니" 하고 개별 스키마를 여기서 재정의/재export 하지 않는다.
+- `index.ts`가 다른 폴더(`lib/jose`, `lib/nodemailer`)의 `index.ts`와 다르게 **배럴이 아니다** — `z.config(z.locales.ko())`로 zod 에러 메시지를 한국어로 바꾸는 전역 side-effect 설정 파일이다. 이 파일이 실제로 import되는 지점(앱 진입점 등)을 확인하지 않고 "당연히 배럴이겠거니" 하고 개별 스키마를 여기서 재정의/재export 하지 않는다.
 
 ## 관련 문서
 

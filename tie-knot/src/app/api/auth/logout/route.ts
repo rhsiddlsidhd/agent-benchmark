@@ -1,5 +1,4 @@
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
+import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
 import { logoutService } from "@/services/auth.service";
 
 /**
@@ -10,8 +9,8 @@ export const DELETE = async (): Promise<
 > => {
   try {
     await logoutService();
-    return apiSuccess({ message: "로그아웃에 성공하였습니다." });
+    return apiOk({ message: "로그아웃에 성공하였습니다." });
   } catch (e) {
-    return handleRouteError(e);
+    return apiFail(e);
   }
 };

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { Product } from "@/services/product.service";
 import { ProductFilterState } from "@/context/productFilter/type";
-import { getChosung } from "@/utils/hangul";
+import { getChosung } from "@/utils";
 
 const useVisibleProducts = ({
   state,

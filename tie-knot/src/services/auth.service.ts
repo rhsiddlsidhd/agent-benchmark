@@ -1,9 +1,9 @@
-import User, { UserRole } from "@/models/user.model";
-import { dbConnect } from "@/utils/mongodb";
-import { getCookie } from "@/lib/cookies/get";
-import { decrypt, encrypt } from "@/lib/token";
+import { UserModel, UserRole } from "@/models/user.model";
+import { dbConnect } from "@/lib/mongodb";
+import { getCookie, setCookie, deleteCookie } from "@/lib/cookies";
+import { decrypt, encrypt } from "@/lib/jose";
 import mongoose from "mongoose";
-import { AuthSession } from "@/types/auth";
+import { AuthSession, HTTPError } from "@/types";
 
 export type LeanUser = {
   email: string;
@@ -34,7 +34,7 @@ export const getUser = async (query: UserQuery): Promise<LeanUser | null> => {
     filter._id = new mongoose.Types.ObjectId(query.id);
   }
 
-  const user = await User.findOne(filter)
+  const user = await UserModel.findOne(filter)
     .select("_id email name phone password role isDelete")
     .lean<LeanUser>();
 
@@ -42,10 +42,37 @@ export const getUser = async (query: UserQuery): Promise<LeanUser | null> => {
 };
 
 export type AuthResult = AuthSession | null;
+
+// access 쿠키(빠른 경로, DB 조회 없이 검증)를 우선 확인하고, 없거나 만료됐으면
+// refresh 쿠키(느린 경로)로 재발급한 뒤 access 쿠키를 갱신한다.
 export async function getAuth(): Promise<AuthResult> {
+  const accessCookie = await getCookie("access");
+
+  if (accessCookie?.value) {
+    try {
+      const { payload } = await decrypt({
+        token: accessCookie.value,
+        type: "ACCESS",
+      });
+
+      if (payload.id) {
+        const user = await getUser({ id: payload.id });
+        if (user) {
+          return {
+            role: user.role,
+            email: user.email,
+            userId: user._id.toString(),
+          };
+        }
+      }
+    } catch {
+      // access 쿠키가 만료/무효 — 아래 refresh 경로로 폴백
+    }
+  }
+
   try {
-    const cookie = await getCookie("token");
-    const refreshToken = cookie?.value;
+    const refreshCookie = await getCookie("token");
+    const refreshToken = refreshCookie?.value;
 
     if (!refreshToken) {
       return null;
@@ -69,8 +96,9 @@ export async function getAuth(): Promise<AuthResult> {
       type: "ACCESS",
     });
 
+    await setCookie({ name: "access", value: accessToken });
+
     return {
-      token: accessToken,
       role: user.role,
       email: user.email,
       userId: user._id.toString(),
@@ -80,11 +108,19 @@ export async function getAuth(): Promise<AuthResult> {
   }
 }
 
+// 인증이 반드시 필요한 Route Handler에서 호출한다 — 세션이 없으면 401을 throw한다.
+export async function requireAuth(): Promise<AuthSession> {
+  const session = await getAuth();
+  if (!session) {
+    throw new HTTPError("인증이 필요합니다.", 401);
+  }
+  return session;
+}
+
 /**
  * 로그아웃 처리를 위해 서버의 인증 토큰 쿠키를 삭제합니다.
  */
-import { deleteCookie } from "@/lib/cookies/delete";
-
 export async function logoutService() {
   await deleteCookie("token");
+  await deleteCookie("access");
 }
