@@ -2,9 +2,11 @@
 
 > Last updated: 2026-07-19
 
-## Scope
+## Overview
 
-두 가지를 다룬다. 하나는 `src/` 바로 밑에 하위 폴더 없이 단독으로 있는 Next.js 특수 파일(현재 `middleware.ts`) — `AGENTS.md`에 명시된 대로 이 프로젝트의 실제 설치 버전(Next.js 16, `node_modules/next/dist/docs/`) 기준으로 정의한다. 다른 하나는 `src/` 하위 폴더 2개 이상에 걸쳐 있어 특정 폴더 CLAUDE.md 하나에 넣기엔 범위가 넘치는 교차 컨벤션(배럴 import 정책, `hooks/`-`lib/` 배치 경계, 상태관리 계층 원칙) — `CLAUDE_MD_HIERARCHY.md`의 overlap 승격 규칙에 따라 여기 모은다. 한 폴더 안에서만 완결되는 규칙은 각자 CLAUDE.md 소관, 여기서 다루지 않는다.
+`src/`는 이 프로젝트 애플리케이션 코드 루트다. 라우트(`app/`)·컴포넌트·훅·유틸·상태관리 등 전체 구현이 이 아래 있다.
+
+이 파일은 두 가지를 다룬다. 하나는 `src/` 바로 밑에 하위 폴더 없이 단독으로 있는 Next.js 특수 파일(현재 `middleware.ts`) — `AGENTS.md`에 명시된 대로 이 프로젝트의 실제 설치 버전(Next.js 16, `node_modules/next/dist/docs/`) 기준으로 정의한다. 다른 하나는 하위 폴더 2개 이상에 걸쳐 있어 특정 폴더 CLAUDE.md 하나에 넣기엔 범위가 넘치는 교차 컨벤션(배럴 import 정책, `hooks/`-`lib/` 배치 경계, 상태관리 계층 원칙) — `CLAUDE_MD_HIERARCHY.md`의 overlap 승격 규칙에 따라 여기 모은다. 한 폴더 안에서만 완결되는 규칙은 각자 CLAUDE.md 소관이다.
 
 ## Structure
 
