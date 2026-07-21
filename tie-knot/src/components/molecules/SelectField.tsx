@@ -1,6 +1,6 @@
 import FormField from "@/components/molecules/FormField";
 import BaseSelect, { SelectOption } from "@/components/molecules/BaseSelect";
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { FieldBase } from "@/types";
 
 type SelectFieldProps = FieldBase & {
@@ -27,10 +27,12 @@ const SelectField = ({
   onValueChange,
 }: SelectFieldProps) => {
   const [info, setInfo] = useState<string | undefined>(defaultValue);
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue);
 
-  useEffect(() => {
+  if (defaultValue !== prevDefaultValue) {
+    setPrevDefaultValue(defaultValue);
     setInfo(defaultValue);
-  }, [defaultValue]);
+  }
 
   // Record<string, string> 형식을 BaseSelect가 사용하는 SelectOption[] 형식으로 맞춤
   const finalOptions: SelectOption[] = data.map((item) => ({

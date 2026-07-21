@@ -3,7 +3,7 @@ import { Input } from "@/components/atoms/input";
 import { Banks } from "@/app/api/banks/route";
 import FormField from "@/components/molecules/FormField";
 import BaseSelect from "@/components/molecules/BaseSelect";
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface BankAccountInfo {
   bankName: string;
@@ -37,14 +37,21 @@ const BankField = ({
     bankName: defaultBankName,
     accountNumber: defaultAccountNumber,
   });
+  const [prevDefaultBankName, setPrevDefaultBankName] = useState(defaultBankName);
+  const [prevDefaultAccountNumber, setPrevDefaultAccountNumber] = useState(defaultAccountNumber);
 
   // defaultValue 변경 시 state 업데이트 (부모 폼에서 데이터 초기화 시 필요)
-  useEffect(() => {
+  if (
+    defaultBankName !== prevDefaultBankName ||
+    defaultAccountNumber !== prevDefaultAccountNumber
+  ) {
+    setPrevDefaultBankName(defaultBankName);
+    setPrevDefaultAccountNumber(defaultAccountNumber);
     setInfo({
       bankName: defaultBankName,
       accountNumber: defaultAccountNumber,
     });
-  }, [defaultBankName, defaultAccountNumber]);
+  }
 
   // 은행 목록을 BaseSelect 옵션 형식으로 변환
   const bankOptions =

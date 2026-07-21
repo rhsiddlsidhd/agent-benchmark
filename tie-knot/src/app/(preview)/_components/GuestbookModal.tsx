@@ -26,15 +26,22 @@ const GuestbookModal = () => {
   const { isOpen, type, payload, closeModal, clearIsOpen } =
     useGuestbookModalStore();
   const [dialogOpen, setDialogOpen] = useState(true);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
   const Component = useMemo(() => {
     return type ? GUESTBOOK[type] : null;
   }, [type]);
 
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setDialogOpen(true);
+    }
+  }
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      setDialogOpen(true);
     }
     return () => {
       document.body.style.overflow = "auto";

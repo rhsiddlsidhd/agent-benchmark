@@ -35,11 +35,10 @@ export function useImageList(defaultUrls?: string[]) {
   }, [items]);
 
   // defaultUrls가 준비되면 한 번만 초기화 (SWR 비동기 로드 대응)
-  useEffect(() => {
-    if (initialized || !defaultUrls?.length) return;
-    setItems(defaultUrls.map(toExistingItem));
+  if (!initialized && defaultUrls?.length) {
     setInitialized(true);
-  }, [defaultUrls, initialized]);
+    setItems(defaultUrls.map(toExistingItem));
+  }
 
   // 언마운트 시 남아있는 blob URL 해제
   useEffect(() => {

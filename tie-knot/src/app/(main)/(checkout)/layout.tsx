@@ -2,7 +2,7 @@ import PageTitle from "@/components/molecules/PageTitle";
 import { OrderSummary } from "@/components/organisms/OrderSummary";
 import React from "react";
 
-const layout = async ({ children }: { children: React.ReactNode }) => {
+const CheckoutLayout = async ({ children }: { children: React.ReactNode }) => {
   return (
     <main className="bg-background min-h-screen">
       <div className="container mx-auto px-4 pt-24 pb-20">
@@ -24,4 +24,4 @@ const layout = async ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default layout;
+export default CheckoutLayout;

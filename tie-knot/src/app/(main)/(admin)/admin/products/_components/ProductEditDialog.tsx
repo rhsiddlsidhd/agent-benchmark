@@ -50,11 +50,12 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
     }
   }, [state, closeModal]);
 
-  useEffect(() => {
-    if (!isPremium) {
+  const handlePremiumChange = (checked: boolean) => {
+    setIsPremium(checked);
+    if (!checked) {
       setSelectedFeatures([]);
     }
-  }, [isPremium]);
+  };
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -338,7 +339,7 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
           <Switch
             id="edit-isPremium"
             checked={isPremium}
-            onCheckedChange={setIsPremium}
+            onCheckedChange={handlePremiumChange}
           />
         </div>
 

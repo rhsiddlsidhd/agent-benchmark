@@ -10,7 +10,7 @@ import SidebarNavItem from "@/components/molecules/SidebarNavItem";
 import SidebarToggle from "@/components/organisms/SidebarToggle";
 import useAuthStore from "@/store/auth.store";
 
-const layout = ({ children }: { children: React.ReactNode }) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
   const email = useAuthStore((state) => state.email);
   const role = useAuthStore((state) => state.role);
 
@@ -46,4 +46,4 @@ const layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default layout;
+export default Layout;

@@ -45,14 +45,16 @@ export function CheckoutForm({ query }: { query: string }) {
 
   const { errors, handleSubmit } = useCheckoutForm({ query, order, action, router });
 
+  const [prevActionState, setPrevActionState] = useState(state);
+  if (state !== prevActionState) {
+    setPrevActionState(state);
+    setErrorMessage(state && state.success === false ? state.error.message : null);
+  }
+
   useEffect(() => {
-    if (!state) return;
-    if (state.success === false) {
-      setErrorMessage(state.error.message);
-      return;
+    if (state && state.success !== false) {
+      triggerPayment(state.data);
     }
-    setErrorMessage(null);
-    triggerPayment(state.data);
   }, [state, triggerPayment]);
 
   // 결제 실패 후 재시도 시 기존 주문(merchantUid)으로 재결제 — DB 주문 중복 생성 방지

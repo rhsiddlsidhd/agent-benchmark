@@ -3,7 +3,7 @@
 import { Input } from "@/components/atoms/input";
 import FormField from "@/components/molecules/FormField";
 import { useDaumPopup } from "@/hooks";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface AddressFieldProps {
   name: string;
@@ -25,16 +25,20 @@ const AddressField = ({
 }: AddressFieldProps) => {
   const { handleDaumAddressPopup, address } = useDaumPopup();
   const [weddingAddress, setWeddingAddress] = useState(defaultValue);
+  const [prevAddress, setPrevAddress] = useState(address);
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue);
 
-  useEffect(() => {
+  if (address !== prevAddress) {
+    setPrevAddress(address);
     if (address) {
       setWeddingAddress(address);
     }
-  }, [address]);
+  }
 
-  useEffect(() => {
+  if (defaultValue !== prevDefaultValue) {
+    setPrevDefaultValue(defaultValue);
     setWeddingAddress(defaultValue);
-  }, [defaultValue]);
+  }
 
   const fieldId = `${name}_address`;
 

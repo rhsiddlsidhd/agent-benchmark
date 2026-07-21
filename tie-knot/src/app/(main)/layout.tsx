@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import { AnnouncementBar } from "@/components/molecules/AnnouncementBar";
 import announcementData from "@/data/announcement.json";
 
-const layout = ({ children }: { children: React.ReactNode }) => {
+const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const activeAnnouncements = announcementData.filter((item) => item.isActive);
 
   return (
@@ -17,4 +17,4 @@ const layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default layout;
+export default MainLayout;
