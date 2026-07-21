@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
-import { Card } from "@/components/atoms/card";
-import { Button } from "@/components/atoms/button";
-import TextField from "@/components/molecules/TextField";
-import { TypographyH1, TypographyLarge, TypographyMuted, TypographySmall } from "@/components/atoms/typography";
+import { Card, Button, TypographyH1, TypographyLarge, TypographyMuted, TypographySmall } from "@/components/atoms";
 
+import { TextField } from "@/components/molecules";
 import { getFieldError } from "@/utils";
 import { APIResponse } from "@/types";
 

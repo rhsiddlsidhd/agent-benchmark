@@ -1,9 +1,9 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "@/api/fetcher";
+import { fetcher } from "@/api";
 import { handleClientError } from "@/utils";
-import { PremiumFeature } from "@/services/premiumFeature.service";
+import { PremiumFeature } from "@/services";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -24,4 +24,4 @@ const usePremiumFeature = () => {
   return { premiumFeatures: data?.features ?? [], loading: isLoading };
 };
 
-export default usePremiumFeature;
+export { usePremiumFeature };

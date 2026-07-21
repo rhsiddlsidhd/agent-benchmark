@@ -4,11 +4,10 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { signupUser } from "@/actions/signupUser";
+import { signupUser } from "@/actions";
 import { hasFieldErrors } from "@/utils";
 import { APIResponse } from "@/types";
-import { SignupForm as PureSignupForm } from "@/components/organisms/SignupForm";
-
+import { SignupForm as PureSignupForm } from "@/components/organisms";
 export function SignupForm() {
   const router = useRouter();
   const [state, action, pending] = useActionState<

@@ -11,8 +11,10 @@
 
 ```
 src/context/
+├── index.ts                  # 배럴 — export * from "./createStateContext"
 ├── createStateContext.tsx   # Provider+useContext 페어를 만드는 제네릭 팩토리(도메인 무관)
 └── productFilter/            # 팩토리를 실제로 쓰는 도메인 하나
+    ├── index.ts                # 배럴(이 도메인 전용, `lib/`의 서비스당 배럴 1개 패턴과 동일)
     ├── type.ts                # State/Action 타입
     └── reducer.ts              # reducer + Provider/hook export(팩토리 호출)
 ```
@@ -25,9 +27,10 @@ src/context/
 
 ## Gotchas
 
-- 없음.
+- 2026-07-22, `index.ts` 배럴 추가(폴더 자체 + `productFilter/` 도메인 폴더 각각). 소비처 4곳을 `@/context/productFilter/reducer`/`type` 개별 경로에서 `@/context/productFilter`로 전환. `createStateContext.tsx`/`productFilter/reducer.ts` 2개 파일에 `"use client"`가 빠져있던 걸 `next build`로 발견해 같이 고쳤다(`src/hooks/CLAUDE.md` Gotchas와 동일 사유).
 
 ## 관련 문서
 
 - 전역 상태(Zustand)와의 경계: `src/store/CLAUDE.md` — 앱 전체 범위면 Context가 아니라 Zustand(`src/store/`)로 간다.
 - 상태 범위 확장 순서(로컬→Context→Zustand) 원칙: `src/CLAUDE.md`
+- 배럴 import 정책(공통): `src/CLAUDE.md`

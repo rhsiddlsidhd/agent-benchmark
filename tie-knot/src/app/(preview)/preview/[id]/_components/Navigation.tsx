@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/components/atoms/button";
+import { Button } from "@/components/atoms";
 import { navigationButtons } from "@/constants";
 import { NavigationGeo } from "@/hooks";
 import Image from "next/image";
@@ -49,4 +49,4 @@ const Navigation = ({ address, geoState }: NavigationProps) => {
   );
 };
 
-export default Navigation;
+export { Navigation };

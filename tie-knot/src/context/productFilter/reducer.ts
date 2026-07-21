@@ -1,3 +1,5 @@
+"use client";
+
 import { useReducer } from "react";
 import { createStateContext } from "../createStateContext";
 import { ProductFilterAction, ProductFilterState } from "./type";

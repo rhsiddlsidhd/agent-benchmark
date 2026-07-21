@@ -1,20 +1,14 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms";
 import { format } from "date-fns";
-import TextField from "@/components/molecules/TextField";
-import AddressField from "@/components/molecules/AddressField";
-import SwitchField from "@/components/molecules/SwitchField";
-import SelectField from "@/components/molecules/SelectField";
-import DateField from "@/components/molecules/DateField";
-import subwayStations from "@/data/subway.json";
-import type { ICoupleInfo } from "@/models/coupleInfo.model";
+import { TextField, AddressField, SwitchField, SelectField, DateField } from "@/components/molecules";
 
+
+
+
+import subwayStations from "@/data/subway.json";
+import { ICoupleInfo } from "@/models";
 type BasicInfoSectionProps = {
   data?: Pick<ICoupleInfo, "weddingDate" | "venue" | "address" | "addressDetail" | "subwayStation" | "guestbookEnabled">;
 };

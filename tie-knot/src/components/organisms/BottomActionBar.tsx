@@ -1,5 +1,7 @@
-import { Button } from "@/components/atoms/button";
-import { Separator } from "@/components/atoms/separator";
+"use client";
+
+import { Button, Separator } from "@/components/atoms";
+
 import clsx from "clsx";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -58,4 +60,4 @@ const BottomActionBar = ({
   );
 };
 
-export default BottomActionBar;
+export { BottomActionBar };

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Address, useDaumPostcodePopup } from "react-daum-postcode";
 
@@ -32,4 +34,4 @@ const useDaumPopup = () => {
   return { address, handleDaumAddressPopup };
 };
 
-export default useDaumPopup;
+export { useDaumPopup };

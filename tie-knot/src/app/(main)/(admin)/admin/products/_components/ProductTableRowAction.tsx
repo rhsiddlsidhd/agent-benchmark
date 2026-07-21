@@ -1,8 +1,8 @@
 "use client";
-import { deleteProduct } from "@/actions/deleteProduct";
+import { deleteProduct } from "@/actions";
 import { ProductTableRowProps } from "./ProductTableRow";
-import { Button } from "@/components/atoms/button";
-import { useAdminModalStore } from "@/store/admin.modal.store";
+import { Button } from "@/components/atoms";
+import { useAdminModalStore } from "@/store";
 import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -58,4 +58,4 @@ const ProductTableRowAction = ({ product }: ProductTableRowProps) => {
   );
 };
 
-export default ProductTableRowAction;
+export { ProductTableRowAction };

@@ -1,11 +1,10 @@
 "use client";
 import React from "react";
 
-import { Button } from "@/components/atoms/button";
+import { Button } from "@/components/atoms";
 import { Edit, Trash2 } from "lucide-react";
-import { PremiumFeature } from "@/services/premiumFeature.service";
-import { useAdminModalStore } from "@/store/admin.modal.store";
-
+import { PremiumFeature } from "@/services";
+import { useAdminModalStore } from "@/store";
 const PremiumFeatureCardAction = ({
   premiumFeature,
 }: {
@@ -30,4 +29,4 @@ const PremiumFeatureCardAction = ({
   );
 };
 
-export default PremiumFeatureCardAction;
+export { PremiumFeatureCardAction };

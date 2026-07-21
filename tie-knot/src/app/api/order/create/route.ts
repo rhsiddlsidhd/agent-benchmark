@@ -1,10 +1,9 @@
-import { APIRouteResponse, apiFail } from "@/api/response";
+import { APIRouteResponse, apiFail } from "@/api";
 import { HTTPError } from "@/types";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { validateAndFlatten } from "@/utils";
-import { requireAuth } from "@/services/auth.service";
-
+import { requireAuth } from "@/services";
 const createOrderRequestSchema = z.object({
   productId: z.string().min(1, { message: "상품 ID가 필요합니다." }),
   originalPrice: z.number().positive({ message: "가격은 양수여야 합니다." }),

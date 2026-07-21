@@ -1,14 +1,14 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "@/api/fetcher";
-import { Button } from "@/components/atoms/button";
-import SectionBody from "@/components/atoms/titled-section";
+import { fetcher } from "@/api";
+import { Button } from "@/components/atoms";
+import { EyebrowSection } from "./EyebrowSection";
 import { PenLine, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { IGuestbook } from "@/models/guestbook.model";
-import { useGuestbookModalStore } from "@/store/guestbook.modal.store";
+import { IGuestbook } from "@/models";
+import { useGuestbookModalStore } from "@/store";
 import { mapDataToGuestbookProps } from "../_utils/guestbookSection.mapper";
 
 export function GuestbookSection({ id }: { id: string }) {
@@ -30,7 +30,7 @@ export function GuestbookSection({ id }: { id: string }) {
   }, [rawData, data]);
 
   return (
-    <SectionBody title="GUESTBOOK" subTitle="방명록">
+    <EyebrowSection eyebrow="GUESTBOOK" heading="방명록">
       <div className="flex flex-col items-center gap-4">
         <div className="h-full text-gray-300">
           <ul className="space-y-4 py-2">
@@ -100,6 +100,6 @@ export function GuestbookSection({ id }: { id: string }) {
           <span className="font-semibold">방명록 작성하기</span>
         </Button>
       </div>
-    </SectionBody>
+    </EyebrowSection>
   );
 }

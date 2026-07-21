@@ -1,4 +1,6 @@
-import { useOrderStore } from "@/store/order.store";
+"use client";
+
+import { useOrderStore } from "@/store";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";

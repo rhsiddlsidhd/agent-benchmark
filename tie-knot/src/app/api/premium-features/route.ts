@@ -1,9 +1,5 @@
-import { apiOk, apiFail, APIRouteResponse } from "@/api/response";
-import {
-  getAllPremiumFeatureService,
-  PremiumFeature,
-} from "@/services/premiumFeature.service";
-
+import { apiOk, apiFail, APIRouteResponse } from "@/api";
+import { getAllPremiumFeatureService, PremiumFeature } from "@/services";
 export const GET = async (): Promise<
   APIRouteResponse<{ features: PremiumFeature[] }>
 > => {

@@ -1,5 +1,5 @@
-import { PremiumFeature } from "@/services/premiumFeature.service";
-import { Product } from "@/services/product.service";
+import { PremiumFeature, Product } from "@/services";
+
 import { create } from "zustand";
 
 type ModalType = "EDIT-PREMIUMFEATURE" | "EDIT-PRODUCT";

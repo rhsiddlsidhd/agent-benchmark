@@ -2,11 +2,10 @@
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { isStatus, STATUS_ITEMS } from "@/types";
-import { updateProductStatus } from "@/actions/updateProductStatus";
+import { updateProductStatus } from "@/actions";
 import { toast } from "sonner";
-import StatusSelect from "@/components/molecules/StatusSelect";
-import { Product } from "@/services/product.service";
-
+import { StatusSelect } from "@/components/molecules";
+import { Product } from "@/services";
 const ProductTableRowSelect = ({ product }: { product: Product }) => {
   const router = useRouter();
   const [status, setStatus] = useState<string>(product.status);
@@ -46,4 +45,4 @@ const ProductTableRowSelect = ({ product }: { product: Product }) => {
   );
 };
 
-export default ProductTableRowSelect;
+export { ProductTableRowSelect };

@@ -1,6 +1,6 @@
-import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
-import TextField from "@/components/molecules/TextField";
+import { Button, TypographyH1, TypographyMuted } from "@/components/atoms";
+
+import { TextField } from "@/components/molecules";
 import Link from "next/link";
 import { getFieldError } from "@/utils";
 import { APIResponse } from "@/types";

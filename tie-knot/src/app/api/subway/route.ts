@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import subwayStations from "@/data/subway.json";
 
 export const GET = async (): Promise<

@@ -1,5 +1,5 @@
-import Alert from "@/components/molecules/Alert";
-import { Label } from "@/components/atoms/label";
+import { Alert } from "@/components/molecules/Alert";
+import { Label } from "@/components/atoms";
 import React from "react";
 import { Asterisk } from "lucide-react";
 
@@ -32,4 +32,4 @@ const FormField = ({
   );
 };
 
-export default FormField;
+export { FormField };

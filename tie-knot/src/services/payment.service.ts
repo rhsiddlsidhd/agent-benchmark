@@ -1,6 +1,6 @@
 import * as PortOne from "@portone/server-sdk";
-import { PaymentModel, PayStatus } from "@/models/payment.model";
-import { OrderModel } from "@/models/order.model";
+import { PaymentModel, PayStatus, OrderModel } from "@/models";
+
 import { getProductService } from "./product.service";
 import { getOrderSeviceByMerchantUid } from "./order.service";
 import { HTTPError } from "@/types";

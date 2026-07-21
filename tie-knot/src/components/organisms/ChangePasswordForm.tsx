@@ -1,13 +1,7 @@
 "use client";
-import { Button } from "@/components/atoms/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import TextField from "@/components/molecules/TextField";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms";
+
+import { TextField } from "@/components/molecules";
 import clsx from "clsx";
 import { Save } from "lucide-react";
 import React, { useState } from "react";
@@ -96,4 +90,4 @@ const ChangePasswordForm = () => {
   );
 };
 
-export default ChangePasswordForm;
+export { ChangePasswordForm };

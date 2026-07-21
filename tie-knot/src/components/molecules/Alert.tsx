@@ -16,4 +16,4 @@ const Alert = ({ type = "info", children }: AlertProps) => {
   );
 };
 
-export default Alert;
+export { Alert };

@@ -1,2 +1,2 @@
 export { PremiumFeatureDialog } from "./PremiumFeatureDialog";
-export { default as PremiumFeatureCardAction } from "./PremiumFeatureCardAction";
+export { PremiumFeatureCardAction } from "./PremiumFeatureCardAction";

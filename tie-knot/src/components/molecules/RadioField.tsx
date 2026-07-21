@@ -1,7 +1,7 @@
 "use client";
 
-import { Label } from "@/components/atoms/label";
-import { RadioGroup, RadioGroupItem } from "@/components/atoms/radio-group";
+import { Label, RadioGroup, RadioGroupItem } from "@/components/atoms";
+
 import React, { useState } from "react";
 import { LucideIcon } from "lucide-react";
 import { FieldBase } from "@/types";
@@ -56,4 +56,4 @@ const RadioField = <T extends string = string>({
   );
 };
 
-export default RadioField;
+export { RadioField };

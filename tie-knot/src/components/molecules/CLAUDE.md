@@ -2,10 +2,11 @@
 
 > Last updated: 2026-07-18
 
-## Scope
+## Overview
 
-- **atoms(및/또는 다른 molecule) 2개 이상을 조합한, 단일 책임의 단순 기능 단위.** organisms와의 경계는 "완성됐냐"가 아니라 "단순한가 복잡한가"다(`src/components/CLAUDE.md` 핵심 원칙 3, 원본 Atomic Design 기준) — 그 자체로 완성돼 바로 쓰여도, 책임이 하나뿐이면 molecule이다. 예: `TextField`(라벨+입력 필드 하나)는 완성돼서 바로 쓰이지만 책임이 "입력 필드 하나"로 단일하니 molecule — `FormField`(children 꽂아야 완성되는 골격)도 마찬가지로 단일 책임이라 molecule. "미완성 골격이냐 완성품이냐"는 이 폴더 안에서는 판단 기준이 아니다(둘 다 있을 수 있음).
-- **순수(presentational)**해야 한다 — 도메인 로직·데이터 페칭·Server Actions 의존 금지(`src/components/CLAUDE.md` 핵심 원칙 1). 조합 대상은 atoms 및/또는 다른 molecule이다 — 조합 결과가 여러 책임을 동시에 지게 되면(예: 필드 여러 개를 한데 묶은 폼 섹션) organisms 소관이다(`src/components/organisms/CLAUDE.md` 참고).
+`molecules/`는 atoms(및/또는 다른 molecule) 2개 이상을 조합해 만든, 단일 책임의 단순 기능 단위를 모아두는 곳이다 — 순수(presentational)해야 하며 도메인 로직·데이터 페칭·Server Actions 의존은 금지된다(`src/components/CLAUDE.md` 핵심 원칙 1).
+
+organism과의 경계는 "완성됐냐"가 아니라 "단순한가 복잡한가"다(핵심 원칙 3, 원본 Atomic Design 기준) — 책임이 하나뿐이면 그 자체로 완성돼 바로 쓰여도 molecule이다. 예: `TextField`(라벨+입력 필드 하나)는 완성돼서 바로 쓰이지만 책임이 단일하니 molecule — `FormField`(children 꽂아야 완성되는 골격)도 단일 책임이라 molecule("미완성 골격이냐 완성품이냐"는 판단 기준이 아니다). 조합 결과가 여러 책임을 동시에 지게 되면(예: 필드 여러 개를 한데 묶은 폼 섹션) organisms 소관이다(`src/components/organisms/CLAUDE.md` 참고).
 
 ## Structure
 
@@ -13,6 +14,7 @@
 
 ```
 src/components/molecules/
+├── index.ts               # 배럴 — export *
 ├── FormField.tsx        # Label(atom)+Alert(molecule) 조합, children 꽂혀야 완성 — 단일 책임
 ├── Alert.tsx               # Typography(atom) 조합
 ├── TextField.tsx            # FormField(molecule)+Input(atom) 조합, 완성돼 바로 쓰임 — 단일 책임(입력 필드 하나)이라 organism 아님
@@ -27,6 +29,8 @@ src/components/molecules/
 
 ## Gotchas
 
+- `src/` 전체 default export 금지 규칙(`src/CLAUDE.md`) 정리하며 이 폴더 전체를 named export로 전환 완료 — 소비처 import도 전부 named import로 같이 수정.
+- 2026-07-22, `index.ts` 배럴 추가(소비처 41곳 전환, 같은 폴더 안 형제 파일끼리는 배럴 대신 직접 경로 유지 — `src/schemas/CLAUDE.md`의 형제 import 전례와 동일). 이 과정에서 `KakaoMap.tsx`/`SelectField.tsx`/`TextField.tsx`/`ImageField.tsx`/`SwitchField.tsx` 5개 파일에 `"use client"`가 원래부터 빠져있던 걸 `next build`로 발견해 같이 고쳤다 — 배럴이 형제 파일 전체를 한 모듈 그래프로 묶어서, 경계 선언 없는 hook 파일이 하나라도 있으면 이 배럴을 참조하는 아무 Server Component에서나 빌드가 깨진다(`src/hooks/CLAUDE.md` Gotchas 참고).
 - `ProductThumbnail.tsx`는 삭제됐다 — 실제로 뜯어보니 `Product` 도메인 결합이 아니라 `CloudImage.tsx`를 그대로 재export만 하는 1줄짜리 별칭 파일이었다(내부 로직 0개). 소비자 6곳도 Order/일반 이미지 프리뷰 등 도메인 무관하게 쓰고 있어 "이름만 Product-스러운 alias"였을 뿐 — organisms로 옮길 대상이 아니라 삭제하고 6곳 전부 `CloudImage` 직접 import로 교체했다. 새 이미지 래퍼가 필요해도 이런 이름-바꿔치기 재export 파일을 만들지 않는다.
 - `CloudImage.tsx` — Cloudinary라는 인프라에 의존하지만 비즈니스 도메인(Product/Order 등)엔 안 묶여있다 — 인프라 의존은 순수성 위반이 아니므로 그대로 유지.
 - `__wedding/Subway.tsx`는 삭제됐다 — 검토 결과 코드베이스 전체에 렌더하는 소비자가 0곳(완전 죽은 코드)이었고, 내부 `fetch("/subway")`/`fetch("/subway/{station}")` 경로도 실제 Route Handler(`/api/subway`)와 안 맞아 살아있었어도 작동 안 했을 것. 이 파일만 쓰던 `src/utils/subway.ts`(`createLineColorMap`/`createSelecedSubwayMap`)도 같이 삭제, `src/utils/index.ts` 배럴에서도 제거.
@@ -35,6 +39,6 @@ src/components/molecules/
 
 ## 관련 문서
 
-- 상위 3단계 정의 및 순수성 원칙: `src/components/CLAUDE.md`
+- 상위 4단계 정의 및 순수성 원칙: `src/components/CLAUDE.md`
 - 더 복잡한 다음 단계: `src/components/organisms/CLAUDE.md`
 - 라우트 전용 승격 대기 공간: `src/app/CLAUDE.md`

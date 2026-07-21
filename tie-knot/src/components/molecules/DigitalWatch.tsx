@@ -35,4 +35,4 @@ const DigitalWatch = ({ countdown, message }: DigitalWatchProps) => {
   );
 };
 
-export default DigitalWatch;
+export { DigitalWatch };

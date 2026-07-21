@@ -3,13 +3,13 @@ import React, { useCallback, useMemo, useState } from "react";
 import { ShoppingCart, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/atoms/badge";
-import { Button } from "@/components/atoms/button";
-import StatusSelect from "@/components/molecules/StatusSelect";
-import { Product } from "@/services/product.service";
-import { PremiumFeature } from "@/services/premiumFeature.service";
+import { Badge, Button } from "@/components/atoms";
+
+import { StatusSelect } from "@/components/molecules";
+import { Product, PremiumFeature } from "@/services";
+
 import { CheckoutItem } from "@/types";
-import { SelectFeatureDto } from "@/schemas/order.schema";
+import { SelectFeatureDto } from "@/schemas";
 import { calculatePrice, formatPriceWithComma } from "@/utils";
 
 const ProductOptions = ({
@@ -161,4 +161,4 @@ const ProductOptions = ({
   );
 };
 
-export default ProductOptions;
+export { ProductOptions };

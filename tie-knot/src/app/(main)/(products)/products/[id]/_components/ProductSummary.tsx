@@ -3,12 +3,11 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-import { useOrderStore } from "@/store/order.store";
-import { Product } from "@/services/product.service";
-import { PremiumFeature } from "@/services/premiumFeature.service";
-import { CheckoutItem } from "@/types";
-import { ProductSummary as PureProductSummary } from "@/components/organisms/ProductSummary";
+import { useOrderStore } from "@/store";
+import { Product, PremiumFeature } from "@/services";
 
+import { CheckoutItem } from "@/types";
+import { ProductSummary as PureProductSummary } from "@/components/organisms";
 export function ProductSummary({
   product,
   options,

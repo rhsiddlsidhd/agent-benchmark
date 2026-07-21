@@ -1,7 +1,7 @@
 "use client";
 
 import { handleClientError } from "@/utils";
-import { apiRequest } from "@/api/apiRequest";
+import { apiRequest } from "@/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

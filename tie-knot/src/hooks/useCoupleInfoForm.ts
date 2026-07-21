@@ -4,12 +4,12 @@ import { startTransition, useActionState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { createCoupleInfo } from "@/actions/createCoupleInfo";
-import { updateCoupleInfo } from "@/actions/updateCoupleInfo";
+import { createCoupleInfo, updateCoupleInfo } from "@/actions";
+
 import { APIResponse } from "@/types";
 import { useImageUpload } from "./useImageUpload";
 import { useImageList } from "./useImageList";
-import useFetchCoupleInfo from "./useFetchCoupleInfo";
+import { useFetchCoupleInfo } from "./useFetchCoupleInfo";
 import { useBanks } from "./useBanks";
 
 export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {

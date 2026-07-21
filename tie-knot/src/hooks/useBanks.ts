@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "@/api/fetcher";
+import { fetcher } from "@/api";
 import { Banks } from "@/app/api/banks/route";
 
 export function useBanks() {

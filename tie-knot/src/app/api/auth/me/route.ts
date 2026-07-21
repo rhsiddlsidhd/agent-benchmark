@@ -1,5 +1,5 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
-import { getAuth } from "@/services/auth.service";
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
+import { getAuth } from "@/services";
 import { AuthSession } from "@/types";
 
 export const GET = async (): Promise<

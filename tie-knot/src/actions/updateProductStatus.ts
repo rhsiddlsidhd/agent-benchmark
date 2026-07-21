@@ -2,10 +2,9 @@
 
 import { APIResponse } from "@/types";
 import { HTTPError } from "@/types";
-import { Status } from "@/models/product.model";
+import { Status } from "@/models";
+import { requireAuth, updateProductService } from "@/services";
 
-import { requireAuth } from "@/services/auth.service";
-import { updateProductService } from "@/services/product.service";
 import { revalidatePath } from "next/cache";
 
 export const updateProductStatus = async (

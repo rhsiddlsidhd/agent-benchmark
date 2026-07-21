@@ -11,6 +11,7 @@
 
 ```
 src/services/
+├── index.ts               # 배럴 — export *
 ├── auth.service.ts        # getUser, getAuth, requireAuth, logoutService
 ├── user.service.ts
 ├── product.service.ts
@@ -25,6 +26,7 @@ src/services/
 
 ## Gotchas
 
+- 2026-07-22, `index.ts` 배럴 추가(소비처 56곳 전환). hook/JSX 없는 순수 로직 레이어라 배럴화 안전 — `next build`로 검증.
 - `doc.md` — 코드 아니라 "`.lean()` vs `.toJSON()` 트레이드오프 가이드" 문서가 이 폴더에 있음. 새 service 함수 작성 전에 이 문서부터 읽는다 — 두 방식이 프로젝트 안에 실제로 혼재하므로(`getPremiumFeatureServiceWithLean` 예시가 문서 안에 있음) 아무거나 복붙하지 않는다.
 - `requireAuth()`는 `getAuth()`를 감싸서 세션 없으면 `HTTPError(401)`을 throw하는 얇은 헬퍼다 — 인증이 필수인 Route Handler는 Bearer 헤더를 직접 파싱하지 않고 이 함수를 호출한다(`src/app/api/CLAUDE.md` Gotchas 참고).
 

@@ -1,10 +1,9 @@
 "use client";
 
-import BottomActionBar from "@/components/organisms/BottomActionBar";
-import Spinner from "@/components/molecules/Spinner";
+import { BottomActionBar } from "@/components/organisms";
+import { Spinner } from "@/components/molecules";
 import { Save } from "lucide-react";
-import type { PayStatus } from "@/models/payment.model";
-
+import { PayStatus } from "@/models";
 interface CheckoutSubmitBarProps {
   disabled: boolean;
   pending: boolean;

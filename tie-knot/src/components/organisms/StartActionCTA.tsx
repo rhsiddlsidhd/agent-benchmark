@@ -1,11 +1,6 @@
 import { Sparkles } from "lucide-react";
 import ctaData from "@/data/cta.json";
-import {
-  TypographyH2,
-  TypographyP,
-  TypographySmall,
-} from "@/components/atoms/typography";
-
+import { TypographyH2, TypographyP, TypographySmall } from "@/components/atoms";
 export function StartActionCTA() {
   return (
     <section className="bg-primary text-primary-foreground relative overflow-hidden py-24">

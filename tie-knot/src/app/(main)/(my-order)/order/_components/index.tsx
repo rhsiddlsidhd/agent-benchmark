@@ -1,1 +1,1 @@
-export { default as PaymentButton } from "./PaymentButton";
+export { PaymentButton } from "./PaymentButton";

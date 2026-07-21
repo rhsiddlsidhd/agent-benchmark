@@ -8,12 +8,11 @@ import {
   MessageSquare,
   History,
 } from "lucide-react";
-import { Button } from "@/components/atoms/button";
+import { Button, TypographyH2, TypographySmall } from "@/components/atoms";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 import promotions from "@/data/promotions.json";
 import { useIntervalIndex } from "@/hooks";
-import { TypographyH2, TypographySmall } from "@/components/atoms/typography";
 
 // 아이콘 매핑 객체
 const ICON_MAP: Record<string, React.ElementType> = {

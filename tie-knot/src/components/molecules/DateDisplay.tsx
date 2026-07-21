@@ -17,4 +17,4 @@ const DateDisplay = ({ date, type, className }: DateDisplayProps) => {
   return <span className={className}>{formatted}</span>;
 };
 
-export default DateDisplay;
+export { DateDisplay };

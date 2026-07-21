@@ -1,5 +1,4 @@
-import { UserRole } from "@/models/user.model";
-
+import { UserRole } from "@/models";
 type JWTType = "ACCESS" | "REFRESH" | "ENTRY";
 
 interface JWTBaseProps {

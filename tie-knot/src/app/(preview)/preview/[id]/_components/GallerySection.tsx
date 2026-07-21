@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import CloudImage from "@/components/molecules/CloudImage";
-import { Button } from "@/components/atoms/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/atoms/dialog";
+import { CloudImage } from "@/components/molecules";
+import { Button, Dialog, DialogContent, DialogTitle } from "@/components/atoms";
+
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import SectionBody from "@/components/atoms/titled-section";
+import { EyebrowSection } from "./EyebrowSection";
 import { GallerySectionProps } from "../_utils/gallerySection.mapper";
 
 export function GallerySection({
@@ -29,7 +29,7 @@ export function GallerySection({
   if (images.length === 0) return null;
 
   return (
-    <SectionBody title="GALLERY" subTitle="웨딩 갤러리">
+    <EyebrowSection eyebrow="GALLERY" heading="웨딩 갤러리">
       <div className="grid grid-cols-2 gap-2">
         {images.map((src, index) => (
           <button
@@ -93,6 +93,6 @@ export function GallerySection({
           </DialogContent>
         </Dialog>
       )}
-    </SectionBody>
+    </EyebrowSection>
   );
 }

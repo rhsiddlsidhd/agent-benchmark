@@ -1,9 +1,8 @@
-import { getAllPremiumFeatureService } from "@/services/premiumFeature.service";
-import { Button } from "@/components/atoms/button";
+import { getAllPremiumFeatureService } from "@/services";
+import { Button, TypographyH1, TypographyMuted } from "@/components/atoms";
 import { ProductRegistrationForm } from "./_components";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 
 export default async function NewProductPage() {
   const premiumFeatures = await getAllPremiumFeatureService();

@@ -29,12 +29,14 @@ Next.js App Router 진입점 — 라우트 그룹(`(main)`, `(auth)`, `(checkout
 - 루트 `app/layout.tsx`만 metadata(SEO/OG/Twitter)·전역 CSS import·환경변수 검증을 담당한다 — 하위 `layout.tsx`에서 이걸 중복 정의하지 않는다.
 - `error.tsx`와 `not-found.tsx`를 혼용하지 않는다 — `error.tsx`는 fetch 실패/예외 경계, `not-found.tsx`는 존재하지 않는 리소스 전용이다. 현재는 라우트 개별이 아니라 **라우트 그룹 단위**로 배치돼있다(`(main)/error.tsx`, `(main)/(products)/error.tsx`, `(main)/(admin)/error.tsx`, 루트 `not-found.tsx`) — 그룹 내 여러 라우트가 에러 경계를 공유해도 되면 그룹 레벨, 특정 라우트만 다른 처리가 필요하면 그 라우트에 개별 배치한다.
 - `page.tsx`에 interface/순수함수/상수/서브 UI 컴포넌트/훅을 인라인으로 쌓지 않는다 — `_components`/`_types`/`_utils`/`_constants`/`_hooks`로 분리한다(새 라우트부터 적용, Gotchas 참고).
-- `_components`/`_types`/`_utils`/`_constants`/`_hooks`를 폴더 + `index.ts`(컴포넌트는 `index.tsx`) 배럴 형태 외의 방식으로 만들지 않는다 — 폴더 안 파일이 1개뿐이어도 예외 없이 이 형태를 유지한다.
+- **`page.tsx`는 Pages 단계만 담당한다** — 실제 데이터를 fetch/조립해서 Template(`src/components/templates/{Name}Template.tsx` 또는 그 라우트 `_components/{Name}Template.tsx`)에 props로 넘기는 것까지만 한다. organism을 배치(grid/flex/spacing 등)하는 코드가 하나라도 있으면 Template 추출이 필수다 — organism 딱 1개를 배치 코드 없이 그대로 렌더하는 경우에 한해서만 `page.tsx`가 직접 렌더할 수 있다. Template은 `layout.tsx`(라우트 그룹 셸)와 다른 층위다 — Template은 항상 그 layout.tsx 안에 중첩된다. (Template 자격 조건 자체 — 순수성, self-fetching 자식 있을 때 opt-out 등 — 은 `src/components/templates/CLAUDE.md` 소관.)
+- `_components`/`_types`/`_utils`/`_constants`/`_hooks`를 폴더 + `index.ts`(컴포넌트는 `index.tsx`) 배럴 형태 외의 방식으로 만들지 않는다 — 폴더 안 파일이 1개뿐이어도 예외 없이 이 형태를 유지한다. **배럴은 `page.tsx`/`layout.tsx`가 직접 소비하는 파일만 재export하면 된다** — 같은 폴더 안 다른 파일에서만 내부적으로 쓰이고 `page.tsx`/`layout.tsx`가 직접 import 안 하는 파일(예: `_components/Navigation.tsx`가 `_components/LocationSection.tsx` 내부에서만 쓰이는 경우)은 배럴에 안 올려도 된다 — 배럴 목적이 "그 라우트 밖에서 이 폴더에 뭐가 있는지 알려주는 것"이지 폴더 안 모든 파일을 강제로 노출하는 게 아니다.
 - 파일명/식별자 케이스는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`를 따른다.
+- **`page.tsx`/`layout.tsx`/`error.tsx`/`not-found.tsx`/`proxy.ts`는 `export default`를 쓴다** — Next.js가 강제하는 파일 컨벤션이다.
 
 ## Gotchas
 
-- 기존 라우트는 대부분 `page.tsx`가 `src/components/organisms/{Name}Form.tsx`를 바로 import하는 얇은 래퍼다 — 라우트 전용 스테이징 없이 처음부터 전역 `src/components/organisms/`에 들어가 있다. 이 구조를 지금 일괄로 되돌리지 않는다 — 새 라우트/새 기능부터, 그리고 컨테이너/순수 분리 리팩토링 대상이 되는 라우트부터 순차 적용(`login/`이 첫 사례: `_components/LoginForm.tsx`(컨테이너)가 `organisms/LoginForm.tsx`(순수)를 감쌈, `src/components/organisms/CLAUDE.md` Gotchas 참고).
+- 기존 라우트는 대부분 `page.tsx`가 `src/components/organisms/{Name}Form.tsx`를 바로 import하는 얇은 래퍼다 — 라우트 전용 스테이징 없이 처음부터 전역 `src/components/organisms/`에 들어가 있다. 이 구조를 지금 일괄로 되돌리지 않는다 — 새 라우트/새 기능부터, 그리고 컨테이너/순수 분리 리팩토링 대상이 되는 라우트부터 순차 적용(`login/`이 첫 사례: `_components/LoginForm.tsx`(컨테이너)가 `organisms/LoginForm.tsx`(순수)를 감쌈, `src/components/organisms/CLAUDE.md` Gotchas 참고). Templates 티어도 같은 정책 — 도입 시점/소급 범위는 `src/components/templates/CLAUDE.md` Gotchas 참고.
 - `_components` private 폴더는 이제 컨테이너/순수 분리가 끝난 라우트마다 있다(각각 `index.tsx` 배럴 완비) — 라우트 그룹 셸 전용(`(main)/`, `(preview)/`, `(admin)/admin/`)과 페이지 전용(`payment/`, `login/`, `signup/`, `find-id/`, `find-pw/`, `change-pw/`, `couple-info/`, `(my-order)/order/`, `(my-order)/order/edit/`, `(products)/products/`, `(products)/products/[id]/`, `(admin)/admin/products/`, `(admin)/admin/products/new/`, `(admin)/admin/premium-features/`, `(admin)/admin/premium-features/new/`, `(preview)/preview/[id]/`) 두 종류가 있다.
 - `_utils` private 폴더의 첫 실사용례가 생겼다 — `(preview)/preview/[id]/_utils/`(mapper 8개, `index.ts` 배럴 포함). 여전히 대부분의 라우트는 이 구조를 안 쓰지만(`_utils` 자체는 더 이상 "예제만 있고 실사용 없음" 상태 아님), 이 라우트 하나가 이 private 폴더군의 실제 동작 예시다.
 - `loading.tsx`는 프로젝트 전체에 0개 — 필요해지면 그때 이 문서에 기준을 추가한다(지금은 규정 안 함).
@@ -48,6 +50,7 @@ Next.js App Router 진입점 — 라우트 그룹(`(main)`, `(auth)`, `(checkout
 - 승격된 타입: `src/types/CLAUDE.md`
 - 승격된 상수: `src/constants/CLAUDE.md`
 - 컴포넌트 조직 구조: `src/components/CLAUDE.md`
+- Templates(페이지 전체 배치) 세부 규칙: `src/components/templates/CLAUDE.md`
 - Route Handler 세부 규칙: `src/app/api/CLAUDE.md`
 - Server Actions: `src/actions/CLAUDE.md`
 - 응답/에러 계약: `src/api/CLAUDE.md`

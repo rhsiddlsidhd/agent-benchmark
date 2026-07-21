@@ -1,23 +1,19 @@
 "use client";
 
-import SectionBody from "@/components/atoms/titled-section";
+import { EyebrowSection } from "./EyebrowSection";
 import React, { useMemo, useState } from "react";
-import { Card } from "@/components/atoms/card";
-import { ClipboardButton } from "@/components/molecules/ClipboardButton";
+import { Card, Tabs, TabsList, TabsTrigger, TypographyLarge, TypographyMuted, Badge } from "@/components/atoms";
+import { ClipboardButton } from "@/components/molecules";
 import { useCopy } from "@/hooks";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 import { useBanks } from "@/hooks";
-import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
+
 import {
   AccountInfo,
   AccountSectionMappedProps,
 } from "../_utils/accountSection.mapper";
-import {
-  TypographyLarge,
-  TypographyMuted,
-} from "@/components/atoms/typography";
-import { Badge } from "@/components/atoms/badge";
+
 
 const AccountSection = ({
   groomAccounts,
@@ -81,7 +77,7 @@ const AccountSection = ({
   };
 
   return (
-    <SectionBody title="ACCOUNT" subTitle="마음 전하실 곳">
+    <EyebrowSection eyebrow="ACCOUNT" heading="마음 전하실 곳">
       {/* Toggle UI */}
       <div className="mb-6 flex justify-center">
         <Tabs
@@ -122,8 +118,8 @@ const AccountSection = ({
           {renderAccountCards(brideAccounts)}
         </div>
       </div>
-    </SectionBody>
+    </EyebrowSection>
   );
 };
 
-export default AccountSection;
+export { AccountSection };

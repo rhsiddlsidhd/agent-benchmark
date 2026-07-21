@@ -1,9 +1,9 @@
-import Alert from "@/components/molecules/Alert";
-import { Button } from "@/components/atoms/button";
-import { Input } from "@/components/atoms/input";
-import { Label } from "@/components/atoms/label";
-import { Textarea } from "@/components/atoms/textarea";
-import { TypographyMuted } from "@/components/atoms/typography";
+import { Alert } from "@/components/molecules";
+import { Button, Input, Label, Textarea, TypographyMuted } from "@/components/atoms";
+
+
+
+
 import { getFieldError } from "@/utils";
 import { APIResponse } from "@/types";
 

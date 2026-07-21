@@ -1,7 +1,7 @@
 "use server";
 import { APIResponse } from "@/types";
-import { premiumFeatureSchema } from "@/schemas/premiumFeature.schema";
-import { createPremiumFeatureService } from "@/services/premiumFeature.service";
+import { premiumFeatureSchema } from "@/schemas";
+import { createPremiumFeatureService } from "@/services";
 import { validateAndFlatten } from "@/utils";
 import { revalidatePath } from "next/cache";
 

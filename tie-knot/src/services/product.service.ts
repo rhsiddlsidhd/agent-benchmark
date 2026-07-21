@@ -1,5 +1,5 @@
-import { ProductModel, ProductJSON, ProductDB } from "@/models/product.model";
-import { ProductDto } from "@/schemas/product.schema";
+import { ProductModel, ProductJSON, ProductDB } from "@/models";
+import { ProductDto } from "@/schemas";
 import { dbConnect } from "@/lib/mongodb";
 import { calculatePrice } from "@/utils";
 import mongoose, { Types } from "mongoose";

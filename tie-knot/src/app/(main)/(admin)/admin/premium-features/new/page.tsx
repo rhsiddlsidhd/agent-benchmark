@@ -5,15 +5,8 @@ import type React from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PremiumFeatureRegistrationForm } from "./_components";
-import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
+import { Button, TypographyH1, TypographyMuted, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms";
+
 
 export default function NewPremiumFeaturePage() {
   return (

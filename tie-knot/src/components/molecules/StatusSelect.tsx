@@ -1,4 +1,4 @@
-import BaseSelect from "@/components/molecules/BaseSelect";
+import { BaseSelect } from "@/components/molecules/BaseSelect";
 import React from "react";
 
 const StatusSelect = ({
@@ -28,4 +28,4 @@ const StatusSelect = ({
   );
 };
 
-export default StatusSelect;
+export { StatusSelect };

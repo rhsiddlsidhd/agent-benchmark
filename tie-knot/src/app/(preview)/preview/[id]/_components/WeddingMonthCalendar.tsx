@@ -2,10 +2,10 @@
 import React, { useMemo } from "react";
 
 import { formatInTimeZone } from "date-fns-tz";
-import SectionBody from "@/components/atoms/titled-section";
+import { EyebrowSection } from "./EyebrowSection";
 import { ko } from "date-fns/locale";
 import clsx from "clsx";
-import DigitalWatch from "@/components/molecules/DigitalWatch";
+import { DigitalWatch } from "@/components/molecules";
 import { useCountdown } from "@/hooks";
 
 import { WeddingMonthCalendarProps } from "../_utils/weddingMonthCalendar.mapper";
@@ -39,7 +39,7 @@ const WeddingMonthCalendar = ({ date }: WeddingMonthCalendarProps) => {
   const result = formatInTimeZone(date, "Asia/Seoul", "eeee aa h시 mm분", { locale: ko });
 
   return (
-    <SectionBody title="CALENDAR" subTitle={formatInTimeZone(date, "Asia/Seoul", "yyyy. MM. dd")}>
+    <EyebrowSection eyebrow="CALENDAR" heading={formatInTimeZone(date, "Asia/Seoul", "yyyy. MM. dd")}>
       <p className="text-muted-foreground font-semibold">{result}</p>
       <ul className="mx-auto grid w-52 grid-cols-7">
         {weekOfKr.map((kr, i) => {
@@ -73,8 +73,8 @@ const WeddingMonthCalendar = ({ date }: WeddingMonthCalendarProps) => {
         })}
       </ul>
       <DigitalWatch countdown={countdown} message={message} />
-    </SectionBody>
+    </EyebrowSection>
   );
 };
 
-export default WeddingMonthCalendar;
+export { WeddingMonthCalendar };

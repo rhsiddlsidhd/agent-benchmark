@@ -4,11 +4,10 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { createProduct } from "@/actions/createProduct";
+import { createProduct } from "@/actions";
 import { APIResponse } from "@/types";
-import type { PremiumFeature } from "@/services/premiumFeature.service";
-import { ProductRegistrationForm as PureProductRegistrationForm } from "@/components/organisms/ProductRegistrationForm";
-
+import { PremiumFeature } from "@/services";
+import { ProductRegistrationForm as PureProductRegistrationForm } from "@/components/organisms";
 export function ProductRegistrationForm({
   premiumFeatures,
 }: {

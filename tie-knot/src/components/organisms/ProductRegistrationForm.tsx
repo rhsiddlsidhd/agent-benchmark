@@ -4,26 +4,16 @@ import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { UploadCloud, X } from "lucide-react";
-import type { PremiumFeature } from "@/services/premiumFeature.service";
-import Alert from "@/components/molecules/Alert";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import { Input } from "@/components/atoms/input";
-import { Button } from "@/components/atoms/button";
-import { Textarea } from "@/components/atoms/textarea";
-import SelectField from "@/components/molecules/SelectField";
-import { Switch } from "@/components/atoms/switch";
-import { Checkbox } from "@/components/atoms/checkbox";
-import { Label } from "@/components/atoms/label";
+import { PremiumFeature } from "@/services";
+import { Alert, SelectField } from "@/components/molecules";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Button, Textarea, Switch, Checkbox, Label, TypographyMuted, TypographyH4 } from "@/components/atoms";
+
+
+
+
 import { getCategoryOptions, getSubCategoryOptions, ProductCategory } from "@/utils";
 import { getFieldError } from "@/utils";
 import { APIResponse } from "@/types";
-import { TypographyMuted, TypographyH4 } from "@/components/atoms/typography";
 
 interface ProductRegistrationFormProps {
   premiumFeatures: PremiumFeature[];

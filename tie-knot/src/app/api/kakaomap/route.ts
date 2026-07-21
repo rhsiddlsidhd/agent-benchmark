@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import { HTTPError } from "@/types";
 import { NextRequest } from "next/server";
 

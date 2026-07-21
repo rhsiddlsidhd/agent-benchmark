@@ -1,5 +1,7 @@
-import FormField from "@/components/molecules/FormField";
-import BaseSelect, { SelectOption } from "@/components/molecules/BaseSelect";
+"use client";
+
+import { FormField } from "@/components/molecules/FormField";
+import { BaseSelect, SelectOption } from "@/components/molecules/BaseSelect";
 import { useState } from "react";
 import { FieldBase } from "@/types";
 
@@ -59,4 +61,4 @@ const SelectField = ({
   );
 };
 
-export default SelectField;
+export { SelectField };

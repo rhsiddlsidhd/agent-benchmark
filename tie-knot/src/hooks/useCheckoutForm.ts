@@ -1,8 +1,10 @@
+"use client";
+
 import { useState, startTransition } from "react";
 import type React from "react";
 import { toast } from "sonner";
 import { validateAndFlatten } from "@/utils";
-import { BuyerInfo, BuyerInfoSchema } from "@/schemas/order.schema";
+import { BuyerInfo, BuyerInfoSchema } from "@/schemas";
 import { CheckoutItem } from "@/types";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 

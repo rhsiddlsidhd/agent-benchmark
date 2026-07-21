@@ -12,4 +12,4 @@ const useKakaoLoader = () => {
   });
 };
 
-export default useKakaoLoader;
+export { useKakaoLoader };

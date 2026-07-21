@@ -1,14 +1,11 @@
 "use client";
 
-import {
-  initialFilterState,
-  ProductFilterProvider,
-} from "@/context/productFilter/reducer";
+import { initialFilterState, ProductFilterProvider } from "@/context/productFilter";
 import React from "react";
 import { ProductFilters } from "@/components/organisms/ProductFilters";
 import { ProductGrid } from "@/components/organisms/ProductGrid";
-import { Product } from "@/services/product.service";
-import { PremiumFeature } from "@/services/premiumFeature.service";
+import { Product, PremiumFeature } from "@/services";
+
 import { ProductCategory } from "@/utils";
 
 interface ProductCatalogProps {
@@ -36,4 +33,4 @@ const ProductCatalog = ({
   );
 };
 
-export default ProductCatalog;
+export { ProductCatalog };

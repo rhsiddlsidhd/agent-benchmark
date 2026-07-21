@@ -1,5 +1,7 @@
-import { Input } from "@/components/atoms/input";
-import FormField from "@/components/molecules/FormField";
+"use client";
+
+import { Input } from "@/components/atoms";
+import { FormField } from "@/components/molecules/FormField";
 import { FieldBase } from "@/types";
 import { HTMLInputTypeAttribute, useState } from "react";
 
@@ -55,4 +57,4 @@ const TextField = ({
   );
 };
 
-export default TextField;
+export { TextField };

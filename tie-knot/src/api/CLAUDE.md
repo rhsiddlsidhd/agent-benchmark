@@ -12,6 +12,7 @@
 
 ```
 src/api/
+├── index.ts   # 배럴 — export *
 ├── response.ts   # Route Handler 전용 응답 빌더 — apiOk(성공)/apiFail(실패), NextResponse.json으로 감쌈. fetcher/apiRequest가 파싱을 위해 의존하는 유일한 envelope.
 ├── fetcher.ts    # useSWR 전용 — (url: string) => Promise<T>. response.ts envelope 파싱, 실패 시 HTTPError로 정규화해서 throw. 인증 쿠키는 동일 origin이라 브라우저가 자동으로 실어준다(수동 토큰 주입/401 refresh 로직 없음, Gotchas 참고).
 └── apiRequest.ts   # SWR 없이 직접 호출하는 mutation 요청 전용(POST/DELETE 등) — method/body 등 RequestInit을 받는다는 점 외엔 fetcher와 동일한 envelope 파싱.
@@ -26,6 +27,7 @@ src/api/
 
 ## Gotchas
 
+- 2026-07-22, `index.ts` 배럴 추가(소비처 25곳 전환). hook/JSX 없는 순수 로직 레이어라 배럴화해도 서버/클라이언트 경계 문제 없음 — `next build`로 검증.
 - 폴더명이 `api`라 `app/api/`(Route Handler)나 "클라이언트 API 호출 코드 전반"으로 착각하기 쉽다 — 실제로는 Route Handler·Client fetch 둘 사이의 계약 + 클라이언트 중앙 fetch 핸들러다. Server Action은 명시적으로 제외.
 - `error.ts` 삭제 완료 — `handleActionError`/`handleRouteError`/`handleClientError` 3개가 이름 규칙도 서로 안 맞고(각각 `createErrorResponse`/`createApiErrorResponse`/`createClientErrorResponse`로 위임하는데 접두어가 제각각) 실질 로직 없이 `response.ts`로 위임만 하는 통과 계층이었다. `handleRouteError`→`response.ts`의 `apiFail`로 흡수(이름도 통일), `handleActionError`는 Server Action 스코프 밖이라 삭제(액션은 이제 plain 객체 직접 리턴), `handleClientError`(상태코드별 UI 분기 로직)는 응답 shape 빌더와 성격이 달라(UI 판단 로직) `src/utils/error.ts`로 이동(`ProductLikeBadge.tsx`/`useEntry.ts`/`usePremiumFeatures.ts` 3곳 모두 `@/utils`에서 import).
 - `HTTPError` 클래스(`src/types/error.ts`)는 이 폴더(Route/fetch 경계) + 서비스 레이어 전용으로 스코프가 좁혀졌다 — Server Action은 자기 자신의 검증 실패를 이 클래스로 throw하지 않지만(위 Critical Convention), 서비스 함수가 이미 이 클래스를 던지는 경우는 액션이 `try/catch`+`instanceof HTTPError`로 받아서 리턴값으로 번역한다(`src/actions/CLAUDE.md` Gotchas 참고).

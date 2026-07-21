@@ -1,7 +1,7 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import { HTTPError } from "@/types";
-import { getGuestbookService } from "@/services/guestbook.service";
-import { IGuestbook } from "@/models/guestbook.model";
+import { getGuestbookService } from "@/services";
+import { IGuestbook } from "@/models";
 import { NextRequest } from "next/server";
 
 export const GET = async (

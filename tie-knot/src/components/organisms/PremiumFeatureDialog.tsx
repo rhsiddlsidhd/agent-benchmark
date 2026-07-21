@@ -1,16 +1,12 @@
-import { Button } from "@/components/atoms/button";
-import { DialogFooter } from "@/components/atoms/dialog";
-import { Input } from "@/components/atoms/input";
-import { TypographyMuted } from "@/components/atoms/typography";
+import { Button, DialogFooter, Input, TypographyMuted, Textarea, Label } from "@/components/atoms";
 
-import { Textarea } from "@/components/atoms/textarea";
 
-import { PremiumFeature } from "@/services/premiumFeature.service";
-import Alert from "@/components/molecules/Alert";
-import { Label } from "@/components/atoms/label";
+
+
+import { PremiumFeature } from "@/services";
+import { Alert, TextField } from "@/components/molecules";
 import { APIResponse } from "@/types";
 import { getFieldError } from "@/utils";
-import TextField from "@/components/molecules/TextField";
 
 interface PremiumFeatureDialogProps {
   premiumFeature: PremiumFeature;

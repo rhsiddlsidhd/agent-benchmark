@@ -1,4 +1,4 @@
-import { SelectFeatureDto } from "@/schemas/order.schema";
+import { SelectFeatureDto } from "@/schemas";
 
 export interface CheckoutItem {
   productId: string;

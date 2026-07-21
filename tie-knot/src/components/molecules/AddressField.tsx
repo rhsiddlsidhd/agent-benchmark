@@ -1,7 +1,7 @@
 "use client";
 
-import { Input } from "@/components/atoms/input";
-import FormField from "@/components/molecules/FormField";
+import { Input } from "@/components/atoms";
+import { FormField } from "@/components/molecules/FormField";
 import { useDaumPopup } from "@/hooks";
 import { useState } from "react";
 
@@ -58,4 +58,4 @@ const AddressField = ({
   );
 };
 
-export default AddressField;
+export { AddressField };

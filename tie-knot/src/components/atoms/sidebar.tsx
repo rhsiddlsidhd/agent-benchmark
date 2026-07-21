@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
 
 import { useIsMobile } from "@/hooks";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import {
   Sheet,
@@ -15,7 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./sheet";
-import { Button } from "@/components/atoms/button";
+import { Button } from "@/components/atoms";
 import { Input } from "./input";
 import { Separator } from "./separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";

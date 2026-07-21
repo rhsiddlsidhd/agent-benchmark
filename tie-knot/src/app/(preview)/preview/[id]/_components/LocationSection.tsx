@@ -1,10 +1,10 @@
 "use client";
 
-import { ClipboardButton } from "@/components/molecules/ClipboardButton";
+import { ClipboardButton, KakaoMap } from "@/components/molecules";
 import { useCopy, useNavigationGeo } from "@/hooks";
-import SectionBody from "@/components/atoms/titled-section";
-import KakaoMap from "@/components/molecules/KakaoMap";
-import Navigation from "./Navigation";
+import { EyebrowSection } from "./EyebrowSection";
+
+import { Navigation } from "./Navigation";
 import { LocationSectionProps } from "../_utils/locationSection.mapper";
 
 export function LocationSection({
@@ -17,7 +17,7 @@ export function LocationSection({
   const geoState = useNavigationGeo(fullAddress);
 
   return (
-    <SectionBody title="LOCATION" subTitle="오시는 길">
+    <EyebrowSection eyebrow="LOCATION" heading="오시는 길">
       <div>
         <p className="text-foreground text-md font-semibold">{venueName}</p>
         <div className="flex items-center justify-center gap-2">
@@ -39,6 +39,6 @@ export function LocationSection({
       <Navigation address={fullAddress} geoState={geoState} />
 
       {/* Transportation Info */}
-    </SectionBody>
+    </EyebrowSection>
   );
 }

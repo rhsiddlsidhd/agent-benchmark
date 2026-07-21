@@ -1,9 +1,9 @@
 "use server";
 
 import { validateAndFlatten } from "@/utils";
-import { PWConfirmSchema } from "@/schemas/pwConfirm.schema";
+import { PWConfirmSchema } from "@/schemas";
 import { APIResponse } from "@/types";
-import { changePassword } from "@/services/user.service";
+import { changePassword } from "@/services";
 import { HTTPError } from "@/types";
 import { decrypt } from "@/lib/jose";
 import { deleteCookie } from "@/lib/cookies";

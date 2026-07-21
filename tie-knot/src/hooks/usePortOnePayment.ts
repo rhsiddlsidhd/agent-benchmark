@@ -1,10 +1,11 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import PortOne from "@portone/browser-sdk/v2";
-import { PayStatus } from "@/models/payment.model";
-import { apiRequest } from "@/api/apiRequest";
+import { PayStatus } from "@/models";
+import { apiRequest } from "@/api";
 import { toast } from "sonner";
-import type { CreateOrderResult } from "@/actions/createOrder";
-
+import { CreateOrderResult } from "@/actions";
 const storeId = process.env.NEXT_PUBLIC_POST_ONE_STORE_ID;
 const channelKey = process.env.NEXT_PUBLIC_POST_ONE_CHANNELKEY;
 

@@ -1,5 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
-
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
 /**
  * data
  * items: {bank:string, name:{ko:string}} [ ]

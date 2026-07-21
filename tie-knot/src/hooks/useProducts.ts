@@ -1,8 +1,8 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "@/api/fetcher";
-import { Product } from "@/services/product.service";
+import { fetcher } from "@/api";
+import { Product } from "@/services";
 import { ProductCategory } from "@/utils";
 
 export function useProducts(

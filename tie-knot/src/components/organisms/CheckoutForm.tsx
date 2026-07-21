@@ -1,15 +1,15 @@
 import { AlertCircle } from "lucide-react";
 
-import { PayStatus } from "@/models/payment.model";
-import { BuyerInfo } from "@/schemas/order.schema";
+import { PayStatus } from "@/models";
+import { BuyerInfo } from "@/schemas";
 
-import Spinner from "@/components/molecules/Spinner";
+import { Spinner } from "@/components/molecules";
 import { PaymentPendingOverlay } from "@/app/(main)/(checkout)/payment/_components/PaymentPendingOverlay";
-import { TypographySmall, TypographyMuted } from "@/components/atoms/typography";
+import { TypographySmall, TypographyMuted } from "@/components/atoms";
 import { BuyerInfoCard } from "@/app/(main)/(checkout)/payment/_components/BuyerInfoCard";
 import { TermsAgreementCard } from "@/app/(main)/(checkout)/payment/_components/TermsAgreementCard";
 import { CheckoutSubmitBar } from "@/app/(main)/(checkout)/payment/_components/CheckoutSubmitBar";
-import PaymentMethodSelector from "./PaymentMethodSelector";
+import { PaymentMethodSelector } from "./PaymentMethodSelector";
 
 interface CheckoutFormProps {
   loading: boolean;

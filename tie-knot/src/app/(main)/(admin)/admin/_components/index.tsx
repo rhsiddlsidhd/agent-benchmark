@@ -1,1 +1,1 @@
-export { default as AdminModal } from "./AdminModal";
+export { AdminModal } from "./AdminModal";

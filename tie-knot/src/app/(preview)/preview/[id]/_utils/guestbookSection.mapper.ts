@@ -1,5 +1,4 @@
-import { IGuestbook } from "@/models/guestbook.model";
-
+import { IGuestbook } from "@/models";
 export interface GuestbookEntryProps {
   id: string;
   author: string;

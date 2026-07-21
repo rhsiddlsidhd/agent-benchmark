@@ -2,8 +2,8 @@
 
 import { APIResponse } from "@/types";
 import { HTTPError } from "@/types";
-import { requireAuth } from "@/services/auth.service";
-import { deleteProductService } from "@/services/product.service";
+import { requireAuth, deleteProductService } from "@/services";
+
 import { revalidatePath } from "next/cache";
 
 export const deleteProduct = async (

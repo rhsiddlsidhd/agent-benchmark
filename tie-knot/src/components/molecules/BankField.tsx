@@ -1,8 +1,8 @@
 "use client";
-import { Input } from "@/components/atoms/input";
+import { Input } from "@/components/atoms";
 import { Banks } from "@/app/api/banks/route";
-import FormField from "@/components/molecules/FormField";
-import BaseSelect from "@/components/molecules/BaseSelect";
+import { FormField } from "@/components/molecules/FormField";
+import { BaseSelect } from "@/components/molecules/BaseSelect";
 import { useState } from "react";
 
 interface BankAccountInfo {
@@ -91,4 +91,4 @@ const BankField = ({
   );
 };
 
-export default BankField;
+export { BankField };

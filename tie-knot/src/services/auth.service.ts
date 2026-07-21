@@ -1,4 +1,4 @@
-import { UserModel, UserRole } from "@/models/user.model";
+import { UserModel, UserRole } from "@/models";
 import { dbConnect } from "@/lib/mongodb";
 import { getCookie, setCookie, deleteCookie } from "@/lib/cookies";
 import { decrypt, encrypt } from "@/lib/jose";

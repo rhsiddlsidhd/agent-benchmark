@@ -1,15 +1,9 @@
 "use client";
-import { Button } from "@/components/atoms/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import TextField from "@/components/molecules/TextField";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, TypographyMuted } from "@/components/atoms";
+
+import { TextField } from "@/components/molecules";
 import clsx from "clsx";
-import { TypographyMuted } from "@/components/atoms/typography";
+
 import { Save } from "lucide-react";
 import React, { useState } from "react";
 
@@ -106,4 +100,4 @@ const BasicInfoForm = ({
   );
 };
 
-export default BasicInfoForm;
+export { BasicInfoForm };

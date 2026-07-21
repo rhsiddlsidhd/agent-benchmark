@@ -1,1 +1,1 @@
-export { default } from "./useKakaoLoader";
+export * from "./useKakaoLoader";

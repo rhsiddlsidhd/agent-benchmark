@@ -1,16 +1,10 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import { TypographyH3 } from "@/components/atoms/typography";
+import { Card, CardContent, CardHeader, CardTitle, TypographyH3 } from "@/components/atoms";
 
-import BankField from "@/components/molecules/BankField";
-import TextField from "@/components/molecules/TextField";
-import type { ICoupleInfo } from "@/models/coupleInfo.model";
+import { BankField, TextField } from "@/components/molecules";
+
+import { ICoupleInfo } from "@/models";
 import type { Banks } from "@/app/api/banks/route";
 
 type CoupleInfoSectionProps = {

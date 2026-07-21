@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/atoms/breadcrumb";
-import { SidebarTrigger } from "@/components/atoms/sidebar";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator, SidebarTrigger } from "@/components/atoms";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useMemo } from "react";
@@ -51,4 +45,4 @@ const SidebarToggle = () => {
   );
 };
 
-export default SidebarToggle;
+export { SidebarToggle };

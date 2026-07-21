@@ -2,8 +2,8 @@
 
 import { APIResponse } from "@/types";
 import { validateAndFlatten } from "@/utils";
-import { premiumFeatureSchema } from "@/schemas/premiumFeature.schema";
-import { updatePremiumFeatureService } from "@/services/premiumFeature.service";
+import { premiumFeatureSchema } from "@/schemas";
+import { updatePremiumFeatureService } from "@/services";
 import { revalidatePath } from "next/cache";
 
 export const updatePremiumFeature = async (

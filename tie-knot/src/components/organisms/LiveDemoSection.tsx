@@ -1,11 +1,10 @@
-import { Button } from "@/components/atoms/button";
-import { Card, CardContent } from "@/components/atoms/card";
+import { Button, Card, CardContent } from "@/components/atoms";
+
 import { Eye, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
-import { ProductJSON } from "@/models/product.model";
-
+import { ProductJSON } from "@/models";
 interface LiveDemoSectionProps {
   product: ProductJSON;
   infoId: string;

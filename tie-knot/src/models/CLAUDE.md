@@ -11,6 +11,7 @@
 
 ```
 src/models/
+├── index.ts               # 배럴 — export *
 ├── user.model.ts        # UserRole, BaseUser, IUser, UserModel
 ├── product.model.ts       # ProductDB, IProduct, ProductJSON, ProductModel
 └── ...                     # 도메인당 파일 1개
@@ -26,6 +27,7 @@ src/models/
 
 ## Gotchas
 
+- 2026-07-22, `index.ts` 배럴 추가(소비처 39곳 전환). DB 스키마 정의만 있어 배럴화 안전 — `next build`로 검증.
 - `coupleInfo.guide.md` — 코드 아니라 "스키마 필드 가이드 + UI 생성 프롬프트" 문서가 이 폴더에 같이 있음. 스키마와 강결합된 사람이 읽는 참고 문서라 여기 둔 것으로 보이나, 다른 모델엔 이런 가이드 문서가 없어 왜 `coupleInfo`만 있는지 불명확 — 새로 만들 때 이 패턴을 다른 모델까지 확대할지는 아직 미정.
 
 ## 관련 문서

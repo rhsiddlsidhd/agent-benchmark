@@ -3,11 +3,10 @@
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 
-import { requestPasswordReset } from "@/actions/requestPasswordReset";
+import { requestPasswordReset } from "@/actions";
 import { hasFieldErrors } from "@/utils";
 import { APIResponse } from "@/types";
-import { ForgotPasswordForm as PureForgotPasswordForm } from "@/components/organisms/ForgotPasswordForm";
-
+import { ForgotPasswordForm as PureForgotPasswordForm } from "@/components/organisms";
 export function ForgotPasswordForm() {
   const [state, action, pending] = useActionState<
     APIResponse<{ message: string; email: string }>,

@@ -2,10 +2,9 @@
 
 import useSWR from "swr";
 import { useEffect } from "react";
-import useAuthStore from "@/store/auth.store";
+import { useAuthStore } from "@/store";
 import { AuthSession } from "@/types";
-import { fetcher } from "@/api/fetcher";
-
+import { fetcher } from "@/api";
 export function useAuth() {
   const setSession = useAuthStore((state) => state.setSession);
   const clearAuth = useAuthStore((state) => state.clearAuth);

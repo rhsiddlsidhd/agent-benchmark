@@ -1,8 +1,8 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import { HTTPError } from "@/types";
-import { requireAuth } from "@/services/auth.service";
-import { ICoupleInfo } from "@/models/coupleInfo.model";
-import { getCoupleInfoById } from "@/services/coupleInfo.service";
+import { requireAuth, getCoupleInfoById } from "@/services";
+import { ICoupleInfo } from "@/models";
+
 import { NextRequest } from "next/server";
 
 export const GET = async (

@@ -1,17 +1,9 @@
 export const revalidate = 600;
 
-import { Badge } from "@/components/atoms/badge";
-import { Card, CardContent } from "@/components/atoms/card";
-import Grid from "@/components/atoms/grid";
-import { PremiumFeatureCardAction } from "./_components";
-import { getAllPremiumFeatureService } from "@/services/premiumFeature.service";
-import {
-  TypographyH1,
-  TypographyH3,
-  TypographyLarge,
-  TypographyMuted,
-} from "@/components/atoms/typography";
+import { Badge, Card, CardContent, TypographyH1, TypographyH3, TypographyLarge, TypographyMuted } from "@/components/atoms";
 
+import { PremiumFeatureCardAction } from "./_components";
+import { getAllPremiumFeatureService } from "@/services";
 export default async function PremiumFeaturesPage() {
   const features = await getAllPremiumFeatureService();
   return (
@@ -27,7 +19,7 @@ export default async function PremiumFeaturesPage() {
         </div>
       </div>
 
-      <Grid slot="admin-premium-features">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {features.map((feature) => (
           <Card key={feature.code}>
             <CardContent className="space-y-4 p-6">
@@ -59,7 +51,7 @@ export default async function PremiumFeaturesPage() {
             </CardContent>
           </Card>
         ))}
-      </Grid>
+      </section>
     </div>
   );
 }

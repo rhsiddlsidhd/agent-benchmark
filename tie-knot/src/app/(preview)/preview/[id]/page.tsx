@@ -1,7 +1,7 @@
 export const revalidate = 300;
 
-import { getCoupleInfoById } from "@/services/coupleInfo.service";
-import { getActiveOrderInfoByCoupleInfoId } from "@/services/order.service";
+import { getCoupleInfoById, getActiveOrderInfoByCoupleInfoId } from "@/services";
+
 import React from "react";
 import {
   AccountSection,
@@ -22,7 +22,7 @@ import {
   mapCoupleInfoToLocationProps,
   mapCoupleInfoToThumbnails,
 } from "./_utils";
-import CloudImage from "@/components/molecules/CloudImage";
+import { CloudImage } from "@/components/molecules";
 import { getThemeByProductId } from "@/constants";
 import { notFound } from "next/navigation";
 

@@ -1,6 +1,6 @@
 "use client";
-import { fetcher } from "@/api/fetcher";
-import { ICoupleInfo } from "@/models/coupleInfo.model";
+import { fetcher } from "@/api";
+import { ICoupleInfo } from "@/models";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 
@@ -26,4 +26,4 @@ const useFetchCoupleInfo = () => {
   return { data, error, isLoading, mutate };
 };
 
-export default useFetchCoupleInfo;
+export { useFetchCoupleInfo };

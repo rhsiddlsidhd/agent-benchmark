@@ -3,11 +3,11 @@
 import { APIResponse } from "@/types";
 import { HTTPError } from "@/types";
 import { uploadProductImage } from "@/lib/cloudinary";
-import { requireAuth } from "@/services/auth.service";
+import { requireAuth, updateProductService } from "@/services";
 import { validateAndFlatten } from "@/utils";
 
-import { productSchema } from "@/schemas/product.schema";
-import { updateProductService } from "@/services/product.service";
+import { productSchema } from "@/schemas";
+
 import { revalidatePath } from "next/cache";
 
 export const updateProduct = async (

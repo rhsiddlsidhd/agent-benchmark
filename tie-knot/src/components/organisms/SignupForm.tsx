@@ -5,11 +5,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { Globe } from "lucide-react";
 
-import { Checkbox } from "@/components/atoms/checkbox";
-import { Button } from "@/components/atoms/button";
-import { Label } from "@/components/atoms/label";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
-import TextField from "@/components/molecules/TextField";
+import { Checkbox, Button, Label, TypographyH1, TypographyMuted } from "@/components/atoms";
+
+
+
+import { TextField } from "@/components/molecules";
 import { getFieldError } from "@/utils";
 import { APIResponse } from "@/types";
 
