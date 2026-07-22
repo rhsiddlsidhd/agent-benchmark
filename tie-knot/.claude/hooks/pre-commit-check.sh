@@ -22,5 +22,5 @@ if ! npm run build; then
 fi
 
 echo ""
-echo "✅ lint+build 통과"
+echo "✅ Pre-commit validation completed successfully."
 exit 0
