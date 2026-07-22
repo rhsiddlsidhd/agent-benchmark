@@ -1,11 +1,11 @@
 # CLAUDE.md — src/models/
 
 > Last updated: 2026-07-18
-> 이 폴더는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md` 소관 밖(프로젝트 고유 선택) — DB 스키마 계약 레이어.
+> 이 폴더는 프로젝트 고유 선택 — DB 스키마 계약 레이어.
 
-## Scope
+## Overview
 
-- **Mongoose 스키마 정의 + 그 스키마가 만드는 Document/JSON 타입 + 컴파일된 Model.** 파일 하나에 셋(스키마/타입/모델)이 다 들어간다 — API/도메인 계약 타입(`src/types/`)과는 소유권이 다르다: 여기는 "DB에 실제로 뭐가 저장되는가", `types/`는 "API가 뭘 주고받는가".
+`models/`는 Mongoose 스키마 정의 + 그 스키마가 만드는 Document/JSON 타입 + 컴파일된 Model을 모아둔다 — 파일 하나에 셋(스키마/타입/모델)이 다 들어간다. API/도메인 계약 타입(`src/types/`)과는 소유권이 다르다: 여기는 "DB에 실제로 뭐가 저장되는가", `types/`는 "API가 뭘 주고받는가".
 
 ## Structure
 
@@ -27,7 +27,6 @@ src/models/
 
 ## Gotchas
 
-- 2026-07-22, `index.ts` 배럴 추가(소비처 39곳 전환). DB 스키마 정의만 있어 배럴화 안전 — `next build`로 검증.
 - `coupleInfo.guide.md` — 코드 아니라 "스키마 필드 가이드 + UI 생성 프롬프트" 문서가 이 폴더에 같이 있음. 스키마와 강결합된 사람이 읽는 참고 문서라 여기 둔 것으로 보이나, 다른 모델엔 이런 가이드 문서가 없어 왜 `coupleInfo`만 있는지 불명확 — 새로 만들 때 이 패턴을 다른 모델까지 확대할지는 아직 미정.
 
 ## 관련 문서

@@ -24,18 +24,14 @@ src/components/molecules/
 
 ## Critical Convention
 
-- 파일명/export는 PascalCase(Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`).
+- 파일명/export는 PascalCase.
 - 소비자가 라우트 1곳뿐인 molecule을 미리 여기로 승격하지 않는다 — 그 라우트의 `_components/` 안에 로컬로 둔다. 라우트 2곳 이상이 실제로 재사용할 때만 승격. 단, 유일한 소비자가 라우트가 아니라 이미 이 폴더/organisms에서 공유 중인 다른 컴포넌트라면 이 규칙 대상이 아니다 — 그 컴포넌트의 구현 디테일로 보고 그냥 여기 둔다(예: `DateField`/`AddressField`/`ImageField`의 유일한 소비자는 `BasicInfoSection`인데, `BasicInfoSection` 자체가 라우트 2곳이 공유하는 `CoupleInfoFormView`의 하위 조각이라 승격 보류 대상이 아니다 — `src/components/CLAUDE.md` 핵심 원칙 1 참고).
 
 ## Gotchas
 
-- `src/` 전체 default export 금지 규칙(`src/CLAUDE.md`) 정리하며 이 폴더 전체를 named export로 전환 완료 — 소비처 import도 전부 named import로 같이 수정.
-- 2026-07-22, `index.ts` 배럴 추가(소비처 41곳 전환, 같은 폴더 안 형제 파일끼리는 배럴 대신 직접 경로 유지 — `src/schemas/CLAUDE.md`의 형제 import 전례와 동일). 이 과정에서 `KakaoMap.tsx`/`SelectField.tsx`/`TextField.tsx`/`ImageField.tsx`/`SwitchField.tsx` 5개 파일에 `"use client"`가 원래부터 빠져있던 걸 `next build`로 발견해 같이 고쳤다 — 배럴이 형제 파일 전체를 한 모듈 그래프로 묶어서, 경계 선언 없는 hook 파일이 하나라도 있으면 이 배럴을 참조하는 아무 Server Component에서나 빌드가 깨진다(`src/hooks/CLAUDE.md` Gotchas 참고).
-- `ProductThumbnail.tsx`는 삭제됐다 — 실제로 뜯어보니 `Product` 도메인 결합이 아니라 `CloudImage.tsx`를 그대로 재export만 하는 1줄짜리 별칭 파일이었다(내부 로직 0개). 소비자 6곳도 Order/일반 이미지 프리뷰 등 도메인 무관하게 쓰고 있어 "이름만 Product-스러운 alias"였을 뿐 — organisms로 옮길 대상이 아니라 삭제하고 6곳 전부 `CloudImage` 직접 import로 교체했다. 새 이미지 래퍼가 필요해도 이런 이름-바꿔치기 재export 파일을 만들지 않는다.
+- 이름-바꿔치기 재export 파일(내부 로직 없이 다른 컴포넌트를 도메인스러운 이름으로만 재export)을 만들지 않는다 — 과거 `ProductThumbnail.tsx`가 `CloudImage.tsx`를 그대로 재export하는 1줄짜리 alias였다(Product 도메인 로직 0개, 소비자도 도메인 무관하게 씀).
 - `CloudImage.tsx` — Cloudinary라는 인프라에 의존하지만 비즈니스 도메인(Product/Order 등)엔 안 묶여있다 — 인프라 의존은 순수성 위반이 아니므로 그대로 유지.
-- `__wedding/Subway.tsx`는 삭제됐다 — 검토 결과 코드베이스 전체에 렌더하는 소비자가 0곳(완전 죽은 코드)이었고, 내부 `fetch("/subway")`/`fetch("/subway/{station}")` 경로도 실제 Route Handler(`/api/subway`)와 안 맞아 살아있었어도 작동 안 했을 것. 이 파일만 쓰던 `src/utils/subway.ts`(`createLineColorMap`/`createSelecedSubwayMap`)도 같이 삭제, `src/utils/index.ts` 배럴에서도 제거.
 - `RadioField.tsx`, `SwitchField.tsx` — `FormField`를 안 쓰고 atoms만 직접 조합해서 라벨까지 자체 처리하는 molecule이다. "...Field"라는 이름만 보고 어디 소속인지 판단하지 않는다 — 위치는 이름이 아니라 실제 조합 복잡도(단순=molecule, 복잡=organism)로 판단한다.
-- `organisms/fields/`의 `TextField`/`SelectField`/`DateField`/`AddressField`/`ImageField`/`BankField` 6개는 전부 여기 molecules로 재분류 완료 — 필드 하나는 책임이 단일해서 organism 자격이 없다(핵심 원칙 3, 예전엔 "완성됐냐"를 기준으로 organisms에 뒀던 게 잘못이었음). `organisms/fields/` 폴더 자체도 없어졌다. `DateField`/`AddressField`/`ImageField`는 소비자가 1곳(`BasicInfoSection`/`ImagesSection`)뿐이지만, 그 소비자가 라우트가 아니라 이미 공유 중인 organism이라 승격 보류 규칙 대상이 아니어서 그대로 여기 남는다(`src/components/CLAUDE.md` 핵심 원칙 1 참고).
 
 ## 관련 문서
 

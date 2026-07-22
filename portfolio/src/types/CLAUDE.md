@@ -30,4 +30,4 @@ src/types/
 - zod 스키마 물리 위치: `src/schemas/CLAUDE.md`
 - 쿼리 검증 함수 물리 위치: `services/CLAUDE.md`
 - 이 파일을 import하는 쪽: `api/CLAUDE.md`(controller), `src/hooks/CLAUDE.md`(훅)
-- 파일명 케이스: Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`
+- 파일명 케이스: `src/CLAUDE.md`

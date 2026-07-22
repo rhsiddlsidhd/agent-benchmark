@@ -71,7 +71,7 @@ portfolio/
 
 ## 관련 문서 (루트)
 
-- 파일/폴더 네이밍 규칙: Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`
+- 파일/폴더 네이밍 규칙: `src/CLAUDE.md`(공통), 각 하위 폴더 `CLAUDE.md`(세부)
 - 클라이언트 레이어: `src/CLAUDE.md`
 - 서버리스 함수(controller): `api/CLAUDE.md`
 - 비즈니스 로직(서버 전용): `services/CLAUDE.md`

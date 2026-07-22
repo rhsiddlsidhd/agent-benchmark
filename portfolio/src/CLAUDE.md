@@ -31,6 +31,8 @@ src/
 - 데이터 접근은 same-origin `/api/*`만 경유한다 — 직접 호출하지 않는다(Supabase/네이버/OpenAI). 이유: 서버 시크릿이 서버리스 함수 밖으로 노출되지 않게 하기 위함
 - secret 계열 env var는 `VITE_` 접두사로 넣지 않는다. 이유: 클라이언트 번들에 그대로 노출됨(Gotchas 참고). 현재 아키텍처(모든 데이터접근이 `/api/*` 경유)상 환경변수 자체가 필요 없을 가능성 높음(실제 필요성은 구현 시점에 재확인)
 - `services/{도메인}.ts`는 `src/hooks/`, `src/components/` 등 클라이언트 번들 코드에서 import하지 않는다. 이유: 서버 시크릿을 직접 참조하는 레이어라 브라우저에 노출됨. 상세: `services/CLAUDE.md`
+- **식별자 케이스**: 타입/인터페이스는 PascalCase, 함수/변수는 camelCase다. `export const`의 값을 재귀적으로 뜯어봤을 때 문자열/숫자/불리언 리터럴(또는 그 배열/lookup map)로만 이루어져 있으면 SCREAMING_SNAKE_CASE로 export한다 — 단일 값이든 여러 값 나열이든 키→리터럴 값 lookup map이든 "값이 끝까지 리터럴이냐"가 기준이다. 값 안에 함수·컴포넌트 참조·이종 필드 객체가 하나라도 섞이면 camelCase다. 위치가 `constants/`든 파일 내부 로컬이든 무관하게 적용한다.
+- 파일명은 kebab-case가 기본이다(`utils/`, `constants/`, `types/` 등) — 컴포넌트/훅은 예외로 각 폴더 CLAUDE.md의 아티팩트별 케이스를 따른다(컴포넌트 PascalCase, 훅 camelCase+`use` 접두사).
 
 ## Gotchas
 

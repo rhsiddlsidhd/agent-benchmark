@@ -1,11 +1,11 @@
 # CLAUDE.md — src/schemas/
 
 > Last updated: 2026-07-22
-> 이 폴더는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md` 소관 밖(프로젝트 고유 선택) — 런타임 검증(zod) 레이어.
+> 이 폴더는 프로젝트 고유 선택 — 런타임 검증(zod) 레이어.
 
-## Scope
+## Overview
 
-- **zod 기반 런타임 검증 스키마.** 폼/API 입력값 검증에 쓰며, 여러 스키마가 서로 조합(import)될 수 있다(`login.schema.ts`가 `pw.schema.ts`의 `PWSchema`를 재사용).
+`schemas/`는 zod 기반 런타임 검증 스키마를 모아둔다 — 폼/API 입력값 검증에 쓰며, 여러 스키마가 서로 조합(import)될 수 있다(`login.schema.ts`가 `pw.schema.ts`의 `PWSchema`를 재사용).
 
 ## Structure
 
@@ -27,8 +27,8 @@ src/schemas/
 
 ## Gotchas
 
-- 2026-07-22 이전엔 `index.ts`가 배럴이 아니라 `z.config(z.locales.ko())`(zod 에러 메시지 한국어화) 전역 설정 파일이었다 — 근데 이 파일을 실제로 import하는 곳이 코드베이스 전체에 0곳이라 로케일 설정이 **한 번도 실행되지 않는 죽은 코드**였다(전 소비처가 `@/schemas/order.schema`처럼 개별 경로로 직접 import, `@/schemas` 자체는 아무도 안 씀). 정리: 설정 자체는 `config.ts`로 분리하고, `index.ts`는 다른 배럴 폴더(`constants`/`hooks`/`types`/`utils`)와 같은 모양(`export *`)의 진짜 배럴이 되면서 맨 위에서 `import "./config"`로 그 side-effect를 딸려 보낸다.
-- 기존 소비처 25곳(Server Action/Route Handler/Service/client 훅/컴포넌트, `@/schemas/x.schema` 개별 경로 직접 import) 전부 `@/schemas`(배럴) 경유로 마이그레이션 완료 — 이제 로케일 설정이 실제로 적용된다. `app/api/order/create/route.ts`는 `src/schemas/`를 아예 안 쓰고 자체 인라인 zod 스키마를 정의하고 있어 이 마이그레이션 대상이 아니다(별개 이슈, 오늘 안 건드림).
+- `config.ts`(zod 에러 메시지 한국어화, `z.config(z.locales.ko())`)는 이 폴더 어떤 스키마 파일도 직접 import하지 않는다 — `index.ts` 배럴 맨 위의 `import "./config"` side-effect로만 실행된다. 개별 파일 경로(`@/schemas/x.schema`)로 직접 import하면 이 side-effect를 안 타서 로케일 설정이 적용 안 된다 — 반드시 배럴(`@/schemas`) 경유로 import해야 하는 이유.
+- `app/api/order/create/route.ts`는 이 폴더를 아예 안 쓰고 자체 인라인 zod 스키마를 정의한다 — 이 폴더의 컨벤션 대상이 아니다(별개 이슈).
 
 ## 관련 문서
 

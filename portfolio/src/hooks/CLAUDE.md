@@ -34,4 +34,4 @@ src/hooks/
 - fetch 대상 계약: `api/CLAUDE.md`
 - 계약 타입/zod 스키마 물리 위치: `src/types/CLAUDE.md`
 - 이 훅을 소비하는 쪽: `src/components/CLAUDE.md`
-- 파일명 케이스: Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`
+- 파일명 케이스: `src/CLAUDE.md`

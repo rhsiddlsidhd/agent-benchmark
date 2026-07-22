@@ -1,11 +1,11 @@
 # CLAUDE.md — src/context/
 
 > Last updated: 2026-07-18
-> 이 폴더는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md` 소관 밖(프로젝트 고유 선택) — 전역 상태 관리 레이어.
+> 이 폴더는 프로젝트 고유 선택 — 전역 상태 관리 레이어.
 
-## Scope
+## Overview
 
-- **여러 위치(라우트/컴포넌트 트리)가 공유해야 하는 React Context 기반 클라이언트 상태.** 전역이지만 Zustand로 옮길 만큼 앱 전체 범위는 아니고, 특정 도메인/UI 트리에 한정된 상태(예: 상품 필터)에 쓴다.
+`context/`는 여러 위치(라우트/컴포넌트 트리)가 공유해야 하는 React Context 기반 클라이언트 상태를 모아둔다 — 전역이지만 Zustand로 옮길 만큼 앱 전체 범위는 아니고, 특정 도메인/UI 트리에 한정된 상태(예: 상품 필터)에 쓴다.
 
 ## Structure
 
@@ -27,7 +27,7 @@ src/context/
 
 ## Gotchas
 
-- 2026-07-22, `index.ts` 배럴 추가(폴더 자체 + `productFilter/` 도메인 폴더 각각). 소비처 4곳을 `@/context/productFilter/reducer`/`type` 개별 경로에서 `@/context/productFilter`로 전환. `createStateContext.tsx`/`productFilter/reducer.ts` 2개 파일에 `"use client"`가 빠져있던 걸 `next build`로 발견해 같이 고쳤다(`src/hooks/CLAUDE.md` Gotchas와 동일 사유).
+- 없음.
 
 ## 관련 문서
 
