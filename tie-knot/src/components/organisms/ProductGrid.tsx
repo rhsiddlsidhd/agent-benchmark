@@ -1,9 +1,10 @@
-import Grid from "@/components/atoms/grid";
+"use client";
+
 import { ProductCard } from "@/components/organisms/ProductCard";
 
 import { useVisibleProducts } from "@/hooks";
-import { useProductFilter } from "@/context/productFilter/reducer";
-import { Product } from "@/services/product.service";
+import { useProductFilter } from "@/context/productFilter";
+import { Product } from "@/services";
 import { TypographyMuted, TypographyP } from "../atoms/typography";
 import { PackageOpen } from "lucide-react";
 
@@ -17,11 +18,11 @@ export function ProductGrid({ data }: { data: Product[] }) {
   return (
     <>
       {visibleProducts.length !== 0 ? (
-        <Grid slot="product">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visibleProducts.map((item) => (
             <ProductCard key={item._id} product={item} />
           ))}
-        </Grid>
+        </section>
       ) : (
         <div className="flex min-h-[400px] w-full flex-col items-center justify-center rounded-2xl border border-dashed py-20 text-center">
           <div className="bg-muted mb-6 flex h-20 w-20 items-center justify-center rounded-full">

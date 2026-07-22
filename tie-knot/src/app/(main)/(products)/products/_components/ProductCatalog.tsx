@@ -1,8 +1,8 @@
 "use client";
 
 import { useProducts, usePremiumFeature } from "@/hooks";
-import ProductCatalogView from "@/components/organisms/ProductCatalog";
-import { Product } from "@/services/product.service";
+import { ProductCatalog as ProductCatalogView } from "@/components/organisms";
+import { Product } from "@/services";
 import { ProductCategory } from "@/utils";
 
 export function ProductCatalog({

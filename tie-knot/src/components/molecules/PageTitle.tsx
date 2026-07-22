@@ -3,8 +3,7 @@ import { PAGE_TITLE } from "@/constants";
 import { isPageTitle } from "@/utils";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
-
+import { TypographyH1, TypographyMuted } from "@/components/atoms";
 const PageTitle = () => {
   const pathname = usePathname();
   const key = pathname.replace("/", "");
@@ -24,4 +23,4 @@ const PageTitle = () => {
   );
 };
 
-export default PageTitle;
+export { PageTitle };

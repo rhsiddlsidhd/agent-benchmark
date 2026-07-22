@@ -5,12 +5,11 @@ import { HTTPError } from "@/types";
 import { redirect } from "next/navigation";
 
 import { getCookie } from "@/lib/cookies";
-import { requireAuth } from "@/services/auth.service";
-import { createOrderService } from "@/services/order.service";
-import { validateAndFlatten } from "@/utils";
-import { createOrderSchema } from "@/schemas/order.schema";
-import { PayMethod } from "@/models/payment.model";
+import { requireAuth, createOrderService } from "@/services";
 
+import { validateAndFlatten } from "@/utils";
+import { createOrderSchema } from "@/schemas";
+import { PayMethod } from "@/models";
 export type CreateOrderResult = {
   merchantUid: string;
   finalPrice: number;

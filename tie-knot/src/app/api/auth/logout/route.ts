@@ -1,6 +1,5 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
-import { logoutService } from "@/services/auth.service";
-
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
+import { logoutService } from "@/services";
 /**
  * 로그아웃 API (인증 토큰 쿠키 삭제)
  */

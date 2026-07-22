@@ -1,17 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/atoms/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import { TypographyH1, TypographyH3, TypographyMuted } from "@/components/atoms/typography";
-import CloudImage from "@/components/molecules/CloudImage";
+import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, TypographyH3, TypographyMuted } from "@/components/atoms";
+
+
+import { CloudImage } from "@/components/molecules";
 import { getCookie } from "@/lib/cookies";
 import { decrypt } from "@/lib/jose";
-import { getOrdersByUserId } from "@/services/order.service";
+import { getOrdersByUserId } from "@/services";
 import {
   Edit,
   RefreshCw,
@@ -24,8 +19,8 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { format } from "date-fns";
 import Link from "next/link";
-import { IOrder } from "@/models/order.model";
-import { PayMethod } from "@/models/payment.model";
+import { IOrder, PayMethod } from "@/models";
+
 import { PaymentButton } from "./_components";
 
 type OrderStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";

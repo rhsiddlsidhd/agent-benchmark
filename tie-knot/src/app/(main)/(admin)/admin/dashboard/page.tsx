@@ -1,14 +1,7 @@
 export const revalidate = 300;
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import Grid from "@/components/atoms/grid";
+import { Card, CardContent, CardHeader, CardTitle, TypographyMuted, TypographySmall } from "@/components/atoms";
 import { Package, DollarSign, ShoppingCart, Users } from "lucide-react";
-import { TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 export default function AdminDashboard() {
   const stats = [
@@ -50,7 +43,7 @@ export default function AdminDashboard() {
         </TypographyMuted>
       </div>
 
-      <Grid slot="admin-dashboard-stats">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -70,7 +63,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
-      </Grid>
+      </section>
 
       <Card>
         <CardHeader>

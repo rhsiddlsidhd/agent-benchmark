@@ -1,21 +1,12 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/atoms/collapsible";
-import BankField from "@/components/molecules/BankField";
-import TextField from "@/components/molecules/TextField";
+import { Card, CardContent, CardHeader, CardTitle, Collapsible, CollapsibleContent, CollapsibleTrigger, TypographyH3, TypographySmall } from "@/components/atoms";
+
+import { BankField, TextField } from "@/components/molecules";
+
 import { ChevronDown } from "lucide-react";
-import { TypographyH3, TypographySmall } from "@/components/atoms/typography";
-import type { ICoupleInfo } from "@/models/coupleInfo.model";
+
+import { ICoupleInfo } from "@/models";
 import type { Banks } from "@/app/api/banks/route";
 
 import { useState } from "react";

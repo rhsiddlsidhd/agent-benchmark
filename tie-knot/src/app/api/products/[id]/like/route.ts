@@ -1,7 +1,6 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import { HTTPError } from "@/types";
-import { requireAuth } from "@/services/auth.service";
-import { updateProductLikeService } from "@/services/product.service";
+import { requireAuth, updateProductLikeService } from "@/services";
 
 import { NextRequest } from "next/server";
 

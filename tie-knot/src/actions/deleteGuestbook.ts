@@ -3,11 +3,8 @@
 import { APIResponse } from "@/types";
 import { comparePasswords } from "@/lib/bcrypt";
 import { validateAndFlatten } from "@/utils";
-import { GuestbookSchema } from "@/schemas/guestbook.schema";
-import {
-  getPrivateGuestbookService,
-  deleteGuestbookService,
-} from "@/services/guestbook.service";
+import { GuestbookSchema } from "@/schemas";
+import { getPrivateGuestbookService, deleteGuestbookService } from "@/services";
 import z from "zod";
 import { revalidatePath } from "next/cache";
 

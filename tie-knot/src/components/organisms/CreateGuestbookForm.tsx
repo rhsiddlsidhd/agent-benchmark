@@ -1,14 +1,8 @@
-import { Button } from "@/components/atoms/button";
-import {
-  DialogClose,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/atoms/dialog";
-import TextField from "@/components/molecules/TextField";
-import SwitchField from "@/components/molecules/SwitchField";
-import { cn } from "@/lib/utils";
+import { Button, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/atoms";
+
+import { TextField, SwitchField } from "@/components/molecules";
+
+import { cn } from "@/lib/cn";
 import { APIResponse } from "@/types";
 import { getFieldError } from "@/utils";
 

@@ -3,9 +3,9 @@
 import { APIResponse } from "@/types";
 import { HTTPError } from "@/types";
 import { uploadProductImage } from "@/lib/cloudinary";
-import { requireAuth } from "@/services/auth.service";
-import { productSchema } from "@/schemas/product.schema";
-import { createProductService } from "@/services/product.service";
+import { requireAuth, createProductService } from "@/services";
+import { productSchema } from "@/schemas";
+
 import { revalidatePath } from "next/cache";
 import { validateAndFlatten } from "@/utils";
 

@@ -1,16 +1,8 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import { PayMethod } from "@/models/payment.model";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms";
+import { PayMethod } from "@/models";
 import { ArrowRightLeft, CreditCard, Landmark, Phone } from "lucide-react";
 import React from "react";
-import RadioField, {
-  RadioFieldOption,
-} from "@/components/molecules/RadioField";
-import Alert from "@/components/molecules/Alert";
+import { RadioField, RadioFieldOption, Alert } from "@/components/molecules";
 
 const PAYMENT_METHODS: RadioFieldOption<PayMethod>[] = [
   {
@@ -66,4 +58,4 @@ const PaymentMethodSelector = ({ error }: { error?: string }) => {
   );
 };
 
-export default PaymentMethodSelector;
+export { PaymentMethodSelector };

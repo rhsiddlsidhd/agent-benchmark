@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/atoms/button";
+import { Button } from "@/components/atoms";
 import { useEntry } from "@/hooks";
 
 /**
@@ -18,4 +18,4 @@ const LoginEntryButton = () => {
   );
 };
 
-export default LoginEntryButton;
+export { LoginEntryButton };

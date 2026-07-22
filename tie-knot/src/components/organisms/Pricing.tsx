@@ -1,12 +1,6 @@
-import { Button } from "@/components/atoms/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
+import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH2, TypographyP, TypographyMuted, TypographySmall } from "@/components/atoms";
+
 import { Check } from "lucide-react";
-import { TypographyH2, TypographyP, TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 const plans = [
   {

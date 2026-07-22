@@ -1,6 +1,5 @@
 import { HTTPError } from "@/types";
-import { UserModel, BaseUser, IUser } from "@/models/user.model";
-
+import { UserModel, BaseUser, IUser } from "@/models";
 import bcrypt from "bcryptjs";
 import { dbConnect } from "@/lib/mongodb";
 // 유저 생성

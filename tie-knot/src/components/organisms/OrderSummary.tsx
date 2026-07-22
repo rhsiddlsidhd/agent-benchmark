@@ -1,19 +1,11 @@
 "use client";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, TypographyH3, TypographyMuted, TypographyP, TypographySmall } from "@/components/atoms";
 import { formatPriceWithComma } from "@/utils";
-import CloudImage from "@/components/molecules/CloudImage";
+import { CloudImage } from "@/components/molecules";
 import { DELIVERY_FEE } from "@/constants";
 
 import { useCheckoutData } from "@/hooks";
-import { SelectFeatureDto } from "@/schemas/order.schema";
-import { TypographyH3, TypographyMuted, TypographyP, TypographySmall } from "@/components/atoms/typography";
-
+import { SelectFeatureDto } from "@/schemas";
 
 export const OrderSummary = () => {
   const { data, loading } = useCheckoutData();

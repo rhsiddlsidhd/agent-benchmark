@@ -3,8 +3,8 @@
 import { APIResponse } from "@/types";
 import { hashPassword } from "@/lib/bcrypt";
 
-import { GuestbookSchema } from "@/schemas/guestbook.schema";
-import { createGuestbookService } from "@/services/guestbook.service";
+import { GuestbookSchema } from "@/schemas";
+import { createGuestbookService } from "@/services";
 import { validateAndFlatten } from "@/utils";
 import { revalidatePath } from "next/cache";
 

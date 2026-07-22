@@ -1,7 +1,9 @@
-import { Switch } from "@/components/atoms/switch";
+"use client";
+
+import { Switch, TypographyMuted } from "@/components/atoms";
 import { Label } from "@radix-ui/react-label";
 import React, { useState } from "react";
-import { TypographyMuted } from "@/components/atoms/typography";
+
 import { FieldBase } from "@/types";
 
 type SwitchFieldProps = Omit<FieldBase, "defaultValue"> & {
@@ -36,4 +38,4 @@ const SwitchField = ({
   );
 };
 
-export default SwitchField;
+export { SwitchField };

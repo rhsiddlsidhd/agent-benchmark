@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import TextField from "@/components/molecules/TextField";
-import type { BuyerInfo } from "@/schemas/order.schema";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms";
+import { TextField } from "@/components/molecules";
+import type { BuyerInfo } from "@/schemas";
 
 interface BuyerInfoCardProps {
   errors: Partial<Record<keyof BuyerInfo, string[]>>;

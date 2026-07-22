@@ -4,13 +4,12 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import useAuthStore from "@/store/auth.store";
-import { loginUser } from "@/actions/loginUser";
+import { useAuthStore } from "@/store";
+import { loginUser } from "@/actions";
 import { APIResponse } from "@/types";
-import { UserRole } from "@/models/user.model";
+import { UserRole } from "@/models";
 import { getFieldError, hasFieldErrors } from "@/utils";
-import { LoginForm as PureLoginForm } from "@/components/organisms/LoginForm";
-
+import { LoginForm as PureLoginForm } from "@/components/organisms";
 export function LoginForm() {
   const router = useRouter();
   const [state, action, pending] = useActionState<

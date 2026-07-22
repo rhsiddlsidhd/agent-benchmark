@@ -1,4 +1,6 @@
-import useKakaoLoader from "@/lib/kakao";
+"use client";
+
+import { useKakaoLoader } from "@/lib/kakao";
 import React, { useEffect, useState } from "react";
 import { Map, MapMarker } from "react-kakao-maps-sdk";
 import { MapPin } from "lucide-react";
@@ -58,4 +60,4 @@ const KakaoMap = ({ address }: { address: string }) => {
   );
 };
 
-export default KakaoMap;
+export { KakaoMap };

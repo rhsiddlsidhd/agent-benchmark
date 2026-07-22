@@ -1,11 +1,10 @@
 "use client";
 
-import { Button } from "@/components/atoms/button";
-import { Card } from "@/components/atoms/card";
+import { Button, Card, TypographyH1, TypographyMuted } from "@/components/atoms";
+
 import { AlertCircle, ArrowLeft, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 
 interface ErrorFallbackProps {
   error: Error & { digest?: string };
@@ -16,7 +15,7 @@ interface ErrorFallbackProps {
   backLabel?: string;
 }
 
-export default function ErrorFallback({
+export function ErrorFallback({
   error,
   reset,
   title = "오류가 발생했습니다",

@@ -1,16 +1,10 @@
 "use client";
 
 import { ProductEditDialog } from "@/app/(main)/(admin)/admin/products/_components";
-import { AdminModalState, useAdminModalStore } from "@/store/admin.modal.store";
+import { AdminModalState, useAdminModalStore } from "@/store";
 import React from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/atoms/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/atoms";
 import { PremiumFeatureDialog } from "@/app/(main)/(admin)/admin/premium-features/_components";
 
 const modalPayload: Record<
@@ -58,4 +52,4 @@ const AdminModal = () => {
   );
 };
 
-export default AdminModal;
+export { AdminModal };

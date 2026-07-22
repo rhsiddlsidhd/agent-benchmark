@@ -2,10 +2,9 @@ export const revalidate = 600;
 
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/atoms/button";
-import { getAllProductsService } from "@/services/product.service";
+import { Button, TypographyH1, TypographyMuted } from "@/components/atoms";
+import { getAllProductsService } from "@/services";
 import { ProductTableRow } from "./_components";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
 
 const tableColums = [
   "썸네일",

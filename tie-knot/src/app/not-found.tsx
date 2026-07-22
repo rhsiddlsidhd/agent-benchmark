@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { TypographyMuted } from "@/components/atoms/typography";
-
+import { TypographyMuted } from "@/components/atoms";
 export default function NotFound() {
   return (
     <main

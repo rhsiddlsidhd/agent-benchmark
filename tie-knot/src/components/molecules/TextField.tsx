@@ -1,7 +1,9 @@
-import { Input } from "@/components/atoms/input";
-import FormField from "@/components/molecules/FormField";
+"use client";
+
+import { Input } from "@/components/atoms";
+import { FormField } from "@/components/molecules/FormField";
 import { FieldBase } from "@/types";
-import React, { HTMLInputTypeAttribute, useState, useEffect } from "react";
+import { HTMLInputTypeAttribute, useState } from "react";
 
 export interface TextFieldProps extends FieldBase {
   type?: HTMLInputTypeAttribute;
@@ -29,10 +31,12 @@ const TextField = ({
   className,
 }: TextFieldProps) => {
   const [info, setInfo] = useState(defaultValue);
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue);
 
-  useEffect(() => {
+  if (defaultValue !== prevDefaultValue) {
+    setPrevDefaultValue(defaultValue);
     setInfo(defaultValue);
-  }, [defaultValue]);
+  }
 
   return (
     <FormField id={id} label={children} error={error} required={required}>
@@ -53,4 +57,4 @@ const TextField = ({
   );
 };
 
-export default TextField;
+export { TextField };

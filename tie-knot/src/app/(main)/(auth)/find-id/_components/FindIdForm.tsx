@@ -3,11 +3,10 @@
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 
-import { findUserEmail } from "@/actions/findUserEmail";
+import { findUserEmail } from "@/actions";
 import { hasFieldErrors } from "@/utils";
 import { APIResponse } from "@/types";
-import { FindIdForm as PureFindIdForm } from "@/components/organisms/FindIdForm";
-
+import { FindIdForm as PureFindIdForm } from "@/components/organisms";
 export function FindIdForm() {
   const [state, action, pending] = useActionState<
     APIResponse<{ email: string }>,

@@ -1,5 +1,5 @@
-import { GuestbookModel, IGuestbook } from "@/models/guestbook.model";
-import { GuestbookType } from "@/schemas/guestbook.schema";
+import { GuestbookModel, IGuestbook } from "@/models";
+import { GuestbookType } from "@/schemas";
 import { dbConnect } from "@/lib/mongodb";
 
 import mongoose from "mongoose";

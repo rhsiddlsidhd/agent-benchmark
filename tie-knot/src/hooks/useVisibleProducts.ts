@@ -1,7 +1,9 @@
+"use client";
+
 import { useMemo } from "react";
 
-import { Product } from "@/services/product.service";
-import { ProductFilterState } from "@/context/productFilter/type";
+import { Product } from "@/services";
+import { ProductFilterState } from "@/context/productFilter";
 import { getChosung } from "@/utils";
 
 const useVisibleProducts = ({
@@ -105,4 +107,4 @@ const useVisibleProducts = ({
   return { visibleProducts };
 };
 
-export default useVisibleProducts;
+export { useVisibleProducts };

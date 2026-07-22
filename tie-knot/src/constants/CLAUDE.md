@@ -2,9 +2,9 @@
 
 > Last updated: 2026-07-18
 
-## Scope
+## Overview
 
-- **도메인 종속/전역 공통 상수** — 파일당 목적 1개(`navigation`, `page`, `payment`, `price`, `product`, `sidebar`, `theme`). 단순 상수뿐 아니라 그 상수에 종속된 룩업 헬퍼 함수(`theme.ts`의 `getThemeByProductId`)도 같은 파일에 둔다.
+도메인/전역 상수 전담, 파일당 목적 1개.
 
 ## Structure
 
@@ -27,5 +27,5 @@ src/constants/
 
 ## 관련 문서
 
-- 파일명/식별자 케이스 일반 규칙: Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md`
+- 식별자 케이스 공통 규칙: `src/CLAUDE.md`
 - 배럴 import 정책: `src/CLAUDE.md`

@@ -1,6 +1,6 @@
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
+import { TypographyH1, TypographyMuted } from "@/components/atoms";
 import { ProductCatalog } from "./_components";
-import { getAllProductsService } from "@/services/product.service";
+import { getAllProductsService } from "@/services";
 import { productCategoryLabels, isProductCategory } from "@/utils";
 import { notFound } from "next/navigation";
 

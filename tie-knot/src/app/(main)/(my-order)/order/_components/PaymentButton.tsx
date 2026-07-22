@@ -2,10 +2,10 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/atoms/button";
+import { Button } from "@/components/atoms";
 import { CreditCard } from "lucide-react";
-import { useOrderStore } from "@/store/order.store";
-import { IOrder } from "@/models/order.model";
+import { useOrderStore } from "@/store";
+import { IOrder } from "@/models";
 import { CheckoutItem } from "@/types";
 
 const PaymentButton = ({ order }: { order: IOrder }) => {
@@ -50,4 +50,4 @@ const PaymentButton = ({ order }: { order: IOrder }) => {
   );
 };
 
-export default PaymentButton;
+export { PaymentButton };

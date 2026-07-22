@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 import Image, { ImageLoaderProps, StaticImageData } from "next/image";
 import React from "react";
 
@@ -42,4 +42,4 @@ const CloudImage = ({
   );
 };
 
-export default CloudImage;
+export { CloudImage };

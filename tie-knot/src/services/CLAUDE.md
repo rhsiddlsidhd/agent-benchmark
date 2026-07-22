@@ -1,16 +1,17 @@
 # CLAUDE.md — src/services/
 
 > Last updated: 2026-07-18
-> 이 폴더는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md` 소관 밖(프로젝트 고유 선택) — 서버 전용 비즈니스 로직 레이어.
+> 이 폴더는 프로젝트 고유 선택 — 서버 전용 비즈니스 로직 레이어.
 
-## Scope
+## Overview
 
-- **DB 접근 + 비즈니스 로직.** `src/models/`(스키마)와 `src/lib/`(외부 연동 wrapper)를 조합해 실제 유스케이스를 구현한다(예: `auth.service.ts`의 `getAuth`가 `lib/cookies`+`lib/jose`+`models/user.model`을 조합). 한 파일에 같은 도메인의 여러 관련 함수(조회/생성/로그아웃 등)를 같이 둘 수 있다 — film-wiki식 "파일당 export 1개" 원칙은 여기 적용 안 함.
+`services/`는 DB 접근 + 비즈니스 로직을 모아둔다 — `src/models/`(스키마)와 `src/lib/`(외부 연동 wrapper)를 조합해 실제 유스케이스를 구현한다(예: `auth.service.ts`의 `getAuth`가 `lib/cookies`+`lib/jose`+`models/user.model`을 조합). 한 파일에 같은 도메인의 여러 관련 함수(조회/생성/로그아웃 등)를 같이 둘 수 있다 — film-wiki식 "파일당 export 1개" 원칙은 여기 적용 안 함.
 
 ## Structure
 
 ```
 src/services/
+├── index.ts               # 배럴 — export *
 ├── auth.service.ts        # getUser, getAuth, requireAuth, logoutService
 ├── user.service.ts
 ├── product.service.ts

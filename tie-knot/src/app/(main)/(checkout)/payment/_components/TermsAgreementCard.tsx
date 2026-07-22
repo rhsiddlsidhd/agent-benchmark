@@ -1,8 +1,7 @@
 "use client";
 
-import { Card, CardContent } from "@/components/atoms/card";
-import { Checkbox } from "@/components/atoms/checkbox";
-import { Label } from "@/components/atoms/label";
+import { Card, CardContent, Checkbox, Label } from "@/components/atoms";
+
 
 interface TermsAgreementCardProps {
   agreed: boolean;

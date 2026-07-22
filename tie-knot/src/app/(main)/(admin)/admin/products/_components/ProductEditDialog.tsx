@@ -3,24 +3,19 @@
 import type React from "react";
 import { useActionState, useEffect, useState } from "react";
 import { UploadCloud, X } from "lucide-react";
-import { updateProduct } from "@/actions/updateProduct";
-import type { Product } from "@/services/product.service";
-import Alert from "@/components/molecules/Alert";
-import { Input } from "@/components/atoms/input";
-import { Button } from "@/components/atoms/button";
-import { Textarea } from "@/components/atoms/textarea";
-import SelectField from "@/components/molecules/SelectField";
-import { Switch } from "@/components/atoms/switch";
-import { Checkbox } from "@/components/atoms/checkbox";
-import { Label } from "@/components/atoms/label";
+import { updateProduct } from "@/actions";
+import { Product } from "@/services";
+import { Alert, SelectField, Spinner, CloudImage } from "@/components/molecules";
+import { Input, Button, Textarea, Switch, Checkbox, Label, TypographyH4, TypographyMuted } from "@/components/atoms";
+
+
+
 import { usePremiumFeature } from "@/hooks";
-import Spinner from "@/components/molecules/Spinner";
-import CloudImage from "@/components/molecules/CloudImage";
+
+
 import { getCategoryOptions, getSubCategoryOptions, ProductCategory, SubCategory } from "@/utils";
 import { toast } from "sonner";
-import { useAdminModalStore } from "@/store/admin.modal.store";
-import { TypographyH4, TypographyMuted } from "@/components/atoms/typography";
-
+import { useAdminModalStore } from "@/store";
 interface ProductEditDialogProps {
   product: Product;
 }
@@ -50,11 +45,12 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
     }
   }, [state, closeModal]);
 
-  useEffect(() => {
-    if (!isPremium) {
+  const handlePremiumChange = (checked: boolean) => {
+    setIsPremium(checked);
+    if (!checked) {
       setSelectedFeatures([]);
     }
-  }, [isPremium]);
+  };
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -338,7 +334,7 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
           <Switch
             id="edit-isPremium"
             checked={isPremium}
-            onCheckedChange={setIsPremium}
+            onCheckedChange={handlePremiumChange}
           />
         </div>
 

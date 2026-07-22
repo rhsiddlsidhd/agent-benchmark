@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { Globe } from "lucide-react";
 
-import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
+import { Button, TypographyH1, TypographyMuted, Checkbox, Label } from "@/components/atoms";
 
-import { Checkbox } from "@/components/atoms/checkbox";
-import { Label } from "@/components/atoms/label";
-import TextField from "@/components/molecules/TextField";
 
+
+import { TextField } from "@/components/molecules";
 interface LoginFormProps {
   action: (formData: FormData) => void;
   pending: boolean;

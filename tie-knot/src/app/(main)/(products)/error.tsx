@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/atoms/button";
-import { Card } from "@/components/atoms/card";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
+import { Button, Card, TypographyH1, TypographyMuted } from "@/components/atoms";
+
+
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

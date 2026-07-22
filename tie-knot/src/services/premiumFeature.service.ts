@@ -1,5 +1,5 @@
-import { FeatureModel } from "@/models/product.feature.model";
-import { premiumFeatureSchema } from "@/schemas/premiumFeature.schema";
+import { FeatureModel } from "@/models";
+import { premiumFeatureSchema } from "@/schemas";
 import { dbConnect } from "@/lib/mongodb";
 
 import mongoose from "mongoose";

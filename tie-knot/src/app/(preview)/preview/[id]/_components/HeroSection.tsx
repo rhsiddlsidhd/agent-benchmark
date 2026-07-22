@@ -3,9 +3,8 @@ import { formatInTimeZone } from "date-fns-tz";
 import { ko } from "date-fns/locale";
 
 import { HeroSectionProps } from "../_utils/heroSection.mapper";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typography";
-import CloudImage from "@/components/molecules/CloudImage";
-
+import { TypographyH1, TypographyMuted } from "@/components/atoms";
+import { CloudImage } from "@/components/molecules";
 export function HeroSection({
   groomName,
   brideName,

@@ -1,6 +1,7 @@
-import { useMemo } from "react";
-import { Product } from "@/services/product.service";
+"use client";
 
+import { useMemo } from "react";
+import { Product } from "@/services";
 const useSuggestProducts = ({
   data,
   keyword,
@@ -20,4 +21,4 @@ const useSuggestProducts = ({
   return { suggestions };
 };
 
-export default useSuggestProducts;
+export { useSuggestProducts };

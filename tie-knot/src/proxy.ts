@@ -7,7 +7,7 @@ import { decrypt } from "@/lib/jose";
  * Auth && User
  */
 
-export default async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
     const tokenCookie = request.cookies.get("token");
@@ -54,7 +54,7 @@ export default async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch (e) {
-    console.error("Middleware error:", e);
+    console.error("Proxy error:", e);
     return NextResponse.redirect(new URL("/", request.url));
   }
 }

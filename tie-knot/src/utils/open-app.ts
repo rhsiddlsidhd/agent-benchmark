@@ -59,4 +59,4 @@ const openApp = {
   openNaverMap,
 };
 
-export default openApp;
+export { openApp };

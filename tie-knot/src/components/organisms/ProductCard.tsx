@@ -1,12 +1,11 @@
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
-import { Product } from "@/services/product.service";
-
+import { Product } from "@/services";
 import { calculatePrice } from "@/utils";
 import { SubCategory, subCategoryLabels } from "@/utils";
 import { Badge } from "../atoms/badge";
 import { TypographyMuted } from "../atoms/typography";
-import CloudImage from "../molecules/CloudImage";
+import { CloudImage } from "../molecules/CloudImage";
 
 export function ProductCard({ product }: { product: Product }) {
   const finalPrice =

@@ -1,13 +1,7 @@
 "use client";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/atoms/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms";
 import React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 
 export interface SelectOption {
   value: string;
@@ -68,4 +62,4 @@ const BaseSelect = ({
   );
 };
 
-export default BaseSelect;
+export { BaseSelect };

@@ -3,10 +3,9 @@
 import { encrypt } from "@/lib/jose";
 import { validateAndFlatten } from "@/utils";
 import { sendEmail } from "@/lib/nodemailer";
-import { emailSchema } from "@/schemas/email.schema";
+import { emailSchema } from "@/schemas";
 import { APIResponse } from "@/types";
-import { checkEmailDuplicate } from "@/services/user.service";
-
+import { checkEmailDuplicate } from "@/services";
 const createChangePWDomain = (token: string): string => {
   return process.env.NODE_ENV === "development"
     ? `http://localhost:3000/change-pw?t=${encodeURIComponent(token)}`

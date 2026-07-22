@@ -3,12 +3,11 @@
 import { APIResponse } from "@/types";
 
 import { validateAndFlatten } from "@/utils";
-import { LoginSchema } from "@/schemas/login.schema";
+import { LoginSchema } from "@/schemas";
 import { encrypt } from "@/lib/jose";
 import { setCookie } from "@/lib/cookies";
-import { getUser } from "@/services/auth.service";
-
-import { UserRole } from "@/models/user.model";
+import { getUser } from "@/services";
+import { UserRole } from "@/models";
 import { comparePasswords } from "@/lib/bcrypt";
 
 export const loginUser = async (

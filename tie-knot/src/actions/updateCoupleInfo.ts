@@ -2,10 +2,9 @@
 
 import { APIResponse } from "@/types";
 import { HTTPError } from "@/types";
-import { requireAuth } from "@/services/auth.service";
+import { requireAuth, updateCoupleInfoService } from "@/services";
 import { validateAndFlatten } from "@/utils";
-import { coupleInfoSchema } from "@/schemas/coupleInfo.schema";
-import { updateCoupleInfoService } from "@/services/coupleInfo.service";
+import { coupleInfoSchema } from "@/schemas";
 
 export const updateCoupleInfo = async (
   _prev: null,

@@ -1,21 +1,12 @@
 "use client";
 
-import {
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/atoms/dialog";
+import { DialogDescription, DialogHeader, DialogTitle, Card, TypographyLarge, TypographyMuted, TypographySmall, Badge } from "@/components/atoms";
 import React from "react";
-import { Card } from "@/components/atoms/card";
-import { ClipboardButton } from "@/components/molecules/ClipboardButton";
+
+import { ClipboardButton } from "@/components/molecules";
 import { useCopy } from "@/hooks";
 import { PhoneIcon } from "lucide-react";
-import {
-  TypographyLarge,
-  TypographyMuted,
-  TypographySmall,
-} from "@/components/atoms/typography";
-import { Badge } from "@/components/atoms/badge";
+
 
 // Contact 타입을 컴포넌트 내에서 직접 정의하여 의존성 제거
 interface Contact {
@@ -83,4 +74,4 @@ const ViewContact = ({ payload }: { payload: Contact[] }) => {
   );
 };
 
-export default ViewContact;
+export { ViewContact };

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Mail } from "lucide-react";
 
-import { Card } from "@/components/atoms/card";
-import { Button } from "@/components/atoms/button";
-import { TypographyH1, TypographyLarge, TypographyMuted } from "@/components/atoms/typography";
-import TextField from "@/components/molecules/TextField";
+import { Card, Button, TypographyH1, TypographyLarge, TypographyMuted } from "@/components/atoms";
+
+
+import { TextField } from "@/components/molecules";
 import { getFieldError } from "@/utils";
 import { APIResponse } from "@/types";
 

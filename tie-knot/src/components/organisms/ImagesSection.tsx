@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/atoms/card";
-import ImageField from "@/components/molecules/ImageField";
-import FormField from "@/components/molecules/FormField";
-import { TypographyMuted } from "@/components/atoms/typography";
+import { Card, CardContent, CardHeader, CardTitle, TypographyMuted } from "@/components/atoms";
+import { ImageField, FormField } from "@/components/molecules";
+
 import type { useImageList } from "@/hooks";
 
 interface ImagesSectionProps {

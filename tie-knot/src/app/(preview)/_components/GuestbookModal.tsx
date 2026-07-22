@@ -1,14 +1,11 @@
 "use client";
 
-import {
-  GuestbookModalType,
-  useGuestbookModalStore,
-} from "@/store/guestbook.modal.store";
+import { GuestbookModalType, useGuestbookModalStore } from "@/store";
 import { AnimatePresence, motion } from "motion/react";
 import React, { useEffect, useMemo, useState } from "react";
-import { Dialog, DialogContent } from "@/components/atoms/dialog";
-import ViewContact from "./ViewContact";
-import { cn } from "@/lib/utils";
+import { Dialog, DialogContent } from "@/components/atoms";
+import { ViewContact } from "./ViewContact";
+import { cn } from "@/lib/cn";
 import clsx from "clsx";
 import { DeleteGuestbookForm } from "./DeleteGuestbookForm";
 import { CreateGuestbookForm } from "./CreateGuestbookForm";
@@ -26,15 +23,22 @@ const GuestbookModal = () => {
   const { isOpen, type, payload, closeModal, clearIsOpen } =
     useGuestbookModalStore();
   const [dialogOpen, setDialogOpen] = useState(true);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
   const Component = useMemo(() => {
     return type ? GUESTBOOK[type] : null;
   }, [type]);
 
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setDialogOpen(true);
+    }
+  }
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      setDialogOpen(true);
     }
     return () => {
       document.body.style.overflow = "auto";
@@ -101,4 +105,4 @@ const GuestbookModal = () => {
   );
 };
 
-export default GuestbookModal;
+export { GuestbookModal };

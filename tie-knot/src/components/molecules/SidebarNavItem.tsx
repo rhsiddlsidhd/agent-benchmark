@@ -1,14 +1,13 @@
 "use client";
 import { allNavigateItems, SubmenuParentTitle } from "@/constants";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 import { isSubmenuParentTitle } from "@/utils";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
-import { Button } from "@/components/atoms/button";
-
-export default function SidebarNavItem({
+import { Button } from "@/components/atoms";
+export function SidebarNavItem({
   type,
 }: {
   type: "ADMIN" | "MY_PROFILE" | "MY_ORDER";

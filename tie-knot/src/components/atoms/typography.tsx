@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 
 interface TypographyProps {
   children: React.ReactNode;
@@ -162,5 +162,18 @@ export function TypographySmall({ children, className }: TypographyProps) {
 export function TypographyMuted({ children, className }: TypographyProps) {
   return (
     <p className={cn("text-muted-foreground text-sm", className)}>{children}</p>
+  );
+}
+
+/**
+ * 섹션 상단 카테고리 라벨 (섹션 제목 위에 붙는 eyebrow 라벨)
+ * - 크기: xs (12px) | 굵기: bold | 자간: widest
+ * - 사용: <TypographyEyebrow>GALLERY</TypographyEyebrow>
+ */
+export function TypographyEyebrow({ children, className }: TypographyProps) {
+  return (
+    <p className={cn("text-xs font-bold tracking-widest", className)}>
+      {children}
+    </p>
   );
 }

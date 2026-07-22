@@ -1,23 +1,17 @@
 "use client";
 
 import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
-import AutoCompleteList from "@/components/molecules/AutoCompleteList";
-import { Command, CommandInput } from "@/components/atoms/command";
-import { Button } from "@/components/atoms/button";
+import { AutoCompleteList } from "@/components/molecules";
+import { Command, CommandInput, Button, DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger, Badge, TypographyMuted, TypographySmall } from "@/components/atoms";
+
 import { useSuggestProducts } from "@/hooks";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/atoms/dropdown-menu";
-import { Badge } from "@/components/atoms/badge";
+
+
 import { useState } from "react";
 
-import { useProductFilter } from "@/context/productFilter/reducer";
-import { Product } from "@/services/product.service";
-import { PremiumFeature } from "@/services/premiumFeature.service";
+import { useProductFilter } from "@/context/productFilter";
+import { Product, PremiumFeature } from "@/services";
+
 import {
   SubCategory,
   ProductCategory,
@@ -32,7 +26,6 @@ import {
   PRODUCT_PRICE_KEYS,
   ProductSortType,
 } from "@/constants";
-import { TypographyMuted, TypographySmall } from "@/components/atoms/typography";
 
 export function ProductFilters({
   data,

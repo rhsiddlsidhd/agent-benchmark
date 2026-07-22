@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import { APIRouteResponse, apiOk, apiFail } from "@/api/response";
+import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import { HTTPError } from "@/types";
 import { getCookie } from "@/lib/cookies";
 import { decrypt } from "@/lib/jose";

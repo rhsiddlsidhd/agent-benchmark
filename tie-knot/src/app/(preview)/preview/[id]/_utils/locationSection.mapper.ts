@@ -1,5 +1,4 @@
-import { ICoupleInfo } from "@/models/coupleInfo.model";
-
+import { ICoupleInfo } from "@/models";
 export interface LocationSectionProps {
   venueName: string;
   address: string;

@@ -1,14 +1,10 @@
 "use client";
 
-import { Button } from "@/components/atoms/button";
-import SectionBody from "@/components/atoms/titled-section";
-import {
-  TypographyP,
-  TypographyLarge,
-  TypographyMuted,
-} from "@/components/atoms/typography";
-import { Separator } from "@/components/atoms/separator";
-import { useGuestbookModalStore } from "@/store/guestbook.modal.store";
+import { Button, TypographyP, TypographyLarge, TypographyMuted, Separator } from "@/components/atoms";
+import { EyebrowSection } from "./EyebrowSection";
+
+
+import { useGuestbookModalStore } from "@/store";
 import { InvitationMessageMappedProps } from "../_utils/invitationMessage.mapper";
 
 const pinMessage = [
@@ -21,7 +17,7 @@ export function InvitationMessage({ parties }: InvitationMessageMappedProps) {
   const { setIsOpen } = useGuestbookModalStore();
 
   return (
-    <SectionBody title="INVITATION" subTitle="소중한 분들을 초대합니다.">
+    <EyebrowSection eyebrow="INVITATION" heading="소중한 분들을 초대합니다.">
       <div className="mb-16 space-y-2">
         {pinMessage.map((msg) => (
           <TypographyP key={msg} className="m-0 text-lg leading-relaxed tracking-wide">
@@ -60,6 +56,6 @@ export function InvitationMessage({ parties }: InvitationMessageMappedProps) {
           </div>
         ))}
       </div>
-    </SectionBody>
+    </EyebrowSection>
   );
 }

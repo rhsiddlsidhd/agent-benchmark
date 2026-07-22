@@ -2,10 +2,9 @@
 
 import { useActionState, useEffect } from "react";
 
-import { createPremiumFeature } from "@/actions/createPremiumFeature";
+import { createPremiumFeature } from "@/actions";
 import { APIResponse } from "@/types";
-import { PremiumFeatureRegistrationForm as PurePremiumFeatureRegistrationForm } from "@/components/organisms/PremiumFeatureRegistrationForm";
-
+import { PremiumFeatureRegistrationForm as PurePremiumFeatureRegistrationForm } from "@/components/organisms";
 export function PremiumFeatureRegistrationForm() {
   const [state, action, pending] = useActionState<
     APIResponse<{ message: string }>,

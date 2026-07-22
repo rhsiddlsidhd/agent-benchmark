@@ -5,9 +5,8 @@ import { APIResponse } from "@/types";
 import { hashPassword } from "@/lib/bcrypt";
 
 import { validateAndFlatten } from "@/utils";
-import { RegisterSchema } from "@/schemas/register.schema";
-import { checkEmailDuplicate, createUser } from "@/services/user.service";
-
+import { RegisterSchema } from "@/schemas";
+import { checkEmailDuplicate, createUser } from "@/services";
 export async function signupUser(
   prev: unknown,
   formData: FormData,

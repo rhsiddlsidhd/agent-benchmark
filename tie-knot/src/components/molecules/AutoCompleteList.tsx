@@ -1,8 +1,4 @@
-import {
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/atoms/command";
+import { CommandGroup, CommandItem, CommandList } from "@/components/atoms";
 import clsx from "clsx";
 import React from "react";
 
@@ -37,4 +33,4 @@ const AutoCompleteList = ({
   );
 };
 
-export default AutoCompleteList;
+export { AutoCompleteList };

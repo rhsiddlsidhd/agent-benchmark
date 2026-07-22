@@ -1,15 +1,8 @@
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/atoms/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, TypographyH2, TypographyP } from "@/components/atoms";
 import React from "react";
 import { ProductCard } from "./ProductCard";
-import { TypographyH2, TypographyP } from "@/components/atoms/typography";
-import { ProductJSON } from "@/models/product.model";
 
+import { ProductJSON } from "@/models";
 interface TemplateCarouselGroupProps {
   data: ProductJSON[];
   title: string;

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
-import { IOrder, OrderModel } from "@/models/order.model";
-
-import { CreateOrderDto } from "@/schemas/order.schema";
+import { IOrder, OrderModel } from "@/models";
+import { CreateOrderDto } from "@/schemas";
 import { generateUid } from "@/utils";
 import { dbConnect } from "@/lib/mongodb";
 

@@ -4,16 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Gem } from "lucide-react";
 import { MAIN_NAV_ITEMS } from "@/constants";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/atoms/sheet";
-import { Button } from "@/components/atoms/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, Button } from "@/components/atoms";
 
-export default function MobileNav() {
+export function MobileNav() {
   const [open, setOpen] = useState(false);
 
   return (

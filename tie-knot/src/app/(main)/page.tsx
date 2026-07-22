@@ -1,17 +1,12 @@
 export const revalidate = 3600;
 
-import { StartActionCTA } from "@/components/organisms/StartActionCTA";
+import { StartActionCTA, EcommerceHero, LiveDemoSection, TemplateCarouselGroup } from "@/components/organisms";
 import { Footer } from "./_components";
-import { EcommerceHero } from "@/components/organisms/EcommerceHero";
-import { LiveDemoSection } from "@/components/organisms/LiveDemoSection";
-import {
-  getFeaturedTemplatesService,
-  getProductService,
-  Product,
-} from "@/services/product.service";
+
+
+import { getFeaturedTemplatesService, getProductService, Product } from "@/services";
 import React from "react";
-import { TypographyH2, TypographyP } from "@/components/atoms/typography";
-import { TemplateCarouselGroup } from "@/components/organisms/TemplateCarouselGroup";
+import { TypographyH2, TypographyP } from "@/components/atoms";
 
 const page = async () => {
   const previewProductId = process.env.NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID;

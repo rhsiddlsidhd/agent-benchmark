@@ -6,9 +6,9 @@
 
 import { APIResponse } from "@/types";
 
-import { UserEmailSchema } from "@/schemas/userEmail.schema";
+import { UserEmailSchema } from "@/schemas";
 
-import { getUserEmail } from "@/services/user.service";
+import { getUserEmail } from "@/services";
 import { HTTPError } from "@/types";
 import { validateAndFlatten } from "@/utils";
 

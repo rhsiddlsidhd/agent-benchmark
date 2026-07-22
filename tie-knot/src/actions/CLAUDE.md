@@ -2,14 +2,15 @@
 
 > Last updated: 2026-07-19
 
-## Scope
+## Overview
 
-Server Actions(`"use server"`) 전용 규칙. `AGENTS.md`에 명시된 대로 이 프로젝트의 실제 설치 버전(Next.js 16, `node_modules/next/dist/docs/`)을 기준으로 정의하며, 현재 작성된 코드의 스타일은 기준에 포함하지 않는다.
+`src/actions/`는 Server Actions(`"use server"`) 전용 규칙을 다룬다 — `AGENTS.md`에 명시된 대로 이 프로젝트의 실제 설치 버전(Next.js 16, `node_modules/next/dist/docs/`)을 기준으로 정의하며, 현재 작성된 코드의 스타일은 기준에 포함하지 않는다.
 
 ## Structure
 
 ```
 src/actions/
+├── index.ts   # 배럴 — export *
 └── {동사}{Domain}.ts   # 예: createProduct.ts, deleteGuestbook.ts, loginUser.ts — "Action" 접미사 없음
 ```
 
@@ -27,10 +28,10 @@ src/actions/
 
 ## Gotchas
 
+- `"use server"` 파일이라 배럴(`index.ts`)로 묶여도 클라이언트엔 실제 코드 대신 RPC 참조만 내려가서 다른 액션의 서버 전용 의존성(mongodb/bcrypt 등)이 새지 않는다.
 - 클라이언트에서 여러 Server Action을 `Promise.all`로 동시에 트리거해도 병렬로 실행되지 않는다 — Next.js가 클라이언트당 순차 디스패치(sequential dispatch)하므로 두 번째 액션은 첫 번째가 끝난 뒤 시작된다. 진짜 병렬 처리가 필요하면 액션 하나 안에서 처리하거나 Route Handler를 쓴다.
 - CSRF 체크(Origin/Host 대조)·요청 본문 1MB 제한·클로저 값 암호화는 프레임워크가 자동으로 처리한다 — 액션 안에 직접 구현하지 않는다.
-- 액션 16개 전부 마이그레이션 완료 — "Action" 접미사 제거 리네임(9개) + `handleActionError`/`HTTPError` throw 패턴을 "예상된 실패는 리턴값" 패턴으로 전환. 서비스 레이어가 여전히 `HTTPError`를 던지는 경우(예: `getUserEmail`/`getUserById`의 404, `requireAuth()`의 401)는 액션이 `try/catch`로 받아서 `instanceof HTTPError`면 그 `message`/`code`를 그대로 리턴값에 실어 보낸다 — 이건 액션 "자신의" 검증 실패를 throw하는 게 아니라 더 아래 레이어에서 이미 일어난 예외를 리턴값으로 번역하는 것이라 위 규칙과 상충하지 않는다.
-- Bearer 헤더 대신 쿠키 기반 인증으로 바뀌면서(`src/CLAUDE.md` 참고), 기존에 각 액션이 `getCookie("token")`+`decrypt(REFRESH)`를 직접 반복하던 인증 확인 로직을 전부 `services/auth.service.ts`의 `requireAuth()` 호출로 교체했다 — `role` 기반 권한 체크(관리자 전용 액션)도 `requireAuth()`가 반환하는 `role`을 바로 쓴다(`getUserById`로 유저를 다시 조회할 필요 없어짐).
+- 서비스 레이어가 `HTTPError`를 던지는 경우(예: `getUserEmail`/`getUserById`의 404, `requireAuth()`의 401)는 액션이 `try/catch`로 받아서 `instanceof HTTPError`면 그 `message`/`code`를 그대로 리턴값에 실어 보낸다 — 이건 액션 "자신의" 검증 실패를 throw하는 게 아니라 더 아래 레이어에서 이미 일어난 예외를 리턴값으로 번역하는 것이라 "예상 가능한 실패는 리턴값으로 모델링한다" 규칙과 상충하지 않는다.
 
 ## 관련 문서
 

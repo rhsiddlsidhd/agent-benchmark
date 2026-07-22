@@ -1,16 +1,17 @@
 # CLAUDE.md — src/models/
 
 > Last updated: 2026-07-18
-> 이 폴더는 Global `~/.claude/docs/FRONTEND_FILE_CONVENTIONS.md` 소관 밖(프로젝트 고유 선택) — DB 스키마 계약 레이어.
+> 이 폴더는 프로젝트 고유 선택 — DB 스키마 계약 레이어.
 
-## Scope
+## Overview
 
-- **Mongoose 스키마 정의 + 그 스키마가 만드는 Document/JSON 타입 + 컴파일된 Model.** 파일 하나에 셋(스키마/타입/모델)이 다 들어간다 — API/도메인 계약 타입(`src/types/`)과는 소유권이 다르다: 여기는 "DB에 실제로 뭐가 저장되는가", `types/`는 "API가 뭘 주고받는가".
+`models/`는 Mongoose 스키마 정의 + 그 스키마가 만드는 Document/JSON 타입 + 컴파일된 Model을 모아둔다 — 파일 하나에 셋(스키마/타입/모델)이 다 들어간다. API/도메인 계약 타입(`src/types/`)과는 소유권이 다르다: 여기는 "DB에 실제로 뭐가 저장되는가", `types/`는 "API가 뭘 주고받는가".
 
 ## Structure
 
 ```
 src/models/
+├── index.ts               # 배럴 — export *
 ├── user.model.ts        # UserRole, BaseUser, IUser, UserModel
 ├── product.model.ts       # ProductDB, IProduct, ProductJSON, ProductModel
 └── ...                     # 도메인당 파일 1개

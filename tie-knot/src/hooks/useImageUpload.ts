@@ -1,7 +1,9 @@
+"use client";
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { validateAndFlatten } from "@/utils";
-import { coupleInfoClientSchema } from "@/schemas/coupleInfo.schema";
+import { coupleInfoClientSchema } from "@/schemas";
 import { processImages } from "@/utils";
 import { uploadMainThumbnail, uploadGalleryImages } from "@/lib/cloudinary";
 import type { ImagePayload } from "@/types";

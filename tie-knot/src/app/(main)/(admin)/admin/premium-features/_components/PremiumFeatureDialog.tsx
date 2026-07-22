@@ -3,12 +3,11 @@
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 
-import { PremiumFeature } from "@/services/premiumFeature.service";
-import { updatePremiumFeature } from "@/actions/updatePremiumFeature";
+import { PremiumFeature } from "@/services";
+import { updatePremiumFeature } from "@/actions";
 import { APIResponse } from "@/types";
 import { hasFieldErrors } from "@/utils";
-import { PremiumFeatureDialog as PurePremiumFeatureDialog } from "@/components/organisms/PremiumFeatureDialog";
-
+import { PremiumFeatureDialog as PurePremiumFeatureDialog } from "@/components/organisms";
 export function PremiumFeatureDialog({
   premiumFeature,
 }: {

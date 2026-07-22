@@ -1,7 +1,7 @@
 import { GuestbookModal } from "./_components";
 import React from "react";
 
-const layout = ({ children }: { children: React.ReactNode }) => {
+const PreviewLayout = ({ children }: { children: React.ReactNode }) => {
   // theme, 공통 Style 정의
 
   return (
@@ -12,4 +12,4 @@ const layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default layout;
+export default PreviewLayout;

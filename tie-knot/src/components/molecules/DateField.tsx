@@ -1,20 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
-import { Button } from "@/components/atoms/button";
-import { Calendar } from "@/components/atoms/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/atoms/popover";
-import { Input } from "@/components/atoms/input";
-import FormField from "@/components/molecules/FormField";
+import { Button, Calendar, Popover, PopoverContent, PopoverTrigger, Input } from "@/components/atoms";
+
+
+
+import { FormField } from "@/components/molecules/FormField";
 import { FieldBase } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/cn";
 
 interface DateFieldProps extends Omit<FieldBase, "defaultValue"> {
   defaultValue?: Date;
@@ -31,11 +27,13 @@ const DateField = ({
   placeholder = "날짜를 선택하세요",
 }: DateFieldProps) => {
   const [date, setDate] = useState<Date | undefined>(defaultValue);
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue);
 
   // defaultValue 변경 시 state 업데이트 (data 로딩 후 반영)
-  useEffect(() => {
+  if (defaultValue !== prevDefaultValue) {
+    setPrevDefaultValue(defaultValue);
     setDate(defaultValue);
-  }, [defaultValue]);
+  }
 
   return (
     <FormField id={id} label={children} required={required}>
@@ -76,4 +74,4 @@ const DateField = ({
   );
 };
 
-export default DateField;
+export { DateField };

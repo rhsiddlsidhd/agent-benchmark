@@ -2,16 +2,9 @@
 
 import Link from "next/link";
 import React from "react";
-import useAuthStore from "@/store/auth.store";
+import { useAuthStore } from "@/store";
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/atoms";
 
-import { Button } from "@/components/atoms/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/atoms/dropdown-menu";
 import { UserIcon, LogOut } from "lucide-react";
 import { USER_NAV_ITEMS } from "@/constants";
 import { toast } from "sonner";
@@ -79,4 +72,4 @@ const UserAccountNav = () => {
   );
 };
 
-export default UserAccountNav;
+export { UserAccountNav };

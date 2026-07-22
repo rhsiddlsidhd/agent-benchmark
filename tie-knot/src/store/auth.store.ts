@@ -1,4 +1,4 @@
-import { UserRole } from "@/models/user.model";
+import { UserRole } from "@/models";
 import { AuthSession } from "@/types";
 import { create } from "zustand";
 
@@ -35,4 +35,4 @@ const useAuthStore = create<AuthState & AuthAction>((set) => ({
     })),
 }));
 
-export default useAuthStore;
+export { useAuthStore };

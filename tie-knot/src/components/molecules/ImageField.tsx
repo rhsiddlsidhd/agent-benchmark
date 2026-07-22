@@ -1,8 +1,10 @@
+"use client";
+
 import React, { useRef, ChangeEvent } from "react";
 import { Upload, Plus } from "lucide-react";
 import { ImagePreviewItem } from "@/components/molecules/ImagePreviewItem";
-import { Button } from "@/components/atoms/button";
-import { TypographyMuted } from "@/components/atoms/typography";
+import { Button, TypographyMuted } from "@/components/atoms";
+
 import type { ImageItem } from "@/hooks";
 
 interface ImageFieldProps {
@@ -97,4 +99,4 @@ const ImageField = ({
   );
 };
 
-export default ImageField;
+export { ImageField };
