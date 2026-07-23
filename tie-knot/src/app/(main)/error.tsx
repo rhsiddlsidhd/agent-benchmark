@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorFallback } from "@/components/organisms";
+import { ErrorFallback } from "@/client/components/organisms";
 interface ErrorProps {
   error: Error & { digest?: string };
   reset: () => void;

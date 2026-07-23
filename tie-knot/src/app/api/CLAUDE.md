@@ -24,7 +24,7 @@ src/app/api/
 - `next/headers`의 `cookies()`/`headers()`를 동기 함수처럼 호출하지 않는다 — 두 함수 모두 비동기이므로 `await cookies()`/`await headers()`로 사용한다.
 - GET 이외의 메서드(POST/PUT/PATCH/DELETE)에 캐싱 옵트인(`export const dynamic = 'force-static'`)을 적용하지 않는다 — 공식 문서: GET을 제외한 나머지 메서드는 같은 파일에 캐시되는 GET과 나란히 있어도 캐시되지 않는다.
 - Route Handler 안에서 `updateTag()`를 호출하지 않는다 — 공식 문서: `updateTag`는 Server Action 전용이며 Route Handler에서 호출하면 에러가 던져진다. Route Handler에서 캐시를 무효화해야 하면 `revalidateTag`/`revalidatePath`를 쓴다.
-- 응답 생성 시 이 프로젝트가 추가한 계약을 따른다 — 세부 규칙은 `src/api/CLAUDE.md` 참고.
+- 응답 생성 시 이 프로젝트가 추가한 계약을 따른다 — 세부 규칙은 `src/server/CLAUDE.md` 참고.
 
 ## Gotchas
 
@@ -33,8 +33,8 @@ src/app/api/
 
 ## 관련 문서
 
-- 응답/에러 계약: `src/api/CLAUDE.md`
-- 이 라우트가 호출하는 비즈니스 로직: `src/services/CLAUDE.md`
-- Server Actions(자매 컨텍스트): `src/actions/CLAUDE.md`
+- 응답/에러 계약: `src/server/CLAUDE.md`
+- 이 라우트가 호출하는 비즈니스 로직: `src/server/services/CLAUDE.md`
+- Server Actions(자매 컨텍스트): `src/server/actions/CLAUDE.md`
 - Proxy/Middleware 경계: `src/CLAUDE.md`
 - 테스트 작성 컨벤션(1차 범위에서 후순위): `docs/TESTING_GUIDELINE.md`

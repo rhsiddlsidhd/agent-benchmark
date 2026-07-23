@@ -1,4 +1,4 @@
-import { ICoupleInfo } from "@/models";
+import { ICoupleInfo } from "@/server/models";
 export interface HeroSectionProps {
   groomName: string;
   brideName: string;

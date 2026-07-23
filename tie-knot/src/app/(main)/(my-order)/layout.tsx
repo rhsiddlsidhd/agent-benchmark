@@ -1,9 +1,9 @@
 "use client";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider } from "@/components/atoms";
-import { SidebarNavItem } from "@/components/molecules";
-import { SidebarToggle } from "@/components/organisms";
-import { useAuthStore } from "@/store";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider } from "@/client/components/atoms";
+import { SidebarNavItem } from "@/client/components/molecules";
+import { SidebarToggle } from "@/client/components/organisms";
+import { useAuthStore } from "@/client/store";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const email = useAuthStore((state) => state.email);
   const role = useAuthStore((state) => state.role);

@@ -1,8 +1,8 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { HTTPError } from "@/types";
-import { syncPayment, requireAuth } from "@/services";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { HTTPError } from "@/shared/types";
+import { syncPayment, requireAuth } from "@/server/services";
 import { NextRequest } from "next/server";
-import { PayStatus } from "@/models";
+import { PayStatus } from "@/server/models";
 
 export const POST = async (
   req: NextRequest,

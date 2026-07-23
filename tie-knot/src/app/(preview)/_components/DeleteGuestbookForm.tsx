@@ -4,11 +4,11 @@ import { useActionState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { deleteGuestbook } from "@/actions";
-import { APIResponse } from "@/types";
-import { hasFieldErrors } from "@/utils";
-import { useGuestbookModalStore } from "@/store";
-import { DeleteGuestbookForm as PureDeleteGuestbookForm } from "@/components/organisms";
+import { deleteGuestbook } from "@/server/actions";
+import { APIResponse } from "@/shared/types";
+import { hasFieldErrors } from "@/shared/utils";
+import { useGuestbookModalStore } from "@/client/store";
+import { DeleteGuestbookForm as PureDeleteGuestbookForm } from "@/client/components/organisms";
 export function DeleteGuestbookForm({ payload }: { payload: string }) {
   const params = useParams();
   const query = useSearchParams();

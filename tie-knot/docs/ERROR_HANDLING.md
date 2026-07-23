@@ -14,7 +14,7 @@ services (HTTPError throw / null 리턴)
 actions (리턴값으로 번역)          route.ts (APIRouteResponse로 응답)
    ↓                                  ↓
                     client
-        handleClientError (src/utils/error.ts)
+        handleClientError (src/shared/utils/error.ts)
         → fieldErrors / message / void 중 하나로 UI에 전달
 ```
 
@@ -22,10 +22,10 @@ actions (리턴값으로 번역)          route.ts (APIRouteResponse로 응답)
 
 | 레이어 | 계약 | 정의 위치 |
 |---|---|---|
-| services | 조회/판별형=null, 확인/인가형=HTTPError throw, 생성/변경형=HTTPError throw | `src/services/CLAUDE.md` |
-| actions | 예상 가능한 실패는 throw 아닌 리턴값 | `src/actions/CLAUDE.md` |
-| route.ts | `APIRouteResponse` 통일 응답 | `src/app/api/CLAUDE.md`, `src/api/CLAUDE.md` |
-| client | status code별 분기 | `src/utils/CLAUDE.md` |
+| services | 조회/판별형=null, 확인/인가형=HTTPError throw, 생성/변경형=HTTPError throw | `src/server/services/CLAUDE.md` |
+| actions | 예상 가능한 실패는 throw 아닌 리턴값 | `src/server/actions/CLAUDE.md` |
+| route.ts | `APIRouteResponse` 통일 응답 | `src/app/api/CLAUDE.md`, `src/server/CLAUDE.md` |
+| client | status code별 분기 | `src/shared/utils/CLAUDE.md` |
 
 ## 상태 코드 의미
 
@@ -43,9 +43,9 @@ actions (리턴값으로 번역)          route.ts (APIRouteResponse로 응답)
 
 ## 관련 문서
 
-- 서비스 레이어 에러 처리 계약: `src/services/CLAUDE.md`
-- Server Action 에러 처리 계약: `src/actions/CLAUDE.md`
-- Route Handler 응답 계약: `src/app/api/CLAUDE.md`, `src/api/CLAUDE.md`
-- 클라이언트 에러 분기: `src/utils/CLAUDE.md`
+- 서비스 레이어 에러 처리 계약: `src/server/services/CLAUDE.md`
+- Server Action 에러 처리 계약: `src/server/actions/CLAUDE.md`
+- Route Handler 응답 계약: `src/app/api/CLAUDE.md`, `src/server/CLAUDE.md`
+- 클라이언트 에러 분기: `src/shared/utils/CLAUDE.md`
 - 테스트 작성 컨벤션: `docs/TESTING_GUIDELINE.md`
 - 글로벌 원칙(swallow 금지/catch-all 금지/근본원인 우선): `~/.claude/docs/ERROR_HANDLING.md`

@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { BasicInfoForm, ChangePasswordForm } from "@/components/organisms";
+import { BasicInfoForm, ChangePasswordForm } from "@/client/components/organisms";
 
-import { getCookie } from "@/lib/cookies";
-import { TypographyH1, TypographyMuted } from "@/components/atoms";
-import { decrypt } from "@/lib/jose";
-import { getUser } from "@/services";
+import { getCookie } from "@/server/lib/cookies";
+import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
+import { decrypt } from "@/server/lib/jose";
+import { getUser } from "@/server/services";
 import { redirect } from "next/navigation";
 import React from "react";
 

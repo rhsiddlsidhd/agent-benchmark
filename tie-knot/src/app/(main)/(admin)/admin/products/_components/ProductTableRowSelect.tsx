@@ -1,11 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { isStatus, STATUS_ITEMS } from "@/types";
-import { updateProductStatus } from "@/actions";
+import { isStatus, STATUS_ITEMS } from "@/shared/types";
+import { updateProductStatus } from "@/server/actions";
 import { toast } from "sonner";
-import { StatusSelect } from "@/components/molecules";
-import { Product } from "@/services";
+import { StatusSelect } from "@/client/components/molecules";
+import { Product } from "@/server/services";
 const ProductTableRowSelect = ({ product }: { product: Product }) => {
   const router = useRouter();
   const [status, setStatus] = useState<string>(product.status);

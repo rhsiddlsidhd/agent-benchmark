@@ -1,5 +1,5 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { BanksResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { BanksResponse } from "@/shared/schemas";
 
 export const GET = async (): Promise<APIRouteResponse<BanksResponse>> => {
   try {

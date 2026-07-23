@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { HTTPError } from "@/types";
+import { HTTPError } from "@/shared/types";
 import { CoupleInfoForm } from "./_components";
-import { getCookie } from "@/lib/cookies";
-import { decrypt } from "@/lib/jose";
+import { getCookie } from "@/server/lib/cookies";
+import { decrypt } from "@/server/lib/jose";
 import React from "react";
 
 const page = async () => {

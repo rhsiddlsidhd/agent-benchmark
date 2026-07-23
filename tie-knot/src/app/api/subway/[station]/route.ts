@@ -1,8 +1,8 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { HTTPError } from "@/types";
-import { parseSeoulOpenApiResponse } from "@/utils";
-import { SUBWAY_LINE_COLORS, DEFAULT_SUBWAY_LINE_COLOR } from "@/constants";
-import { SubwayStationLineInfoResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { HTTPError } from "@/shared/types";
+import { parseSeoulOpenApiResponse } from "@/shared/utils";
+import { SUBWAY_LINE_COLORS, DEFAULT_SUBWAY_LINE_COLOR } from "@/shared/constants";
+import { SubwayStationLineInfoResponse } from "@/shared/schemas";
 import { NextRequest } from "next/server";
 
 const SERVICE_NAME = "SearchInfoBySubwayNameService";

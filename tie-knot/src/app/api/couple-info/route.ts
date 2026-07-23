@@ -1,8 +1,8 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { HTTPError } from "@/types";
-import { requireAuth, getCoupleInfoById } from "@/services";
-import { ICoupleInfo } from "@/models";
-import { CoupleInfoResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { HTTPError } from "@/shared/types";
+import { requireAuth, getCoupleInfoById } from "@/server/services";
+import { ICoupleInfo } from "@/server/models";
+import { CoupleInfoResponse } from "@/shared/schemas";
 
 import { NextRequest } from "next/server";
 

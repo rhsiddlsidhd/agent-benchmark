@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { getAllProductsService } from "@/services";
-import { ProductResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { getAllProductsService } from "@/server/services";
+import { ProductResponse } from "@/shared/schemas";
 export const GET = async (
   request: NextRequest,
 ): Promise<APIRouteResponse<ProductResponse[]>> => {

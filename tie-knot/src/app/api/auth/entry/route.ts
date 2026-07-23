@@ -1,8 +1,8 @@
-import { encrypt } from "@/lib/jose";
+import { encrypt } from "@/server/lib/jose";
 import { type NextRequest } from "next/server";
-import { setCookie, deleteCookie } from "@/lib/cookies";
-import { HTTPError } from "@/types";
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
+import { setCookie, deleteCookie } from "@/server/lib/cookies";
+import { HTTPError } from "@/shared/types";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
 // entry 토큰을 발행하고 지정된 경로로 401 리다이렉트
 
 export const POST = async (

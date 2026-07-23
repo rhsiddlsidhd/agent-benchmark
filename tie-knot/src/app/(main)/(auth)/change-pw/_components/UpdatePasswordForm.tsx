@@ -4,11 +4,11 @@ import { useActionState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { updateUserPassword } from "@/actions";
-import { apiRequest } from "@/api";
-import { hasFieldErrors } from "@/utils";
-import { APIResponse } from "@/types";
-import { UpdatePasswordForm as PureUpdatePasswordForm } from "@/components/organisms";
+import { updateUserPassword } from "@/server/actions";
+import { apiRequest } from "@/client/apiRequest";
+import { hasFieldErrors } from "@/shared/utils";
+import { APIResponse } from "@/shared/types";
+import { UpdatePasswordForm as PureUpdatePasswordForm } from "@/client/components/organisms";
 const deleteCookieToUserEmail = async (): Promise<void> => {
   try {
     await apiRequest<void>("/api/auth/cookie", { method: "DELETE" });

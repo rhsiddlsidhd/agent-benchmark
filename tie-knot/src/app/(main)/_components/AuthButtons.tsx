@@ -1,10 +1,10 @@
 "use client";
 
-import { useAuth } from "@/hooks";
+import { useAuth } from "@/client/hooks";
 import { UserAccountNav } from "./UserAccountNav";
-import { LoginEntryButton } from "@/components/organisms";
-import { Skeleton } from "@/components/atoms";
-import { useAuthStore } from "@/store";
+import { LoginEntryButton } from "@/client/components/organisms";
+import { Skeleton } from "@/client/components/atoms";
+import { useAuthStore } from "@/client/store";
 export function AuthButtons() {
   const { isLoading } = useAuth();
   const isAuth = useAuthStore((state) => state.isAuth);

@@ -1,10 +1,10 @@
 import { Eye, Heart, ShoppingCart } from "lucide-react";
-import { Badge, TypographyMuted, TypographySmall } from "@/components/atoms";
-import { Product } from "@/services";
-import { CloudImage } from "@/components/molecules";
+import { Badge, TypographyMuted, TypographySmall } from "@/client/components/atoms";
+import { Product } from "@/server/services";
+import { CloudImage } from "@/client/components/molecules";
 import { ProductTableRowAction } from "./ProductTableRowAction";
 import { ProductTableRowSelect } from "./ProductTableRowSelect";
-import { productCategoryLabels, subCategoryLabels, ProductCategory, SubCategory } from "@/utils";
+import { productCategoryLabels, subCategoryLabels, ProductCategory, SubCategory } from "@/shared/utils";
 
 export interface ProductTableRowProps {
   product: Product;

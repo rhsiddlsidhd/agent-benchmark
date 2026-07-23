@@ -1,14 +1,14 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "@/api";
-import { Button } from "@/components/atoms";
+import { fetcher } from "@/client/fetcher";
+import { Button } from "@/client/components/atoms";
 import { EyebrowSection } from "./EyebrowSection";
 import { PenLine, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { IGuestbook } from "@/models";
-import { useGuestbookModalStore } from "@/store";
+import { IGuestbook } from "@/server/models";
+import { useGuestbookModalStore } from "@/client/store";
 import { mapDataToGuestbookProps } from "../_utils/guestbookSection.mapper";
 
 export function GuestbookSection({ id }: { id: string }) {

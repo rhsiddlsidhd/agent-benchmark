@@ -4,13 +4,13 @@ import { useActionState, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { createOrder, type CreateOrderResult } from "@/actions";
-import { APIResponse } from "@/types";
-import { useOrderStore } from "@/store";
-import { usePortOnePayment } from "@/hooks";
-import { useCheckoutData } from "@/hooks";
-import { useCheckoutForm } from "@/hooks";
-import { CheckoutForm as PureCheckoutForm } from "@/components/organisms";
+import { createOrder, type CreateOrderResult } from "@/server/actions";
+import { APIResponse } from "@/shared/types";
+import { useOrderStore } from "@/client/store";
+import { usePortOnePayment } from "@/client/hooks";
+import { useCheckoutData } from "@/client/hooks";
+import { useCheckoutForm } from "@/client/hooks";
+import { CheckoutForm as PureCheckoutForm } from "@/client/components/organisms";
 export function CheckoutForm({ query }: { query: string }) {
   const router = useRouter();
   const clearOrder = useOrderStore((state) => state.clearOrder);

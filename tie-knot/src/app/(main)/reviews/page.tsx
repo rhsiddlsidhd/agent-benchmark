@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TypographyMuted } from "@/components/atoms";
+import { TypographyMuted } from "@/client/components/atoms";
 import { Hammer } from "lucide-react";
 
 export default function ReviewsPage() {

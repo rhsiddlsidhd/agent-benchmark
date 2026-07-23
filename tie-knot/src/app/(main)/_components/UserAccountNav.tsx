@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import React from "react";
-import { useAuthStore } from "@/store";
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/atoms";
+import { useAuthStore } from "@/client/store";
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/client/components/atoms";
 
 import { UserIcon, LogOut } from "lucide-react";
-import { USER_NAV_ITEMS } from "@/constants";
+import { USER_NAV_ITEMS } from "@/shared/constants";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 

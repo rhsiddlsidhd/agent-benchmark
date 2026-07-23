@@ -1,8 +1,8 @@
 [
   "src/test/**",
-  "src/types/**",
-  "src/constants/**",
-  "src/components/atoms/**",
+  "src/shared/types/**",
+  "src/shared/constants/**",
+  "src/client/components/atoms/**",
   "src/app/**/page.tsx",
   "src/app/**/layout.tsx",
   "src/app/**/error.tsx",

@@ -1,6 +1,6 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { getAllSubwayStationNames } from "@/services";
-import { SubwayStationsResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { getAllSubwayStationNames } from "@/server/services";
+import { SubwayStationsResponse } from "@/shared/schemas";
 
 export const GET = async (): Promise<
   APIRouteResponse<SubwayStationsResponse>

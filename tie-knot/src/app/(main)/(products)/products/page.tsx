@@ -1,7 +1,7 @@
-import { TypographyH1, TypographyMuted } from "@/components/atoms";
+import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
 import { ProductCatalog } from "./_components";
-import { getAllProductsService } from "@/services";
-import { productCategoryLabels, isProductCategory } from "@/utils";
+import { getAllProductsService } from "@/server/services";
+import { productCategoryLabels, isProductCategory } from "@/shared/utils";
 import { notFound } from "next/navigation";
 
 export default async function ProductsPage({
