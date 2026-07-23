@@ -12,13 +12,23 @@ declare global {
   var mongooseCache: MongooseCache;
 }
 
-const uri =
-  process.env.MONGO_TEST_URI ??
-  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@new-invitation-cluster.8umdvcl.mongodb.net/new_invitation?retryWrites=true&w=majority&appName=new-invitation-cluster`;
+const testUri = process.env.MONGO_TEST_URI;
 
-if (!uri) {
-  throw new Error(`MongoDB URI를 확인해주세요.`);
+if (process.env.VITEST && !testUri) {
+  throw new Error(
+    "테스트 환경에서 MONGO_TEST_URI 없이 실행됨 — 프로덕션 DB 오염 위험, globalSetup 확인하세요.",
+  );
 }
+
+if (!testUri && (!process.env.DB_USER || !process.env.DB_PASSWORD)) {
+  throw new Error(
+    "MongoDB 연결 정보(DB_USER/DB_PASSWORD 또는 MONGO_TEST_URI)가 없습니다.",
+  );
+}
+
+const uri =
+  testUri ??
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@new-invitation-cluster.8umdvcl.mongodb.net/new_invitation?retryWrites=true&w=majority&appName=new-invitation-cluster`;
 
 let cached = global.mongooseCache;
 

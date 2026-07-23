@@ -12,6 +12,15 @@ if ! npm run lint; then
   exit 2
 fi
 
+if ! npm run test:coverage; then
+  echo "" >&2
+  echo "$SEPARATOR" >&2
+  echo "❌ TEST/COVERAGE 실패 — 커밋 차단됨" >&2
+  echo "   테스트 실패 또는 파일당 line coverage 80% 미달입니다." >&2
+  echo "$SEPARATOR" >&2
+  exit 2
+fi
+
 if ! npm run build; then
   echo "" >&2
   echo "$SEPARATOR" >&2

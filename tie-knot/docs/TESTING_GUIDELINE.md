@@ -70,7 +70,7 @@ src/
 ## Gotchas
 
 - `mongodb-memory-server`는 아직 설치되지 않았다 — DB가 걸린 `services/`·`actions/` 테스트에 착수할 때 설치하고, 이 섹션의 DB 테스트 컨벤션이 실제로 동작하는지 검증해야 한다.
-- pre-commit hook(`.claude/hooks/pre-commit-check.sh`)이나 CI에 테스트 실행을 엮을지는 이 문서 범위 밖이다 — 결정되지 않았다, 별도로 다룬다.
+- `.claude/hooks/pre-commit-check.sh`가 lint → `test:coverage` → build 순서로 커밋을 막는다. `test:coverage`는 `vitest.config.ts`의 `coverage.thresholds`(`perFile: true, lines: 80`)로 **테스트가 존재하는 파일 각각**의 line coverage 80% 미만이면 실패한다 — git diff로 이번 커밋에서 건드린 파일만 보는 게 아니라, 테스트가 붙어있는 파일 전체가 대상이다(단 `coverage.all`이 `false`라 테스트가 아예 없는 레거시 파일은 리포트에 안 잡혀 전면 락은 안 걸린다). 커버리지 %는 "테스트가 있다"는 사실만 강제하는 Write/Edit 훅과 별개로 "그 테스트가 실제로 로직을 타는가"를 걸러내는 2차 게이트다 — 단, branch coverage는 아직 안 본다(line만), assertion이 의미있는지는 여전히 사람 리뷰 몫이다.
 - 컴포넌트/UI 테스트 셋업(`environment: jsdom`, `@testing-library/react`, `@testing-library/jest-dom`)은 이미 설치·설정됐다(Write/Edit 시점 TDD 강제 훅이 `molecules/`·`organisms/`도 대상으로 삼아서 선행 설치됨) — 다만 이 문서엔 아직 컴포넌트 테스트 작성 컨벤션(assertion 패턴, mock 범위)이 없다, 실제로 작성하며 후속 개정 대상.
 - `services/` 함수의 조회형/확인형 에러 처리 이분법은 프로젝트 자체 규칙이 아니라 Next.js 공식 문서 두 곳(`node_modules/next/dist/docs/01-app/02-guides/authentication.md`의 `dal.ts` 예제, `data-security.md`의 `deletePost` 예제)에 각각 근거가 있다 — `HTTPError` 클래스와 401/404 같은 status code 매핑만 공식 문서에 없는 프로젝트 고유 확장이다(`src/services/CLAUDE.md` 참고). 이 구분을 무시하고 모든 services 함수를 한 가지 패턴으로 테스트하지 않는다.
 

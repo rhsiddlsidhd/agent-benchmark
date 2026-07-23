@@ -12,6 +12,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       exclude: testScopeExclude,
+      thresholds: {
+        perFile: true,
+        lines: 80,
+      },
     },
   },
 });
