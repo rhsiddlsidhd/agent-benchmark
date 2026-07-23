@@ -1,0 +1,12 @@
+[
+  "src/test/**",
+  "src/types/**",
+  "src/constants/**",
+  "src/components/atoms/**",
+  "src/app/**/page.tsx",
+  "src/app/**/layout.tsx",
+  "src/app/**/error.tsx",
+  "src/app/**/not-found.tsx",
+  "**/index.ts",
+  "**/index.tsx"
+]
