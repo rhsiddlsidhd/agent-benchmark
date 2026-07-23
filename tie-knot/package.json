@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "report:api": "node scripts/api-report/scan.js"
+    "report:api": "node scripts/api-report/scan.js",
+    "verify:api": "node scripts/api-verify/run.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

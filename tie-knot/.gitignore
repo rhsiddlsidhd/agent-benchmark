@@ -55,3 +55,4 @@ reports*
 
 # api-report script output (로컬 확인용, 커밋 대상 아님)
 /scripts/api-report/output/
+/scripts/api-verify/output/
