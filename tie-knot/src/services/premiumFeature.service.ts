@@ -1,9 +1,8 @@
 import { FeatureModel } from "@/models";
-import { premiumFeatureSchema } from "@/schemas";
+import { PremiumFeatureDto } from "@/schemas";
 import { dbConnect } from "@/lib/mongodb";
 
 import mongoose from "mongoose";
-import z from "zod";
 interface FeatureLeanDoc {
   _id: mongoose.Types.ObjectId;
   code: string;
@@ -37,7 +36,7 @@ const mapToPremiumFeature = (doc: FeatureLeanDoc): PremiumFeature => ({
 });
 
 export const createPremiumFeatureService = async (
-  data: z.infer<typeof premiumFeatureSchema>,
+  data: PremiumFeatureDto,
 ) => {
   await dbConnect();
   const newFeatureModel = await new FeatureModel(data).save();
@@ -64,7 +63,7 @@ export const getPremiumFeatureService = async (ids: string[] | []) => {
 
 export const updatePremiumFeatureService = async (
   id: string,
-  data: z.infer<typeof premiumFeatureSchema>,
+  data: PremiumFeatureDto,
 ) => {
   await dbConnect();
 

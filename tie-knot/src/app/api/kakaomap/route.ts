@@ -1,8 +1,11 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import { HTTPError } from "@/types";
+import { KakaomapResponse } from "@/schemas";
 import { NextRequest } from "next/server";
 
-export const GET = async (req: NextRequest): Promise<APIRouteResponse<unknown>> => {
+export const GET = async (
+  req: NextRequest,
+): Promise<APIRouteResponse<KakaomapResponse>> => {
   try {
     const { searchParams } = new URL(req.url);
     const address = searchParams.get("address");

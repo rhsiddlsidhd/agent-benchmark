@@ -5,7 +5,7 @@ import { comparePasswords } from "@/lib/bcrypt";
 import { validateAndFlatten } from "@/utils";
 import { GuestbookSchema } from "@/schemas";
 import { getPrivateGuestbookService, deleteGuestbookService } from "@/services";
-import z from "zod";
+import * as z from "zod";
 import { revalidatePath } from "next/cache";
 
 export const deleteGuestbook = async (

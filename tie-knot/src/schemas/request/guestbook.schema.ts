@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 
 export const GuestbookSchema = z.object({
   coupleInfoId: z.string().min(1, "청첩장 ID가 필요합니다"),

@@ -1,8 +1,9 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import subwayStations from "@/data/subway.json";
+import { SubwayStationsResponse } from "@/schemas";
 
 export const GET = async (): Promise<
-  APIRouteResponse<typeof subwayStations>
+  APIRouteResponse<SubwayStationsResponse>
 > => {
   try {
     return apiOk(subwayStations);

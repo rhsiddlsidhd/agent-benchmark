@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 import { PWSchema } from "./pw.schema";
 
 export const LoginSchema = z.object({
