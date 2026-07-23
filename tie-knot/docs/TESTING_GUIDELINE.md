@@ -12,6 +12,8 @@
 - 테스트 러너: `vitest`
 - DB: `mongodb-memory-server` — 인메모리 mongod를 띄워 mongoose 쿼리를 실제로 실행한다. mongoose model을 `vi.mock`으로 대체하지 않는다. `dbConnect()`(`src/lib/mongodb/connect.ts`)는 `process.env.MONGO_TEST_URI`가 설정돼 있으면 그 URI로, 없으면 기존 Atlas SRV URI로 연결한다 — 운영 코드 경로는 그대로 두고 테스트에서만 memory server로 리다이렉트하는 오버라이드다.
 - path alias 해석: `vite-tsconfig-paths`
+- 컴포넌트 상호작용 시뮬레이션: `@testing-library/user-event`
+- 커버리지 대상 파일 스캔: `glob`(`vitest.config.ts`에서 `.test.ts(x)` 목록 → `coverage.include` 생성)
 
 ## Structure
 
@@ -63,6 +65,21 @@ src/
   - 필수 존재/인가 확인형(없으면 요청 자체가 잘못됨 — `getUserById`/`getUserEmail`/`requireAuth` 등) → `await expect(fn(...)).rejects.toThrow(HTTPError)`에 더해 status code까지 구체적으로 검증한다(`.rejects.toMatchObject({ code: 401 })`). 이유: `instanceof`/`toThrow(HTTPError)`만 보면 401이 나와야 할 자리에 403이 나와도 테스트가 그린으로 남는다 — 인증/권한이 이 프로젝트 리스크가 큰 축이라 status code 자체가 계약이다.
 - `actions/` 함수는 throw를 기대하지 않는다 — 리턴값을 검증한다: `const result = await action(...); expect(result).toEqual({ success: false, ... })`. 이유: Server Action은 예상 가능한 실패를 리턴값으로 모델링하는 게 공식 계약(`src/actions/CLAUDE.md` 근거)이라, 여기서 throw를 기대하는 테스트를 쓰면 실제 계약과 어긋난 케이스를 검증하게 된다. 단, 서비스 레이어가 이미 던진 `HTTPError`를 액션이 받아 리턴값으로 번역하는 케이스(`src/actions/CLAUDE.md` Gotchas)는 액션 자체는 여전히 throw하지 않으므로 이 규칙 그대로 적용한다 — 리턴값 안의 번역된 message/code를 검증한다.
 
+### 컴포넌트 테스트
+
+- 스코프는 `components/molecules/`·`components/organisms/`로 한정한다 — `src/app/**/_components/`(라우트 전용 컨테이너)는 `useActionState`/Zustand 스토어/`router` 등 도메인 의존이 있어 이 섹션의 "순수 컴포넌트" 전제가 안 맞는다, 별도 컨벤션 대상이다(아직 미작성).
+- `molecules`(단일 책임)와 `organisms`(여러 책임 조합) 경계는 `src/components/CLAUDE.md` 핵심 원칙 3을 그대로 쓴다 — 계층을 잘못 판단하면 폴더 위치뿐 아니라 아래 테스트 범위도 잘못 적용된다.
+- `molecules`는 렌더링(props→출력)과 **단일 상호작용 지점**(이벤트 1번 → handler prop 1번 호출)까지 검증한다. `organisms`는 여기에 더해 **여러 상호작용이 로컬 UI 상태를 거쳐 조합되는 흐름**(스텝 이동, 조건부 활성화 등)까지 검증한다 — 두 계층 다 도메인 로직 검증은 대상이 아니다(컨테이너 소관, `src/components/CLAUDE.md` 핵심 원칙 1).
+- 하위 컴포넌트를 `vi.mock`하지 않는다 — 항상 full render한다. 이유: RTL 공식 철학("The more your tests resemble the way your software is used, the more confidence they can give you")과 어긋나고, shadcn/Radix 하위 요소는 접근성 속성(`role`/`aria-*`)에 의존해 쿼리하는 경우가 많아 mock하면 그 구조가 사라져 오히려 실제와 멀어진다.
+- 쿼리는 RTL 공식 우선순위(`getByRole` > `getByLabelText` > `getByPlaceholderText` > `getByText` > `getByDisplayValue`/`getByAltText`/`getByTitle` > `getByTestId`)를 따른다 — `data-testid`는 다른 쿼리로 못 찾을 때만 최후 수단으로 쓴다.
+- 상호작용 시뮬레이션은 `fireEvent` 대신 `@testing-library/user-event`를 쓴다. 이유: `fireEvent`는 단일 DOM 이벤트만 발생시키지만 `user-event`는 실제 클릭 시 브라우저가 발생시키는 이벤트 시퀀스(`pointerdown`→`mousedown`→`focus`→`pointerup`→`mouseup`→`click`) 전체를 재현해, `onFocus` 등에 의존하는 동작을 `fireEvent`로는 못 잡는다.
+
+### 컴포넌트 테스트 인프라 셋업
+
+- `.env`는 vitest가 Next.js처럼 자동으로 읽지 않는다 — `vitest.config.ts`에서 `@next/env`(Next 내장, 별도 설치 불필요)의 `loadEnvConfig(process.cwd())`를 `defineConfig` 호출 이전에 실행해 로드한다. 이거 없으면 배럴 import를 타고 들어온 무관한 모듈(예: 인증 코드)이 환경변수 누락으로 테스트를 깨뜨릴 수 있다.
+- RTL의 자동 `afterEach(cleanup)`은 이 프로젝트의 `globals: false` 설정에서는 안 걸린다 — `src/test/testing-library-setup.ts`에 `afterEach(cleanup)`을 명시적으로 등록해뒀다. 이거 없으면 이전 테스트가 렌더한 DOM이 안 지워진 채 다음 테스트로 넘어가 쿼리가 여러 개 매칭되는 식으로 깨진다.
+- jsdom은 Pointer Events API(`hasPointerCapture`/`setPointerCapture`/`releasePointerCapture`)와 `scrollIntoView`를 구현하지 않는다 — Radix UI(Select/Dialog 등) 컴포넌트가 이 메서드들을 호출해서 폴리필 없으면 상호작용 테스트가 런타임에 터진다. `src/test/testing-library-setup.ts`에 폴리필을 이미 등록해뒀다.
+
 ### 스타일
 
 - `describe`/`it` 타이틀은 한국어로 쓴다. 이유: 이 프로젝트 컨벤션 문서·커밋 전부 한국어 우선이라 통일한다.
@@ -72,8 +89,9 @@ src/
 ## Gotchas
 
 - `mongodb-memory-server`는 설치·연동 완료됐고 `connect.test.ts`로 실제 연결까지 검증했다 — 다만 이건 인프라 배선(`dbConnect()` 자체)만 검증한 것이고, `beforeEach`의 `clearCollections`(`src/test/db.ts`)로 테스트 간 격리가 실제로 깨지지 않는지, 팩토리(`src/test/factories/`) 패턴이 실동작하는지는 `services/`·`actions/` 테스트를 실제로 작성하며 검증해야 한다(아직 안 함).
-- pre-commit hook(`.claude/hooks/pre-commit-check.sh`)이나 CI에 테스트 실행을 엮을지는 이 문서 범위 밖이다 — 결정되지 않았다, 별도로 다룬다.
-- 컴포넌트/UI 테스트 셋업(`environment: jsdom`, `@testing-library/react`, `@testing-library/jest-dom`)은 이미 설치·설정됐다(Write/Edit 시점 TDD 강제 훅이 `molecules/`·`organisms/`도 대상으로 삼아서 선행 설치됨) — 다만 이 문서엔 아직 컴포넌트 테스트 작성 컨벤션(assertion 패턴, mock 범위)이 없다, 실제로 작성하며 후속 개정 대상.
+- `.claude/hooks/pre-commit-check.sh`가 lint → `test:coverage` → build 순서로 커밋을 막는다. `test:coverage`는 `vitest.config.ts`의 `coverage.thresholds`(`perFile: true, lines: 80`)로 **테스트가 존재하는 파일 각각**의 line coverage 80% 미만이면 실패한다. 커버리지 %는 "테스트가 있다"는 사실만 강제하는 Write/Edit 훅과 별개로 "그 테스트가 실제로 로직을 타는가"를 걸러내는 2차 게이트다 — 단, branch coverage는 아직 안 본다(line만), assertion이 의미있는지는 여전히 사람 리뷰 몫이다.
+- `coverage.include`는 `.test.ts(x)`가 실제로 존재하는 소스 파일 목록으로 `vitest.config.ts`가 매번 자동 스캔해서 채운다(`glob` 패키지, `src/**/*.test.{ts,tsx}` → `.test` 뗀 경로). 이유: `src/CLAUDE.md`의 배럴 전용 import 컨벤션 때문에 컴포넌트 하나만 import해도 배럴 연쇄(예: `@/components/atoms` → `sidebar.tsx` → `@/hooks` → `useAuth.ts`)로 무관한 파일이 대량으로 로드된다 — vitest 커버리지는 "직접 테스트한 파일"이 아니라 "테스트 실행 중 로드된 파일"을 리포트에 잡으므로, `include`로 명시하지 않으면 테스트 하나 추가할 때마다 무관한 레거시 파일들이 커버리지 미달로 같이 실패한다(`coverage.all: false`로는 못 막는다 — 그 파일들은 실제로 로드되므로 `all` 설정과 무관하게 리포트에 잡힌다).
+- 컴포넌트 테스트 컨벤션(위 "컴포넌트 테스트"/"컴포넌트 테스트 인프라 셋업" 섹션)은 `src/components/molecules/BaseSelect.tsx`(Radix Select 조합, 이 프로젝트 molecule 대표 사례)로 렌더링+상호작용 테스트를 실제로 작성해보며 검증했다 — `.env` 미로딩/cleanup 누락/jsdom Pointer Events 미구현 3가지를 실제로 겪고 고쳤다. 다만 `organisms`(여러 상호작용의 로컬 상태 오케스트레이션) 쪽은 아직 실제 작성된 테스트가 없어 그 부분 컨벤션은 미검증이다.
 - `services/` 함수의 조회형/확인형 에러 처리 이분법은 프로젝트 자체 규칙이 아니라 Next.js 공식 문서 두 곳(`node_modules/next/dist/docs/01-app/02-guides/authentication.md`의 `dal.ts` 예제, `data-security.md`의 `deletePost` 예제)에 각각 근거가 있다 — `HTTPError` 클래스와 401/404 같은 status code 매핑만 공식 문서에 없는 프로젝트 고유 확장이다(`src/services/CLAUDE.md` 참고). 이 구분을 무시하고 모든 services 함수를 한 가지 패턴으로 테스트하지 않는다.
 
 ## 관련 문서
@@ -83,3 +101,5 @@ src/
 - Route Handler 응답 계약: `src/app/api/CLAUDE.md`, `src/api/CLAUDE.md`
 - 배럴/import 원칙: `src/CLAUDE.md`
 - `.lean()`/`.toJSON()` 트레이드오프: `src/services/doc.md`
+- 컴포넌트 계층(atoms/molecules/organisms/templates) 분류 기준, 순수성 원칙: `src/components/CLAUDE.md`
+- molecules 세부 정의/예시: `src/components/molecules/CLAUDE.md`
