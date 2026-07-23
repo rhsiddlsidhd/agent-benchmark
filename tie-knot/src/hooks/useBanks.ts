@@ -2,10 +2,10 @@
 
 import useSWR from "swr";
 import { fetcher } from "@/api";
-import { Banks } from "@/app/api/banks/route";
+import { BanksResponse } from "@/schemas";
 
 export function useBanks() {
-  const { data, error, isLoading } = useSWR<Banks>("/api/banks", fetcher);
+  const { data, error, isLoading } = useSWR<BanksResponse>("/api/banks", fetcher);
 
   return {
     banks: data,

@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, TypographyH3 } from "@/compon
 import { BankField, TextField } from "@/components/molecules";
 
 import { ICoupleInfo } from "@/models";
-import type { Banks } from "@/app/api/banks/route";
+import type { BanksResponse } from "@/schemas";
 
 type CoupleInfoSectionProps = {
   data?: Pick<ICoupleInfo, "groom" | "bride">;
-  banks?: Banks;
+  banks?: BanksResponse;
 };
 
 export function CoupleInfoSection({ data, banks }: CoupleInfoSectionProps) {

@@ -1,9 +1,9 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/api";
 import { getAuth } from "@/services";
-import { AuthSession } from "@/types";
+import { AuthSessionResponse } from "@/schemas";
 
 export const GET = async (): Promise<
-  APIRouteResponse<AuthSession | null>
+  APIRouteResponse<AuthSessionResponse>
 > => {
   try {
     const session = await getAuth();

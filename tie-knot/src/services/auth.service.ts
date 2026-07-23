@@ -3,7 +3,8 @@ import { dbConnect } from "@/lib/mongodb";
 import { getCookie, setCookie, deleteCookie } from "@/lib/cookies";
 import { decrypt, encrypt } from "@/lib/jose";
 import mongoose from "mongoose";
-import { AuthSession, HTTPError } from "@/types";
+import { HTTPError } from "@/types";
+import { AuthSession } from "@/schemas";
 
 export type LeanUser = {
   email: string;

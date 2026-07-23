@@ -7,7 +7,7 @@ import { BankField, TextField } from "@/components/molecules";
 import { ChevronDown } from "lucide-react";
 
 import { ICoupleInfo } from "@/models";
-import type { Banks } from "@/app/api/banks/route";
+import type { BanksResponse } from "@/schemas";
 
 import { useState } from "react";
 
@@ -20,7 +20,7 @@ const PARENTS: { id: ParentRole; title: string }[] = [
 
 type ParentsInfoSectionProps = {
   data?: Pick<ICoupleInfo, "groom" | "bride">;
-  banks?: Banks;
+  banks?: BanksResponse;
 };
 
 export function ParentsInfoSection({ data, banks }: ParentsInfoSectionProps) {

@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 
 export const premiumFeatureSchema = z.object({
   code: z.string(),
@@ -6,3 +6,5 @@ export const premiumFeatureSchema = z.object({
   description: z.string().min(20, "최소 20자 이상 입력해주세요."),
   additionalPrice: z.number(),
 });
+
+export type PremiumFeatureDto = z.infer<typeof premiumFeatureSchema>;

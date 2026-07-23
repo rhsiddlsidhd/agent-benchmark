@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 
 type ValidationResult<T> =
   | { success: true; data: T; error?: never }
