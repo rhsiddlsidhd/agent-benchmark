@@ -38,3 +38,4 @@ src/components/molecules/
 - 상위 4단계 정의 및 순수성 원칙: `src/components/CLAUDE.md`
 - 더 복잡한 다음 단계: `src/components/organisms/CLAUDE.md`
 - 라우트 전용 승격 대기 공간: `src/app/CLAUDE.md`
+- 테스트 작성 컨벤션(렌더링+단일 상호작용): `docs/TESTING_GUIDELINE.md`
