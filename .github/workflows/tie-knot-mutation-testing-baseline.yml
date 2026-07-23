@@ -1,0 +1,43 @@
+name: Mutation Testing Baseline (tie-knot)
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: mutation-baseline-dev
+  cancel-in-progress: false
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: tie-knot
+        run: npm ci
+
+      - name: Restore previous baseline (incremental report)
+        uses: actions/cache/restore@v4
+        with:
+          path: tie-knot/reports/stryker-incremental.json
+          key: mutation-incremental-dev-${{ github.sha }}
+          restore-keys: |
+            mutation-incremental-dev-
+
+      - name: Run mutation testing
+        working-directory: tie-knot
+        run: npx stryker run --incremental
+
+      - name: Save baseline (incremental report)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: tie-knot/reports/stryker-incremental.json
+          key: mutation-incremental-dev-${{ github.sha }}

@@ -1,0 +1,106 @@
+name: Mutation Testing (tie-knot)
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+concurrency:
+  group: mutation-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: tie-knot
+        run: npm ci
+
+      - name: Restore dev baseline (incremental report)
+        uses: actions/cache/restore@v4
+        with:
+          path: tie-knot/reports/stryker-incremental.json
+          key: mutation-incremental-dev-${{ github.sha }}
+          restore-keys: |
+            mutation-incremental-dev-
+
+      - name: Run mutation testing
+        working-directory: tie-knot
+        run: npx stryker run --incremental
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: tie-knot/reports/mutation/mutation.html
+
+      - name: Comment mutation score on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+
+            const reportPath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              "tie-knot/reports/mutation/mutation.json",
+            );
+
+            if (!fs.existsSync(reportPath)) {
+              console.log("mutation.json 없음 — mutate 대상 파일 없거나 실행 실패, comment 스킵");
+              return;
+            }
+
+            const report = JSON.parse(fs.readFileSync(reportPath, "utf-8"));
+
+            const metricsModulePath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              "tie-knot/node_modules/mutation-testing-metrics/dist/src/index.js",
+            );
+            const { calculateMutationTestMetrics } = await import(
+              "file://" + metricsModulePath
+            );
+
+            const { systemUnderTestMetrics } = calculateMutationTestMetrics(report);
+            const score = systemUnderTestMetrics.metrics.mutationScore;
+            const scoreText = Number.isNaN(score) ? "N/A" : score.toFixed(1);
+
+            const marker = "<!-- stryker-mutation-report -->";
+            const body = `${marker}\n### 🧬 Mutation Test Score: **${scoreText}%**`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find((c) => c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
