@@ -33,4 +33,16 @@ describe("calculatePrice", () => {
       calculatePrice(1000, { discountType: "amount", value: 5000 }),
     ).toBe(0);
   });
+
+  it("discount.value가 음수면 할인 로직을 타지 않고 원가를 그대로 반환한다", () => {
+    expect(calculatePrice(10000, { discountType: "rate", value: -5 })).toBe(
+      10000,
+    );
+  });
+
+  it("알 수 없는 discountType이면 원가를 그대로 반환한다", () => {
+    expect(
+      calculatePrice(10000, { discountType: "unknown", value: 500 }),
+    ).toBe(10000);
+  });
 });

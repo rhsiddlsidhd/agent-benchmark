@@ -1,4 +1,5 @@
 export const formatPriceWithComma = (value: number): string => {
+  // Stryker disable next-line ConditionalExpression: (0).toLocaleString()도 "0"이라 이 분기는 결과에 영향 없는 equivalent mutant
   if (value === 0) return "0";
 
   return value.toLocaleString();
@@ -8,6 +9,7 @@ export const calculatePrice = (
   price: number,
   discount: { discountType: string; value: number },
 ) => {
+  // Stryker disable next-line EqualityOperator: value===0일 때 rate/amount 어느 분기를 타도 결과가 price로 동일해 <=/< 차이가 관측 안 되는 equivalent mutant
   if (!discount || discount.value <= 0) return price;
 
   if (discount.discountType === "rate") {
