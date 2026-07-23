@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "report:api": "node scripts/api-report/scan.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
