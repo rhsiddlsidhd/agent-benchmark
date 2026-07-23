@@ -85,13 +85,12 @@ src/
 
 ## 상태
 
-- [ ] 마이그레이션 미착수. 이 문서는 목표 상태만 확정한 것이고, 실제 파일 이동/import 경로 변경은 별도 작업·별도 브랜치에서 진행한다.
-- 이동 전까지는 각 레이어의 기존 `CLAUDE.md`(`src/services/CLAUDE.md` 등)가 실제 코드 위치 기준으로 계속 유효하다 — 이 문서와 경로가 다르다고 기존 문서를 무시하지 않는다.
-- 마이그레이션이 실행되면 이동된 각 폴더의 `CLAUDE.md`도 새 경로 기준으로 함께 갱신한다(경로 예시·Structure 트리 갱신 포함).
+- [x] 마이그레이션 완료(브랜치 `refactor/server-client-shared-split`). 매핑표대로 파일 이동 + import 경로 전체 치환 + 이동된 각 폴더의 `CLAUDE.md` 갱신 완료. `src/api/`, `src/lib/`는 더 이상 존재하지 않는다(`src/api/`는 `src/server/response.ts` + `src/client/fetcher.ts`/`apiRequest.ts`로, `src/lib/`는 `src/server/lib/` + `src/client/lib/`로 분리) — 이 문서의 목표 트리/매핑표 안 "현재 src/api/..." 주석은 마이그레이션 이전 경로를 가리키는 히스토리 기록으로 그대로 둔다.
 
 ## 관련 문서
 
 - 배럴/import·상태관리 계층 원칙: `src/CLAUDE.md`
-- 서비스 레이어 계약: `src/services/CLAUDE.md`
-- Route Handler 응답 계약: `src/app/api/CLAUDE.md`, `src/api/CLAUDE.md`
+- 서비스 레이어 계약: `src/server/services/CLAUDE.md`
+- Route Handler 응답 계약: `src/app/api/CLAUDE.md`, `src/server/CLAUDE.md`
+- 클라이언트 fetch 계약: `src/client/CLAUDE.md`
 - 레이어 간 에러 흐름: `docs/ERROR_HANDLING.md`

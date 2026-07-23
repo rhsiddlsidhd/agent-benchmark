@@ -1,6 +1,6 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { getAuth } from "@/services";
-import { AuthSessionResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { getAuth } from "@/server/services";
+import { AuthSessionResponse } from "@/shared/schemas";
 
 export const GET = async (): Promise<
   APIRouteResponse<AuthSessionResponse>

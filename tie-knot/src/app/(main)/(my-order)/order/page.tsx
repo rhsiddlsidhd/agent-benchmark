@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, TypographyH3, TypographyMuted } from "@/components/atoms";
+import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, TypographyH3, TypographyMuted } from "@/client/components/atoms";
 
 
-import { CloudImage } from "@/components/molecules";
-import { getCookie } from "@/lib/cookies";
-import { decrypt } from "@/lib/jose";
-import { getOrdersByUserId } from "@/services";
+import { CloudImage } from "@/client/components/molecules";
+import { getCookie } from "@/server/lib/cookies";
+import { decrypt } from "@/server/lib/jose";
+import { getOrdersByUserId } from "@/server/services";
 import {
   Edit,
   RefreshCw,
@@ -19,7 +19,7 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { format } from "date-fns";
 import Link from "next/link";
-import { IOrder, PayMethod } from "@/models";
+import { IOrder, PayMethod } from "@/server/models";
 
 import { PaymentButton } from "./_components";
 

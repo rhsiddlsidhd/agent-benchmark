@@ -1,7 +1,7 @@
 "use client";
 
-import { ClipboardButton, KakaoMap } from "@/components/molecules";
-import { useCopy, useNavigationGeo, useSubwayLineInfo } from "@/hooks";
+import { ClipboardButton, KakaoMap } from "@/client/components/molecules";
+import { useCopy, useNavigationGeo, useSubwayLineInfo } from "@/client/hooks";
 import { EyebrowSection } from "./EyebrowSection";
 
 import { Navigation } from "./Navigation";

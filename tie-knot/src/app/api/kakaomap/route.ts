@@ -1,6 +1,6 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { HTTPError } from "@/types";
-import { KakaomapResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { HTTPError } from "@/shared/types";
+import { KakaomapResponse } from "@/shared/schemas";
 import { NextRequest } from "next/server";
 
 export const GET = async (

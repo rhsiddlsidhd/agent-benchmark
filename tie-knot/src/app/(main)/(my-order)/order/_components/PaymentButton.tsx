@@ -2,11 +2,11 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/atoms";
+import { Button } from "@/client/components/atoms";
 import { CreditCard } from "lucide-react";
-import { useOrderStore } from "@/store";
-import { IOrder } from "@/models";
-import { CheckoutItem } from "@/types";
+import { useOrderStore } from "@/client/store";
+import { IOrder } from "@/server/models";
+import { CheckoutItem } from "@/shared/types";
 
 const PaymentButton = ({ order }: { order: IOrder }) => {
   const router = useRouter();

@@ -1,4 +1,4 @@
-import { ICoupleInfo } from "@/models";
+import { ICoupleInfo } from "@/server/models";
 // 최종적으로 InvitationMessage 컴포넌트가 받을 props 타입
 interface Contact {
   relation: string;

@@ -1,9 +1,9 @@
 "use client";
 
-import { useProducts, usePremiumFeature } from "@/hooks";
-import { ProductCatalog as ProductCatalogView } from "@/components/organisms";
-import { Product } from "@/services";
-import { ProductCategory } from "@/utils";
+import { useProducts, usePremiumFeature } from "@/client/hooks";
+import { ProductCatalog as ProductCatalogView } from "@/client/components/organisms";
+import { Product } from "@/server/services";
+import { ProductCategory } from "@/shared/utils";
 
 export function ProductCatalog({
   products,

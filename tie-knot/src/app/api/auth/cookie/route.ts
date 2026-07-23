@@ -1,5 +1,5 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { deleteCookie } from "@/lib/cookies";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { deleteCookie } from "@/server/lib/cookies";
 
 export const DELETE = async (): Promise<
   APIRouteResponse<{ message: string }>

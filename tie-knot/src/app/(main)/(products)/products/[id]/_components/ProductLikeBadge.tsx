@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/atoms";
-import { cn } from "@/lib/cn";
-import { apiRequest } from "@/api";
-import { handleClientError } from "@/utils";
-import { useAuthStore } from "@/store";
+import { Badge } from "@/client/components/atoms";
+import { cn } from "@/client/lib/cn";
+import { apiRequest } from "@/client/apiRequest";
+import { handleClientError } from "@/shared/utils";
+import { useAuthStore } from "@/client/store";
 interface ProductLikeBadgeProps {
   productId: string;
   productLikes: string[];

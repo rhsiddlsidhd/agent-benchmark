@@ -1,9 +1,9 @@
 export const revalidate = 600;
 
-import { Badge, Card, CardContent, TypographyH1, TypographyH3, TypographyLarge, TypographyMuted } from "@/components/atoms";
+import { Badge, Card, CardContent, TypographyH1, TypographyH3, TypographyLarge, TypographyMuted } from "@/client/components/atoms";
 
 import { PremiumFeatureCardAction } from "./_components";
-import { getAllPremiumFeatureService } from "@/services";
+import { getAllPremiumFeatureService } from "@/server/services";
 export default async function PremiumFeaturesPage() {
   const features = await getAllPremiumFeatureService();
   return (

@@ -1,8 +1,8 @@
 export const revalidate = 3600;
 
-import { ProductFeatures } from "@/components/organisms";
+import { ProductFeatures } from "@/client/components/organisms";
 import { ProductSummary } from "./_components";
-import { getPremiumFeatureService, getAllProductsService, getProductService } from "@/services";
+import { getPremiumFeatureService, getAllProductsService, getProductService } from "@/server/services";
 
 import { notFound } from "next/navigation";
 import React from "react";

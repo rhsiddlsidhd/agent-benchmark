@@ -2,12 +2,12 @@
 
 import { EyebrowSection } from "./EyebrowSection";
 import React, { useMemo, useState } from "react";
-import { Card, Tabs, TabsList, TabsTrigger, TypographyLarge, TypographyMuted, Badge } from "@/components/atoms";
-import { ClipboardButton } from "@/components/molecules";
-import { useCopy } from "@/hooks";
+import { Card, Tabs, TabsList, TabsTrigger, TypographyLarge, TypographyMuted, Badge } from "@/client/components/atoms";
+import { ClipboardButton } from "@/client/components/molecules";
+import { useCopy } from "@/client/hooks";
 
-import { cn } from "@/lib/cn";
-import { useBanks } from "@/hooks";
+import { cn } from "@/client/lib/cn";
+import { useBanks } from "@/client/hooks";
 
 import {
   AccountInfo,

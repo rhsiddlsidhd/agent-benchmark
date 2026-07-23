@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { HTTPError } from "@/types";
-import { getCookie } from "@/lib/cookies";
-import { decrypt } from "@/lib/jose";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { HTTPError } from "@/shared/types";
+import { getCookie } from "@/server/lib/cookies";
+import { decrypt } from "@/server/lib/jose";
 
 type UploadSignature = {
   signature: string;

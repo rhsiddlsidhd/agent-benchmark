@@ -1,5 +1,5 @@
 import { Github, Mail } from "lucide-react";
-import { TypographyH4 } from "@/components/atoms";
+import { TypographyH4 } from "@/client/components/atoms";
 export function Footer() {
   return (
     <footer className="border-border border-t bg-slate-50 py-12">

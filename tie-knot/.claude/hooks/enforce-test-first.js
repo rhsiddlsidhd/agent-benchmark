@@ -69,6 +69,7 @@ process.stdin.on("end", () => {
   process.stderr.write(`\n${sep}\n`);
   process.stderr.write(`❌ TDD 위반 — ${testPath} 없음\n`);
   process.stderr.write(`   ${relPath} 수정/작성 전에 테스트부터 작성하세요.\n`);
+  process.stderr.write(`   Bash 우회 금지. 예외는 자체 판단 말고 사용자에게 물어라.\n`);
   process.stderr.write(`${sep}\n`);
   process.exit(2);
 });

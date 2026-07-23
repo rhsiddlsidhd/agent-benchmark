@@ -2,8 +2,8 @@ export const revalidate = 600;
 
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Button, TypographyH1, TypographyMuted } from "@/components/atoms";
-import { getAllProductsService } from "@/services";
+import { Button, TypographyH1, TypographyMuted } from "@/client/components/atoms";
+import { getAllProductsService } from "@/server/services";
 import { ProductTableRow } from "./_components";
 
 const tableColums = [

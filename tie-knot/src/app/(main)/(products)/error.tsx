@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, TypographyH1, TypographyMuted } from "@/components/atoms";
+import { Button, Card, TypographyH1, TypographyMuted } from "@/client/components/atoms";
 
 
 import { AlertCircle, ArrowLeft } from "lucide-react";

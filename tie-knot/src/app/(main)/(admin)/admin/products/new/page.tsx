@@ -1,5 +1,5 @@
-import { getAllPremiumFeatureService } from "@/services";
-import { Button, TypographyH1, TypographyMuted } from "@/components/atoms";
+import { getAllPremiumFeatureService } from "@/server/services";
+import { Button, TypographyH1, TypographyMuted } from "@/client/components/atoms";
 import { ProductRegistrationForm } from "./_components";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

@@ -1,6 +1,6 @@
 export const revalidate = 300;
 
-import { getCoupleInfoById, getActiveOrderInfoByCoupleInfoId } from "@/services";
+import { getCoupleInfoById, getActiveOrderInfoByCoupleInfoId } from "@/server/services";
 
 import React from "react";
 import {
@@ -22,8 +22,8 @@ import {
   mapCoupleInfoToLocationProps,
   mapCoupleInfoToThumbnails,
 } from "./_utils";
-import { CloudImage } from "@/components/molecules";
-import { getThemeByProductId } from "@/constants";
+import { CloudImage } from "@/client/components/molecules";
+import { getThemeByProductId } from "@/shared/constants";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {

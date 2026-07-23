@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { CheckCircle2, AlertCircle, Home, FileText } from "lucide-react";
-import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, TypographyMuted, TypographySmall } from "@/components/atoms";
+import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, TypographyMuted, TypographySmall } from "@/client/components/atoms";
 
 
 import Link from "next/link";

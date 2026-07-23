@@ -1,8 +1,8 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/api";
-import { HTTPError } from "@/types";
-import { getGuestbookService } from "@/services";
-import { IGuestbook } from "@/models";
-import { GuestbookListResponse } from "@/schemas";
+import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { HTTPError } from "@/shared/types";
+import { getGuestbookService } from "@/server/services";
+import { IGuestbook } from "@/server/models";
+import { GuestbookListResponse } from "@/shared/schemas";
 import { NextRequest } from "next/server";
 
 // getGuestbookService가 이미 password/__v/updatedAt은 select에서 제외한다 —

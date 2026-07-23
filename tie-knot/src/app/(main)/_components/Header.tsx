@@ -1,9 +1,9 @@
 import { AuthButtons } from "./AuthButtons";
-import { MobileNav } from "@/components/organisms";
+import { MobileNav } from "@/client/components/organisms";
 import Link from "next/link";
 import React from "react";
-import { MAIN_NAV_ITEMS } from "@/constants";
-import { TypographyH4 } from "@/components/atoms";
+import { MAIN_NAV_ITEMS } from "@/shared/constants";
+import { TypographyH4 } from "@/client/components/atoms";
 const Header = () => {
   return (
     <header className="bg-background/80 border-border sticky top-0 right-0 left-0 z-50 w-full border-b backdrop-blur-md">

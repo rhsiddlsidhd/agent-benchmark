@@ -1,6 +1,6 @@
 export const revalidate = 300;
 
-import { Card, CardContent, CardHeader, CardTitle, TypographyMuted, TypographySmall } from "@/components/atoms";
+import { Card, CardContent, CardHeader, CardTitle, TypographyMuted, TypographySmall } from "@/client/components/atoms";
 import { Package, DollarSign, ShoppingCart, Users } from "lucide-react";
 
 export default function AdminDashboard() {

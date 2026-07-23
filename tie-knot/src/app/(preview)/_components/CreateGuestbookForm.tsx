@@ -4,11 +4,11 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { createGuestbook } from "@/actions";
-import { APIResponse } from "@/types";
-import { hasFieldErrors } from "@/utils";
-import { useGuestbookModalStore } from "@/store";
-import { CreateGuestbookForm as PureCreateGuestbookForm } from "@/components/organisms";
+import { createGuestbook } from "@/server/actions";
+import { APIResponse } from "@/shared/types";
+import { hasFieldErrors } from "@/shared/utils";
+import { useGuestbookModalStore } from "@/client/store";
+import { CreateGuestbookForm as PureCreateGuestbookForm } from "@/client/components/organisms";
 interface Payload {
   id: string;
 }
