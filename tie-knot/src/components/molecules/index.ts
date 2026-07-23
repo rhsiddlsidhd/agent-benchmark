@@ -6,6 +6,7 @@ export * from "./BankField";
 export * from "./BaseSelect";
 export * from "./ClipboardButton";
 export * from "./CloudImage";
+export * from "./ComboboxField";
 export * from "./DateDisplay";
 export * from "./DateField";
 export * from "./DigitalWatch";

@@ -1,7 +1,7 @@
 "use client";
 
 import { ClipboardButton, KakaoMap } from "@/components/molecules";
-import { useCopy, useNavigationGeo } from "@/hooks";
+import { useCopy, useNavigationGeo, useSubwayLineInfo } from "@/hooks";
 import { EyebrowSection } from "./EyebrowSection";
 
 import { Navigation } from "./Navigation";
@@ -11,10 +11,12 @@ export function LocationSection({
   venueName,
   address,
   addressDetail,
+  subwayStation,
 }: LocationSectionProps) {
   const fullAddress = addressDetail ? `${address} ${addressDetail}` : address;
   const { isCopied, copyToClipboard } = useCopy();
   const geoState = useNavigationGeo(fullAddress);
+  const { lineInfo } = useSubwayLineInfo(subwayStation);
 
   return (
     <EyebrowSection eyebrow="LOCATION" heading="오시는 길">
@@ -39,6 +41,22 @@ export function LocationSection({
       <Navigation address={fullAddress} geoState={geoState} />
 
       {/* Transportation Info */}
+      {lineInfo && (
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <span className="text-muted-foreground">{lineInfo.station}역</span>
+          <div className="flex gap-1.5">
+            {lineInfo.lines.map((line) => (
+              <span
+                key={line.name}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                style={{ backgroundColor: line.color }}
+              >
+                {line.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </EyebrowSection>
   );
 }

@@ -2,7 +2,7 @@
 
 import { APIResponse } from "@/types";
 import { HTTPError } from "@/types";
-import { requireAuth, updateCoupleInfoService } from "@/services";
+import { requireAuth, updateCoupleInfoService, isValidSubwayStationName } from "@/services";
 import { validateAndFlatten } from "@/utils";
 import { coupleInfoSchema } from "@/schemas";
 
@@ -72,6 +72,20 @@ export const updateCoupleInfo = async (
     return {
       success: false,
       error: { message: "입력값을 확인해주세요", code: 400, fieldErrors: parsed.error },
+    };
+  }
+
+  if (
+    parsed.data.subwayStation &&
+    !(await isValidSubwayStationName(parsed.data.subwayStation))
+  ) {
+    return {
+      success: false,
+      error: {
+        message: "입력값을 확인해주세요",
+        code: 400,
+        fieldErrors: { subwayStation: ["존재하지 않는 지하철역입니다."] },
+      },
     };
   }
 

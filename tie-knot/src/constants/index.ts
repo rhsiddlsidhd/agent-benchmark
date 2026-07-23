@@ -4,4 +4,5 @@ export * from "./payment";
 export * from "./price";
 export * from "./product";
 export * from "./sidebar";
+export * from "./subway";
 export * from "./theme";
