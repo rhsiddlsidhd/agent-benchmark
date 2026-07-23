@@ -13,3 +13,4 @@
 | 문서                        | When                     | What                          |
 | --------------------------- | ------------------------ | ----------------------------- |
 | `docs/TESTING_GUIDELINE.md` | vitest 테스트 작성/수정 시 | DB/목킹 전략, assertion 패턴, 파일 배치 컨벤션 |
+| `docs/ARCHITECTURE.md`      | 디렉토리 구조 변경, 새 최상위 폴더 추가 판단 시 | server/client/shared 목표 구조, 현재→목표 마이그레이션 매핑 |
