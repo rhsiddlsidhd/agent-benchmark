@@ -12,6 +12,26 @@
             "statusMessage": "🚀 Starting pre-commit validation... \n ✓ Lint \n ✓ Build"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-test-first.js",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-test-first.js",
+            "timeout": 10
+          }
+        ]
       }
     ]
   }

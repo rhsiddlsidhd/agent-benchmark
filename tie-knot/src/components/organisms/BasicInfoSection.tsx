@@ -2,18 +2,17 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms";
 import { format } from "date-fns";
-import { TextField, AddressField, SwitchField, SelectField, DateField } from "@/components/molecules";
+import { TextField, AddressField, SwitchField, ComboboxField, DateField } from "@/components/molecules";
 
-
-
-
-import subwayStations from "@/data/subway.json";
 import { ICoupleInfo } from "@/models";
+import type { SubwayStationsResponse } from "@/schemas";
+
 type BasicInfoSectionProps = {
   data?: Pick<ICoupleInfo, "weddingDate" | "venue" | "address" | "addressDetail" | "subwayStation" | "guestbookEnabled">;
+  subwayStations?: SubwayStationsResponse;
 };
 
-export function BasicInfoSection({ data }: BasicInfoSectionProps) {
+export function BasicInfoSection({ data, subwayStations }: BasicInfoSectionProps) {
   return (
     <Card>
       <CardHeader>
@@ -77,15 +76,15 @@ export function BasicInfoSection({ data }: BasicInfoSectionProps) {
         </TextField>
 
         {/* 인근 지하철 역 */}
-        <SelectField
+        <ComboboxField
           id="subwayStation"
           name="subway_station"
-          placeholder="지하철역 선택"
+          placeholder="지하철역 검색"
           defaultValue={data && data.subwayStation}
-          data={subwayStations}
+          options={subwayStations ?? []}
         >
           인근 지하철 역
-        </SelectField>
+        </ComboboxField>
 
         {/* Guestbook Toggle */}
         <SwitchField

@@ -1,5 +1,5 @@
 import { UserRole } from "@/models";
-import { AuthSession } from "@/types";
+import { AuthSession } from "@/schemas";
 import { create } from "zustand";
 
 export type AuthState = {

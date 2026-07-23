@@ -3,15 +3,15 @@
 import useSWR from "swr";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store";
-import { AuthSession } from "@/types";
+import { AuthSessionResponse } from "@/schemas";
 import { fetcher } from "@/api";
 export function useAuth() {
   const setSession = useAuthStore((state) => state.setSession);
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
-  const { data: session, isLoading } = useSWR<AuthSession | null>(
+  const { data: session, isLoading } = useSWR<AuthSessionResponse>(
     "/api/auth/me",
-    (url) => fetcher<AuthSession | null>(url),
+    (url) => fetcher<AuthSessionResponse>(url),
     { revalidateOnFocus: false },
   );
 

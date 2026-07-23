@@ -1,5 +1,5 @@
 import { PAY_METHOD } from "@/constants";
-import z from "zod";
+import * as z from "zod";
 
 export const BuyerInfoSchema = z.object({
   buyerName: z.string().min(2, { message: "이름은 2자 이상 입력해주세요." }),

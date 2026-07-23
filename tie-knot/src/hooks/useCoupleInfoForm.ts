@@ -11,6 +11,7 @@ import { useImageUpload } from "./useImageUpload";
 import { useImageList } from "./useImageList";
 import { useFetchCoupleInfo } from "./useFetchCoupleInfo";
 import { useBanks } from "./useBanks";
+import { useSubwayStations } from "./useSubwayStations";
 
 export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
 
   const { data, isLoading } = useFetchCoupleInfo();
   const { banks } = useBanks();
+  const { subwayStations } = useSubwayStations();
   const thumbnail = useImageList(data?.thumbnailImages);
   const gallery = useImageList(data?.galleryImages);
 
@@ -69,6 +71,7 @@ export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
     data,
     isLoading,
     banks,
+    subwayStations,
     thumbnail,
     gallery,
     isUploading,

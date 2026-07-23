@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 
 const ParentSchema = z.object({
   name: z.string().min(1, "이름을 입력해주세요."),

@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 import { SUB_CATEGORY_MAP, SubCategory } from "@/utils";
 
 export const productSchema = z

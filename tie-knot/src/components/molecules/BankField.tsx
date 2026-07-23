@@ -1,6 +1,6 @@
 "use client";
 import { Input } from "@/components/atoms";
-import { Banks } from "@/app/api/banks/route";
+import { BanksResponse } from "@/schemas";
 import { FormField } from "@/components/molecules/FormField";
 import { BaseSelect } from "@/components/molecules/BaseSelect";
 import { useState } from "react";
@@ -17,7 +17,7 @@ interface BankFieldProps {
   defaultAccountNumber?: string;
   error?: string;
   required?: boolean;
-  banks?: Banks;
+  banks?: BanksResponse;
 }
 
 /**
