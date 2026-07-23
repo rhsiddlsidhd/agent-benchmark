@@ -8,6 +8,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/testing-library-setup.ts"],
+    globalSetup: ["./src/test/setup.ts"],
     coverage: {
       provider: "v8",
       exclude: testScopeExclude,
