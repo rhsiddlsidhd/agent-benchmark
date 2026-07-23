@@ -13,3 +13,4 @@
 | 문서                        | When                     | What                          |
 | --------------------------- | ------------------------ | ----------------------------- |
 | `docs/TESTING_GUIDELINE.md` | vitest 테스트 작성/수정 시 | DB/목킹 전략, assertion 패턴, 파일 배치 컨벤션 |
+| `docs/ERROR_HANDLING.md`    | 여러 레이어(services/actions/route/client)에 걸친 에러 처리 로직 작성/수정 시 | 레이어 간 에러 흐름 전체 그림, 상태 코드 의미 통일표 |

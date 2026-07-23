@@ -25,6 +25,8 @@ src/services/
 - Mongoose Document를 그대로 반환하지 않는다 — `.lean()` 또는 `.toJSON()`으로 변환한 뒤 반환한다(트레이드오프는 `doc.md` 참고).
 - **조회/판별형 함수(없는 게 정상 흐름인 경우, 예: `getUser`/`getAuth`)는 `null`을 리턴한다** — 공식 문서(`node_modules/next/dist/docs/01-app/02-guides/authentication.md` Line 1176-1198, `dal.ts` 예제)가 이 패턴 근거다: DB 조회 실패/미존재를 try/catch로 삼키고 `null` 리턴, throw하지 않는다.
 - **필수 존재/인가 확인형 함수(없으면 요청 자체가 잘못된 경우, 예: `getUserById`/`getUserEmail`/`requireAuth`)는 `HTTPError`를 throw한다** — 공식 문서(`node_modules/next/dist/docs/01-app/02-guides/data-security.md` Line 401-421)가 DAL 함수 안에서 `throw new Error(...)`하는 예제 근거다. 단 `HTTPError` 클래스 자체와 401/404 같은 status code 매핑은 공식 문서에 없는 프로젝트 고유 확장이다 — 두 패턴을 섞어서 "조회형인데 throw" 또는 "확인형인데 null 리턴"으로 짓지 않는다.
+- 확인/인가형 분기에서 plain `Error`(`throw new Error(...)`)를 throw하지 않는다 — `handleClientError`(`src/utils/error.ts`)의 `instanceof HTTPError` 판별을 못 타 정확한 status code 대신 500으로 처리된다. `throw new HTTPError(message, code)`로 통일한다.
+- **생성/변경형 함수(DB 쓰기, 예: `createCoupleInfoService`/`createProductService`)에서 Mongoose 저장 에러를 catch해 `false`/`null` 같은 sentinel 값으로 바꿔 리턴하지 않는다** — 호출자가 검증 실패인지 커넥션 실패인지 구분하지 못한다. 원인에 맞는 status code로 `HTTPError`를 만들어 다시 throw한다(예: Mongoose validation error → 400, 그 외 DB 오류 → 500). 상태 코드별 의미는 `docs/ERROR_HANDLING.md` 참고.
 
 ## Gotchas
 
@@ -37,3 +39,4 @@ src/services/
 - 외부 연동 wrapper: `src/lib/CLAUDE.md`
 - 이 서비스를 호출하는 쪽: `src/app/api/CLAUDE.md`, `src/actions/CLAUDE.md`
 - 테스트 작성 컨벤션(DB/목킹 전략, assertion 패턴): `docs/TESTING_GUIDELINE.md`
+- 레이어 간 에러 흐름 전체 그림, 상태 코드 의미 통일표: `docs/ERROR_HANDLING.md`
