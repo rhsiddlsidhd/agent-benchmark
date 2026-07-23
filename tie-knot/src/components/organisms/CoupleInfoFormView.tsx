@@ -17,6 +17,7 @@ export function CoupleInfoFormView({
   data,
   isLoading,
   banks,
+  subwayStations,
   thumbnail,
   gallery,
   isUploading,
@@ -46,7 +47,7 @@ export function CoupleInfoFormView({
         <input type="hidden" name="couple_info_id" value={coupleInfoId} />
       )}
 
-      <BasicInfoSection data={data} />
+      <BasicInfoSection data={data} subwayStations={subwayStations} />
       <CoupleInfoSection data={data} banks={banks} />
       <ParentsInfoSection data={data} banks={banks} />
       <ImagesSection thumbnail={thumbnail} gallery={gallery} />

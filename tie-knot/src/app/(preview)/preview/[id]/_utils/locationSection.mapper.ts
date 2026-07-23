@@ -3,6 +3,7 @@ export interface LocationSectionProps {
   venueName: string;
   address: string;
   addressDetail?: string;
+  subwayStation?: string;
 }
 
 export const mapCoupleInfoToLocationProps = (
@@ -12,5 +13,6 @@ export const mapCoupleInfoToLocationProps = (
     venueName: coupleInfo.venue,
     address: coupleInfo.address,
     addressDetail: coupleInfo.addressDetail,
+    subwayStation: coupleInfo.subwayStation,
   };
 };
