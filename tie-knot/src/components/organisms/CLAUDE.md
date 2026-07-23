@@ -32,3 +32,4 @@ src/components/organisms/
 - 컨테이너(도메인 로직 담당) 및 승격 규칙: `src/app/CLAUDE.md`
 - 조합 재료: `src/components/molecules/CLAUDE.md`
 - 추상화 네이밍 규칙: `src/CLAUDE.md`
+- 테스트 작성 컨벤션(렌더링+상호작용 오케스트레이션): `docs/TESTING_GUIDELINE.md`
