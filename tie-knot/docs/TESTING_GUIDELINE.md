@@ -1,7 +1,7 @@
 # docs/TESTING_GUIDELINE.md
 
 > Last updated: 2026-07-23
-> vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`는 아직 미설치(DB 테스트 착수 시 별도 설치 필요).
+> vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup.ts` globalSetup, `src/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. 실제 테스트 파일은 현재 `src/utils/price.test.ts`, `src/lib/mongodb/connect.test.ts` 2개뿐이고, `src/test/factories/`는 아직 만들어지지 않았다(services/actions DB 테스트 착수 시 필요해지는 시점에 생성).
 
 ## Overview
 
@@ -10,7 +10,7 @@
 ## Tooling
 
 - 테스트 러너: `vitest`
-- DB: `mongodb-memory-server` — 인메모리 mongod를 띄워 mongoose 쿼리를 실제로 실행한다. mongoose model을 `vi.mock`으로 대체하지 않는다.
+- DB: `mongodb-memory-server` — 인메모리 mongod를 띄워 mongoose 쿼리를 실제로 실행한다. mongoose model을 `vi.mock`으로 대체하지 않는다. `dbConnect()`(`src/lib/mongodb/connect.ts`)는 `process.env.MONGO_TEST_URI`가 설정돼 있으면 그 URI로, 없으면 기존 Atlas SRV URI로 연결한다 — 운영 코드 경로는 그대로 두고 테스트에서만 memory server로 리다이렉트하는 오버라이드다.
 - path alias 해석: `vite-tsconfig-paths`
 
 ## Structure
@@ -27,13 +27,15 @@ src/
 │   ├── login.schema.ts
 │   └── login.schema.test.ts
 └── test/                          # 배럴 예외(src/app/과 동일 성격) — 테스트 전용 공용 인프라
-    ├── setup.ts                     # vitest globalSetup — mongodb-memory-server 기동/종료
-    ├── db.ts                        # beforeEach에서 쓰는 컬렉션 clear 헬퍼
-    └── factories/
+    ├── setup.ts                     # vitest globalSetup — mongodb-memory-server 기동/종료 (구현됨)
+    ├── db.ts                        # beforeEach에서 쓰는 컬렉션 clear 헬퍼 (구현됨)
+    └── factories/                    # 아직 미생성 — services/actions DB 테스트 착수 시 만든다
         ├── user.factory.ts          # buildUser(overrides?)
         ├── product.factory.ts
         └── ...                       # 모델당 파일 1개, src/models/ 구성과 1:1 대응
 ```
+
+> `services/auth.service.test.ts`, `actions/createOrder.test.ts`, `schemas/request/login.schema.test.ts`는 이 구조를 보여주기 위한 예시이지 실제 존재하는 파일이 아니다. 실제로 작성된 테스트는 현재 `src/utils/price.test.ts`, `src/lib/mongodb/connect.test.ts` 둘뿐이다.
 
 ## Critical Convention
 
@@ -69,7 +71,7 @@ src/
 
 ## Gotchas
 
-- `mongodb-memory-server`는 아직 설치되지 않았다 — DB가 걸린 `services/`·`actions/` 테스트에 착수할 때 설치하고, 이 섹션의 DB 테스트 컨벤션이 실제로 동작하는지 검증해야 한다.
+- `mongodb-memory-server`는 설치·연동 완료됐고 `connect.test.ts`로 실제 연결까지 검증했다 — 다만 이건 인프라 배선(`dbConnect()` 자체)만 검증한 것이고, `beforeEach`의 `clearCollections`(`src/test/db.ts`)로 테스트 간 격리가 실제로 깨지지 않는지, 팩토리(`src/test/factories/`) 패턴이 실동작하는지는 `services/`·`actions/` 테스트를 실제로 작성하며 검증해야 한다(아직 안 함).
 - pre-commit hook(`.claude/hooks/pre-commit-check.sh`)이나 CI에 테스트 실행을 엮을지는 이 문서 범위 밖이다 — 결정되지 않았다, 별도로 다룬다.
 - 컴포넌트/UI 테스트 셋업(`environment: jsdom`, `@testing-library/react`, `@testing-library/jest-dom`)은 이미 설치·설정됐다(Write/Edit 시점 TDD 강제 훅이 `molecules/`·`organisms/`도 대상으로 삼아서 선행 설치됨) — 다만 이 문서엔 아직 컴포넌트 테스트 작성 컨벤션(assertion 패턴, mock 범위)이 없다, 실제로 작성하며 후속 개정 대상.
 - `services/` 함수의 조회형/확인형 에러 처리 이분법은 프로젝트 자체 규칙이 아니라 Next.js 공식 문서 두 곳(`node_modules/next/dist/docs/01-app/02-guides/authentication.md`의 `dal.ts` 예제, `data-security.md`의 `deletePost` 예제)에 각각 근거가 있다 — `HTTPError` 클래스와 401/404 같은 status code 매핑만 공식 문서에 없는 프로젝트 고유 확장이다(`src/services/CLAUDE.md` 참고). 이 구분을 무시하고 모든 services 함수를 한 가지 패턴으로 테스트하지 않는다.
