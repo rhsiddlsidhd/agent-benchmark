@@ -37,3 +37,4 @@ src/app/api/
 - 이 라우트가 호출하는 비즈니스 로직: `src/services/CLAUDE.md`
 - Server Actions(자매 컨텍스트): `src/actions/CLAUDE.md`
 - Proxy/Middleware 경계: `src/CLAUDE.md`
+- 테스트 작성 컨벤션(1차 범위에서 후순위): `docs/TESTING_GUIDELINE.md`

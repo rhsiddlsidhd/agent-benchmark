@@ -31,3 +31,4 @@ src/utils/
 - 식별자 케이스 공통 규칙: `src/CLAUDE.md`
 - side-effect 로직과의 경계: `src/lib/CLAUDE.md`
 - 배럴 import 정책: `src/CLAUDE.md`
+- 테스트 작성 컨벤션(1차 커버 범위 우선순위): `docs/TESTING_GUIDELINE.md`

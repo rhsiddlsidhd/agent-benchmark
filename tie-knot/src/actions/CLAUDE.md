@@ -37,3 +37,4 @@ src/actions/
 
 - 인증/권한 검증 규칙(Proxy 의존 금지 포함): `src/CLAUDE.md`
 - Server Action이 제외된 응답/에러 계약(Route/Client 전용): `src/api/CLAUDE.md`
+- 테스트 작성 컨벤션(리턴값 assertion 패턴): `docs/TESTING_GUIDELINE.md`

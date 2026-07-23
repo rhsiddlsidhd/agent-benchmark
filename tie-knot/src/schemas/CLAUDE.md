@@ -43,3 +43,4 @@ src/schemas/
 - 이 스키마를 쓰는 폼 훅: `src/hooks/CLAUDE.md`
 - 이 폴더와 `src/types/`의 소유권 경계: `src/types/CLAUDE.md`
 - 배럴 import 정책(공통): `src/CLAUDE.md`
+- 테스트 작성 컨벤션(1차 커버 범위 우선순위): `docs/TESTING_GUIDELINE.md`

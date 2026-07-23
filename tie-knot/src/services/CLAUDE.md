@@ -1,7 +1,7 @@
 # CLAUDE.md — src/services/
 
-> Last updated: 2026-07-18
-> 이 폴더는 프로젝트 고유 선택 — 서버 전용 비즈니스 로직 레이어.
+> Last updated: 2026-07-23
+> 폴더 분리(서비스 레이어) 자체는 프로젝트 고유 선택이지만, 내부 에러 처리 패턴은 공식 문서 근거가 있다 — Critical Convention 참고.
 
 ## Overview
 
@@ -23,6 +23,8 @@ src/services/
 - 파일명은 `{도메인}.service.ts`로 고정한다.
 - DB 쿼리 전에 `dbConnect()`를 호출한다(`src/lib/mongodb/index.ts`).
 - Mongoose Document를 그대로 반환하지 않는다 — `.lean()` 또는 `.toJSON()`으로 변환한 뒤 반환한다(트레이드오프는 `doc.md` 참고).
+- **조회/판별형 함수(없는 게 정상 흐름인 경우, 예: `getUser`/`getAuth`)는 `null`을 리턴한다** — 공식 문서(`node_modules/next/dist/docs/01-app/02-guides/authentication.md` Line 1176-1198, `dal.ts` 예제)가 이 패턴 근거다: DB 조회 실패/미존재를 try/catch로 삼키고 `null` 리턴, throw하지 않는다.
+- **필수 존재/인가 확인형 함수(없으면 요청 자체가 잘못된 경우, 예: `getUserById`/`getUserEmail`/`requireAuth`)는 `HTTPError`를 throw한다** — 공식 문서(`node_modules/next/dist/docs/01-app/02-guides/data-security.md` Line 401-421)가 DAL 함수 안에서 `throw new Error(...)`하는 예제 근거다. 단 `HTTPError` 클래스 자체와 401/404 같은 status code 매핑은 공식 문서에 없는 프로젝트 고유 확장이다 — 두 패턴을 섞어서 "조회형인데 throw" 또는 "확인형인데 null 리턴"으로 짓지 않는다.
 
 ## Gotchas
 
@@ -34,3 +36,4 @@ src/services/
 - DB 스키마: `src/models/CLAUDE.md`
 - 외부 연동 wrapper: `src/lib/CLAUDE.md`
 - 이 서비스를 호출하는 쪽: `src/app/api/CLAUDE.md`, `src/actions/CLAUDE.md`
+- 테스트 작성 컨벤션(DB/목킹 전략, assertion 패턴): `docs/TESTING_GUIDELINE.md`
