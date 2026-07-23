@@ -12,7 +12,9 @@ declare global {
   var mongooseCache: MongooseCache;
 }
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@new-invitation-cluster.8umdvcl.mongodb.net/new_invitation?retryWrites=true&w=majority&appName=new-invitation-cluster`;
+const uri =
+  process.env.MONGO_TEST_URI ??
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@new-invitation-cluster.8umdvcl.mongodb.net/new_invitation?retryWrites=true&w=majority&appName=new-invitation-cluster`;
 
 if (!uri) {
   throw new Error(`MongoDB URI를 확인해주세요.`);
