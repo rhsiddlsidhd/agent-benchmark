@@ -1,18 +1,13 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
-import path from "node:path";
+import tsconfigPaths from "vite-tsconfig-paths";
 import testScopeExclude from "./.claude/hooks/test-scope-exclude.json";
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+  plugins: [react(), tsconfigPaths()],
   test: {
     environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ["./src/test/testing-library-setup.ts"],
     coverage: {
       provider: "v8",
       exclude: testScopeExclude,
