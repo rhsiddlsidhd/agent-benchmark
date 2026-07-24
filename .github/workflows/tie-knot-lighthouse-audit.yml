@@ -79,7 +79,7 @@ jobs:
       - name: Run audit
         id: audit
         working-directory: tie-knot-lighthouse-audit
-        run: node scripts/run-audit.js
+        run: node src/run-audit.js
 
       - name: Commit history
         working-directory: tie-knot

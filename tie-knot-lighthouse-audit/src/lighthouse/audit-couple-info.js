@@ -1,5 +1,5 @@
 const puppeteer = require("puppeteer");
-const { loginAsRole } = require("./login");
+const { loginAsRole } = require("../auth/login");
 
 const SESSION_STORAGE_KEY = "order-storage";
 
