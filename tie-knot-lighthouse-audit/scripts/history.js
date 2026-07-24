@@ -1,7 +1,9 @@
 const fs = require("fs/promises");
 const path = require("path");
 
-const HISTORY_PATH = path.join(__dirname, "../../lighthouse-history.ndjson");
+const HISTORY_PATH =
+  process.env.LIGHTHOUSE_HISTORY_PATH ||
+  path.join(__dirname, "../../tie-knot/lighthouse-history.ndjson");
 
 async function loadHistory() {
   try {
