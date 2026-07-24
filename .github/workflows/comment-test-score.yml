@@ -1,4 +1,4 @@
-name: Mutation Testing (tie-knot)
+name: Comment Test Score (tie-knot)
 
 on:
   pull_request:
@@ -80,56 +80,5 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require("fs");
-            const path = require("path");
-
-            const reportPath = path.join(
-              process.env.GITHUB_WORKSPACE,
-              "tie-knot/reports/mutation/mutation.json",
-            );
-
-            if (!fs.existsSync(reportPath)) {
-              console.log("mutation.json 없음 — mutate 대상 파일 없거나 실행 실패, comment 스킵");
-              return;
-            }
-
-            const report = JSON.parse(fs.readFileSync(reportPath, "utf-8"));
-
-            const metricsModulePath = path.join(
-              process.env.GITHUB_WORKSPACE,
-              "tie-knot/node_modules/mutation-testing-metrics/dist/src/index.js",
-            );
-            const { calculateMutationTestMetrics } = await import(
-              "file://" + metricsModulePath
-            );
-
-            const { systemUnderTestMetrics } = calculateMutationTestMetrics(report);
-            const score = systemUnderTestMetrics.metrics.mutationScore;
-            const scoreText = Number.isNaN(score) ? "N/A" : score.toFixed(1);
-
-            const marker = "<!-- stryker-mutation-report -->";
-            const body = `${marker}\n### 🧬 Mutation Test Score: **${scoreText}%**`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const existing = comments.find((c) => c.body?.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            const commentMutationScore = require('./.github/scripts/comment-mutation-score.js')
+            await commentMutationScore({ github, context })

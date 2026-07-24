@@ -91,7 +91,7 @@ src/
 - Stryker Mutator(`@stryker-mutator/core` + `@stryker-mutator/vitest-runner`) 사용. coverage(실행 여부)만으로 못 잡는 부실 assertion(예: 값 검증 없이 `toBeDefined()`/`toBeTruthy()`만 쓰는 경우)을 survived mutant로 검출한다.
 - mutate 대상은 `stryker.config.mjs`의 `testedSourceFiles`(`.test.ts(x)`가 실제로 존재하는 소스만) — `vitest.config.ts`의 `coverage.include` 스캔 원칙과 동일하게 맞춘다. 이유: 테스트 없는 파일까지 mutate하면 전부 survived로 나와 신호가 죽는다.
 - threshold(`stryker.config.mjs` `thresholds`): high 80 / low 60 / break 60 — score가 60 미만이면 CI 실패.
-- diff-scoped 실행은 `--incremental`로 한다(`--since`는 stryker-js 현재 버전에 없는 옵션, Stryker 6.2+부터 incremental mode로 대체됐다). `dev` push마다(`tie-knot-mutation-testing-baseline.yml`) baseline report(`reports/stryker-incremental.json`)를 캐시 저장하고, PR workflow(`tie-knot-mutation-testing.yml`)가 그 캐시를 복원해 재사용한다 — killed mutant는 관련 test가 안 바뀌면 skip, survived mutant는 새 test가 커버하지 않으면 skip. 전체 repo가 아니라 baseline 대비 변경분만 재실행된다.
+- diff-scoped 실행은 `--incremental`로 한다(`--since`는 stryker-js 현재 버전에 없는 옵션, Stryker 6.2+부터 incremental mode로 대체됐다). `dev` push마다(`save-test-score.yml`) baseline report(`reports/stryker-incremental.json`)를 캐시 저장하고, PR workflow(`comment-test-score.yml`)가 그 캐시를 복원해 재사용한다 — killed mutant는 관련 test가 안 바뀌면 skip, survived mutant는 새 test가 커버하지 않으면 skip. 전체 repo가 아니라 baseline 대비 변경분만 재실행된다.
 - push 전 로컬에서 `npm run test:mutation`으로 먼저 확인하는 습관을 들인다 — CI 실패 후에 알면 리포트 재확인 왕복 비용이 크다. 강제 수단은 아니다(hook 게이트는 `test:coverage`까지만 막는다).
 
 ### survived mutant 대응 흐름
@@ -116,5 +116,5 @@ src/
 - 배럴/import 원칙: `src/CLAUDE.md`
 - `.lean()`/`.toJSON()` 트레이드오프: `src/server/services/doc.md`
 - 컴포넌트 계층(atoms/molecules/organisms/templates) 분류 기준, 순수성 원칙: `src/client/components/CLAUDE.md`
-- mutation testing 설정: `stryker.config.mjs`, CI workflow: `.github/workflows/tie-knot-mutation-testing.yml`, `-baseline.yml`
+- mutation testing 설정: `stryker.config.mjs`, CI workflow: `.github/workflows/comment-test-score.yml`, `save-test-score.yml`
 - molecules 세부 정의/예시: `src/client/components/molecules/CLAUDE.md`

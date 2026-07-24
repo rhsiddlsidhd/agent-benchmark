@@ -1,4 +1,4 @@
-name: Mutation Testing Baseline (tie-knot)
+name: Save Test Score (tie-knot)
 
 on:
   push:
