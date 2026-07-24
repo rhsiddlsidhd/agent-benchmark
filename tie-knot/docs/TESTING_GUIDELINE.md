@@ -86,6 +86,20 @@ src/
 - `describe`/`it`/`expect`/`vi` 등은 전역으로 쓰지 않는다 — 매 파일 `import { describe, it, expect, vi } from "vitest"`로 명시한다(vitest config `globals: false`). 이유: `src/CLAUDE.md`가 암묵적 전역(배럴도 `export *`만, `export default` 금지)을 배제하는 스타일이라 테스트만 전역 주입을 쓰면 어긋난다.
 - path alias(`@/*`)는 vitest config에서 `vite-tsconfig-paths` 플러그인으로 해석한다 — `resolve.alias`를 수동으로 중복 정의하지 않는다. 이유: tsconfig가 바뀔 때마다 두 곳을 수동 동기화하지 않아도 된다.
 
+## Mutation Testing
+
+- Stryker Mutator(`@stryker-mutator/core` + `@stryker-mutator/vitest-runner`) 사용. coverage(실행 여부)만으로 못 잡는 부실 assertion(예: 값 검증 없이 `toBeDefined()`/`toBeTruthy()`만 쓰는 경우)을 survived mutant로 검출한다.
+- mutate 대상은 `stryker.config.mjs`의 `testedSourceFiles`(`.test.ts(x)`가 실제로 존재하는 소스만) — `vitest.config.ts`의 `coverage.include` 스캔 원칙과 동일하게 맞춘다. 이유: 테스트 없는 파일까지 mutate하면 전부 survived로 나와 신호가 죽는다.
+- threshold(`stryker.config.mjs` `thresholds`): high 80 / low 60 / break 60 — score가 60 미만이면 CI 실패.
+- diff-scoped 실행은 `--incremental`로 한다(`--since`는 stryker-js 현재 버전에 없는 옵션, Stryker 6.2+부터 incremental mode로 대체됐다). `dev` push마다(`tie-knot-mutation-testing-baseline.yml`) baseline report(`reports/stryker-incremental.json`)를 캐시 저장하고, PR workflow(`tie-knot-mutation-testing.yml`)가 그 캐시를 복원해 재사용한다 — killed mutant는 관련 test가 안 바뀌면 skip, survived mutant는 새 test가 커버하지 않으면 skip. 전체 repo가 아니라 baseline 대비 변경분만 재실행된다.
+- push 전 로컬에서 `npm run test:mutation`으로 먼저 확인하는 습관을 들인다 — CI 실패 후에 알면 리포트 재확인 왕복 비용이 크다. 강제 수단은 아니다(hook 게이트는 `test:coverage`까지만 막는다).
+
+### survived mutant 대응 흐름
+
+1. PR 코멘트의 mutation score 확인 → score 미달이거나 survived mutant가 있으면 `mutation-report` artifact(HTML)를 받아 어떤 mutant가 survived인지 확인한다.
+2. survived mutant가 가리키는 라인의 assertion을 보강한다 — 값 자체를 검증하지 않고 존재만 확인하는 패턴(`toBeDefined`/`toBeTruthy`)이 대표적이다, `toBe`/`toEqual`/`toMatchObject`로 구체화한다.
+3. `npm run test:mutation`으로 로컬 재실행해 해당 mutant가 killed로 바뀌는지 확인한 뒤 재push한다.
+
 ## Gotchas
 
 - `mongodb-memory-server`는 설치·연동 완료됐고 `connect.test.ts`로 실제 연결까지 검증했다 — 다만 이건 인프라 배선(`dbConnect()` 자체)만 검증한 것이고, `beforeEach`의 `clearCollections`(`src/test/db.ts`)로 테스트 간 격리가 실제로 깨지지 않는지, 팩토리(`src/test/factories/`) 패턴이 실동작하는지는 `services/`·`actions/` 테스트를 실제로 작성하며 검증해야 한다(아직 안 함).
@@ -102,4 +116,5 @@ src/
 - 배럴/import 원칙: `src/CLAUDE.md`
 - `.lean()`/`.toJSON()` 트레이드오프: `src/server/services/doc.md`
 - 컴포넌트 계층(atoms/molecules/organisms/templates) 분류 기준, 순수성 원칙: `src/client/components/CLAUDE.md`
+- mutation testing 설정: `stryker.config.mjs`, CI workflow: `.github/workflows/tie-knot-mutation-testing.yml`, `-baseline.yml`
 - molecules 세부 정의/예시: `src/client/components/molecules/CLAUDE.md`

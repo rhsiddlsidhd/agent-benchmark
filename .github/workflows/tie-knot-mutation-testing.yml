@@ -1,0 +1,135 @@
+name: Mutation Testing (tie-knot)
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+concurrency:
+  group: mutation-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ENTRY_JWT_SECRET: ${{ secrets.ENTRY_JWT_SECRET }}
+      GMAIL_USER: ${{ secrets.GMAIL_USER }}
+      GMAIL_APP_KEY: ${{ secrets.GMAIL_APP_KEY }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      NEXT_PUBLIC_CLOUDINARY_BASE_URL: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_BASE_URL }}
+      NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET }}
+      NEXT_PUBLIC_KAKAO_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
+      KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+      SEOUL_PUBLIC_API_KEY: ${{ secrets.SEOUL_PUBLIC_API_KEY }}
+      SUBWAY_SEOUL_BASE_URL: ${{ secrets.SUBWAY_SEOUL_BASE_URL }}
+      NEXT_PUBLIC_DAUM_POSTCODE_URL: ${{ secrets.NEXT_PUBLIC_DAUM_POSTCODE_URL }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+      DEPLOYMENT_BASE_URL: ${{ secrets.DEPLOYMENT_BASE_URL }}
+      NEXT_PUBLIC_SAMPLE_USERID: ${{ secrets.NEXT_PUBLIC_SAMPLE_USERID }}
+      POST_ONE_API_KEY: ${{ secrets.POST_ONE_API_KEY }}
+      NEXT_PUBLIC_POST_ONE_STORE_ID: ${{ secrets.NEXT_PUBLIC_POST_ONE_STORE_ID }}
+      NEXT_PUBLIC_POST_ONE_CHANNELKEY: ${{ secrets.NEXT_PUBLIC_POST_ONE_CHANNELKEY }}
+      NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID }}
+      NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID: ${{ secrets.NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+      TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: tie-knot
+        run: npm ci
+
+      - name: Restore dev baseline (incremental report)
+        uses: actions/cache/restore@v4
+        with:
+          path: tie-knot/reports/stryker-incremental.json
+          key: mutation-incremental-dev-${{ github.sha }}
+          restore-keys: |
+            mutation-incremental-dev-
+
+      - name: Run mutation testing
+        working-directory: tie-knot
+        run: npx stryker run --incremental
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: tie-knot/reports/mutation/mutation.html
+
+      - name: Comment mutation score on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+
+            const reportPath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              "tie-knot/reports/mutation/mutation.json",
+            );
+
+            if (!fs.existsSync(reportPath)) {
+              console.log("mutation.json 없음 — mutate 대상 파일 없거나 실행 실패, comment 스킵");
+              return;
+            }
+
+            const report = JSON.parse(fs.readFileSync(reportPath, "utf-8"));
+
+            const metricsModulePath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              "tie-knot/node_modules/mutation-testing-metrics/dist/src/index.js",
+            );
+            const { calculateMutationTestMetrics } = await import(
+              "file://" + metricsModulePath
+            );
+
+            const { systemUnderTestMetrics } = calculateMutationTestMetrics(report);
+            const score = systemUnderTestMetrics.metrics.mutationScore;
+            const scoreText = Number.isNaN(score) ? "N/A" : score.toFixed(1);
+
+            const marker = "<!-- stryker-mutation-report -->";
+            const body = `${marker}\n### 🧬 Mutation Test Score: **${scoreText}%**`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find((c) => c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
