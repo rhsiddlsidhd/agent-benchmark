@@ -11,7 +11,17 @@
 
 ## Stage A — 테스트 안전망 (오늘)
 
-- [ ] 세부 항목 추후 정리 (TODO.md 생성 후 별도 정리 예정)
+- [x] **1차 가드레일** — Write/Edit 도구 사용 시 대상 파일의 `test.ts` 부재하면 도구 실행 차단 (hook). 미충족 시 message로 명시
+- [x] **2차 가드레일** — `npm run test:coverage` 임계값 검증(커밋 시). 커버리지(실행 여부) 기준선 확보
+- [ ] **3차 가드레일** — mutation testing 도입 (survived mutant로 부실 assertion 검출, coverage로 못 잡는 영역)
+  - [ ] Stryker Mutator 설치 + vitest runner 설정
+  - [ ] mutation score 임계값 정의 + 설정 파일(`stryker.conf`) 반영
+  - [ ] diff-scoped 실행(`--since`) 적용 — PR 변경분만 mutation, 전체 repo는 대상 아님
+  - [ ] 로컬 사전 실행용 npm script 추가 (예: `test:mutation`) — push 전 로컬에서 먼저 확인하는 습관 정착용, 강제 수단 아님
+  - [ ] GitHub Actions workflow 작성 — PR 트리거, mutation 실행, HTML 리포트 artifact 업로드
+  - [ ] branch protection에 해당 workflow를 required status check로 등록 — 실패 시 merge 버튼 잠금 (hook은 `--no-verify`로 우회 가능하므로 서버 쪽 최종 관문 필요)
+  - [ ] `docs/TESTING_GUIDELINE.md`에 mutation testing 섹션 추가 — survived mutant 발견 시 대응 흐름(리포트 확인 → assertion 보강 → 재실행) 문서화
+  - branch: `chore/mutation-testing-stryker`
 
 ---
 
