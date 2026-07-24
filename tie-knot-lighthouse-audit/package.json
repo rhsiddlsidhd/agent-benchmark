@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "audit": "node scripts/run-audit.js"
+    "audit": "node src/run-audit.js"
   },
   "dependencies": {
     "lighthouse": "^13.4.0",

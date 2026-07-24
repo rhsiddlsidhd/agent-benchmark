@@ -1,12 +1,12 @@
 const fs = require("fs/promises");
 const { execSync } = require("child_process");
 
-const { routes, FORM_FACTORS, NUMBER_OF_RUNS } = require("./routes");
-const { getCookieHeader } = require("./get-auth-cookie");
-const { runLighthouseCli } = require("./run-lighthouse-cli");
-const { auditCoupleInfo } = require("./audit-couple-info");
-const { medianOfRuns } = require("./extract-metrics");
-const { loadHistory, hasRecord, saveHistory } = require("./history");
+const { routes, FORM_FACTORS, NUMBER_OF_RUNS } = require("./config/routes");
+const { getCookieHeader } = require("./auth/get-auth-cookie");
+const { runLighthouseCli } = require("./lighthouse/run-lighthouse-cli");
+const { auditCoupleInfo } = require("./lighthouse/audit-couple-info");
+const { medianOfRuns } = require("./report/extract-metrics");
+const { loadHistory, hasRecord, saveHistory } = require("./report/history");
 
 const ROLES_NEEDING_COOKIE = ["entry", "user", "admin"];
 
