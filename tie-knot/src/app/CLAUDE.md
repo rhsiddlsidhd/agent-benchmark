@@ -34,6 +34,18 @@ Next.js App Router 진입점 — 라우트 그룹(`(main)`, `(auth)`, `(checkout
 - 파일명/식별자 케이스는 `src/CLAUDE.md`의 공통 규칙을 따른다.
 - **`page.tsx`/`layout.tsx`/`error.tsx`/`not-found.tsx`/`proxy.ts`는 `export default`를 쓴다** — Next.js가 강제하는 파일 컨벤션이다.
 
+## global-error.tsx
+
+root `src/app/` 밑에 `global-error.tsx` 없이 배포하지 않는다 — `error.tsx`는 route segment 하위만 커버해서 root layout(`src/app/layout.tsx`) 자체가 렌더 중 던지는 에러는 어떤 `error.tsx`도 못 잡는다, `global-error.tsx`가 그 마지막 안전망이다.
+
+root layout을 통째로 대체하기 때문에 생기는 제약:
+
+| 제약 | 내용 |
+|---|---|
+| Provider 소멸 | root layout 자체엔 provider가 없지만 `(main)/layout.tsx`의 Provider/Toaster까지 같이 사라진다 — 렌더하는 컴포넌트는 provider 없이도 동작하는 self-contained 컴포넌트여야 한다(예: `organisms/ErrorFallback.tsx` — atoms만 조합, context 의존 없음) |
+| CSS 재import 필요 | root layout이 담당하던 `globals.css` import도 같이 대체된다 — `global-error.tsx` 안에서 별도로 다시 import하지 않으면 스타일이 안 먹는다 |
+| metadata 미지원 | `metadata`/`generateMetadata` export가 안 먹힌다 — Client Component 강제라서다, 필요하면 React `<title>` 컴포넌트로 대체한다(공식문서) |
+
 ## Gotchas
 
 - 기존 라우트는 대부분 `page.tsx`가 `src/client/components/organisms/{Name}Form.tsx`를 바로 import하는 얇은 래퍼다 — 라우트 전용 스테이징 없이 처음부터 전역 `src/client/components/organisms/`에 들어가 있다. 이 구조를 지금 일괄로 되돌리지 않는다 — 새 라우트/새 기능부터, 그리고 컨테이너/순수 분리 리팩토링 대상이 되는 라우트부터 순차 적용(`login/`이 첫 사례: `_components/LoginForm.tsx`(컨테이너)가 `organisms/LoginForm.tsx`(순수)를 감쌈, `src/client/components/organisms/CLAUDE.md` Gotchas 참고). Templates 티어도 같은 정책 — 도입 시점/소급 범위는 `src/client/components/templates/CLAUDE.md` Gotchas 참고.
