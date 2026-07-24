@@ -1,0 +1,12 @@
+{
+  "name": "tie-knot-lighthouse-audit",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "audit": "node scripts/run-audit.js"
+  },
+  "dependencies": {
+    "lighthouse": "^13.4.0",
+    "puppeteer": "^21.6.1"
+  }
+}

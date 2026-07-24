@@ -41,6 +41,7 @@ jobs:
       TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
       TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
       AUDIT_BASE_URL: http://localhost:3000
+      LIGHTHOUSE_HISTORY_PATH: ${{ github.workspace }}/tie-knot/lighthouse-history.ndjson
       PUPPETEER_SKIP_DOWNLOAD: "true"
       PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
     steps:
@@ -52,8 +53,12 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install dependencies
+      - name: Install app dependencies
         working-directory: tie-knot
+        run: npm ci
+
+      - name: Install audit tool dependencies
+        working-directory: tie-knot-lighthouse-audit
         run: npm ci
 
       - name: Build
@@ -73,8 +78,8 @@ jobs:
 
       - name: Run audit
         id: audit
-        working-directory: tie-knot
-        run: node scripts/lighthouse-audit/run-audit.js
+        working-directory: tie-knot-lighthouse-audit
+        run: node scripts/run-audit.js
 
       - name: Commit history
         working-directory: tie-knot
