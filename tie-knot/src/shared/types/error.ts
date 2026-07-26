@@ -1,27 +1,6 @@
 import { NextResponse } from "next/server";
 
 /**
- * Custom HTTP Error class for structured error handling.
- * The `fieldErrors` property is optional and holds validation errors.
- */
-export class HTTPError extends Error {
-  code: number;
-  fieldErrors?: Record<string, string[]>;
-
-  constructor(
-    message: string,
-    code: number = 400,
-    fieldErrors?: Record<string, string[]>,
-  ) {
-    super(message);
-    this.name = "HTTPError";
-    this.code = code;
-    this.fieldErrors = fieldErrors;
-    Object.setPrototypeOf(this, HTTPError.prototype);
-  }
-}
-
-/**
  * Success response structure.
  */
 export type SuccessResponse<T> = {

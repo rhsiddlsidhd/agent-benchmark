@@ -143,12 +143,14 @@
 
 ## Phase B6 — `HTTPError` 최종 삭제
 
-**상태: 착수 가능(B3 완료로 선행조건 충족 — B4/B5 대기 불필요, B3 스코프 갭 3번 참고).**
+**상태: 완료.** (B3 완료로 선행조건이 앞당겨져 B4/B5보다 먼저 착수 — B3 스코프 갭 3번 참고.)
 
-- `grep -rn "HTTPError" src`로 참조 0건 확인.
-- `src/shared/types/error.ts`에서 `HTTPError` 클래스 삭제.
-- `src/server/response.ts`의 재export 목록에서 `HTTPError` 제거.
-- 타입체크로 최종 확인.
+- [x] `src/shared/types/error.ts`에서 `HTTPError` 클래스 삭제.
+- [x] `src/server/response.ts`: 재export 목록·import에서 `HTTPError` 제거 + `apiFail`의 레거시 catch 분기 삭제.
+- [x] `src/server/actions/handleActionError.ts`: import + 레거시 catch 분기 삭제.
+- [x] `grep -rn "HTTPError" src` 참조 0건 확인. 타입체크·테스트 통과.
+
+> **B6 실행 중 발견한 스코프 갭(2026-07-26)**: `docs/TESTING_GUIDELINE.md` 3곳이 `HTTPError`를 실제 assertion 대상으로 지시하고 있었다(`rejects.toThrow(HTTPError)` + `.toMatchObject({ code: 401 })`) — 클래스가 사라지면서 그대로 두면 따라 쓸 수 없는 문서가 된다. `AppError` + `category` 기준으로 갱신했고, "services는 HTTP status를 모르므로 status로 검증하지 않는다(status 매핑 검증은 `response.ts` 테스트 소관)"는 근거도 같이 명시했다. `src/CLAUDE.md`·`src/shared/types/CLAUDE.md`의 `HTTPError` 언급은 "이런 타입을 만들지 않는다"는 금지 규칙이라 그대로 둔다.
 
 ---
 
@@ -161,11 +163,8 @@
 2. Phase 1 구현(`global-error.tsx` 신규 작성, Phase 2 결과물 재사용).
 3. Phase 3-1 → 3-2 → 3-3 — 위 둘과 의존관계 없어 아무 때나/병행 가능.
 
-**트랙 B**(레이어 에러 계약): **B1(완료) → B2(완료) → B3(완료) → B6 / B4·B5**. B2가 원래 B4/B5 몫이던 wire 타입 전환까지 끝내놨고(스코프 갭 1번), B3이 throw 사이트를 다 없앴다 — 남은 셋은 서로 의존관계가 없어 아무 순서로나/병행 가능하다.
+**트랙 B**(레이어 에러 계약): **B1·B2·B3·B6 완료 → B4 → B5**. 레거시 `HTTPError` 경로가 완전히 사라져서, 이제 코드에 남은 건 새 계약(`AppError`/`ErrorPayload`) 하나뿐이다.
 
-다음 착수 후보:
-- **B6**(`HTTPError` 최종 삭제) — 가장 짧다. 레거시 catch 분기 2곳(`handleActionError.ts`, `response.ts`) + 클래스 정의 + `response.ts` 재export만 지우면 끝. 브랜치: `refactor/error-httperror-removal`.
-- **B4**(`apiRequest` 삭제 + 호출자 4개 Server Action 이관) — 남은 범위 중 제일 크다.
-- **B5**(클라이언트 판단로직 제거) — B4와 대상이 겹친다(`ProductLikeBadge`/`useEntry`), B4 먼저가 자연스럽다.
+다음 착수: **B4**(`apiRequest` 삭제 + 호출자 4개 Server Action 이관) — 남은 범위 중 제일 크다. 그다음 **B5**(클라이언트 판단로직 제거) — B4와 대상이 겹쳐서(`ProductLikeBadge`/`useEntry`) B4 뒤가 자연스럽다.
 
 **검증 환경 이슈(B2에서 테스트를 못 돌린 원인, B3에서 해소)**: `npx vitest run`을 막던 `@rolldown/binding-linux-x64-gnu` 누락은 코드 문제가 아니라 로컬 설치 문제였다 — `package-lock.json`엔 1.1.5로 잠겨 있는데 `node_modules/@rolldown/`엔 안 깔려 있었다(optional dep 설치 누락). `npm install @rolldown/binding-linux-x64-gnu@1.1.5 --no-save`로 채우면 실행된다(`--no-save`라 락파일 무변경, `node_modules`만 채움). **새 워크트리/클론에서 재발한다** — 테스트가 이 에러로 죽으면 이 명령부터 실행할 것.
