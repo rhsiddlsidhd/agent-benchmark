@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/client/components/atoms";
 import { cn } from "@/client/lib/cn";
-import { apiRequest } from "@/client/apiRequest";
-import { handleClientError } from "@/shared/utils";
+import { toggleProductLike } from "@/server/actions";
 import { useAuthStore } from "@/client/store";
 interface ProductLikeBadgeProps {
   productId: string;
@@ -23,6 +22,7 @@ const ProductLikeBadge = ({
 }: ProductLikeBadgeProps) => {
   const userId = useAuthStore((state) => state.userId);
   const [localLikes, setLocalLikes] = useState<string[]>(productLikes);
+  const [, startTransition] = useTransition();
   const isLiked = userId ? localLikes.includes(userId) : false;
 
   const updateProductLike = (e: React.MouseEvent) => {
@@ -41,18 +41,14 @@ const ProductLikeBadge = ({
       isLiked ? prev.filter((id) => id !== userId) : [...prev, userId],
     );
 
-    apiRequest(`/api/products/${productId}/like`, { method: "POST" })
-      .then(() => {
-        // Success
-      })
-      .catch((error) => {
-        // Rollback on failure
+    startTransition(async () => {
+      const result = await toggleProductLike(productId);
+
+      if (result.success === false) {
         setLocalLikes(previousLikes);
-        const result = handleClientError(error);
-        if (result && "message" in result) {
-          toast.error(result.message);
-        }
-      });
+        toast.error(result.error.message);
+      }
+    });
   };
 
   return (

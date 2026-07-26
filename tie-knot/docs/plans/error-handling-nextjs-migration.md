@@ -127,11 +127,19 @@
 
 ## Phase B4 — `apiRequest` 삭제 + 호출자 Server Action 이관
 
-**상태: 규칙 확정, 코드 미착수. B1·B2 선행(리턴 타입 확정 후).**
+**상태: 완료.**
 
-- 4개 호출자 → Server Action: `usePortOnePayment`(결제 검증 `/api/payment/complete` → `completePayment`), `useEntry`(entry 토큰), `ProductLikeBadge`(좋아요 토글), `UpdatePasswordForm`(로그아웃 쿠키 DELETE).
-- 결제: 브라우저 SDK(`PortOne.requestPayment`)는 클라 유지, 그 뒤 검증 POST만 Server Action. route.ts 엔드포인트는 PortOne 웹훅(서버→서버, 채널 B)용으로 남을 수 있음.
-- `apiRequest.ts` 삭제(내부 `HTTPError` 참조도 같이 사라짐).
+- [x] 4개 Server Action 신설(`src/server/actions/`): `issueEntryToken`(entry 토큰, `useEntry`가 호출), `completePayment`(결제 검증, `usePortOnePayment`가 호출), `toggleProductLike`(좋아요 토글, `ProductLikeBadge`가 호출), `clearUserEmailCookie`(로그아웃 정리용 쿠키 삭제, change-pw `UpdatePasswordForm` 컨테이너가 호출). 전부 `handleActionError` 공용 핸들러 사용(`clearUserEmailCookie`는 리턴값이 없는 단순 정리 작업이라 대상 아님).
+- [x] 4개 호출자 전환 + `src/CLAUDE.md` 데이터접근표 규칙대로 폼 밖 이벤트 핸들러(`useEntry`/`ProductLikeBadge`)는 `useTransition`으로 감싸 호출.
+- [x] `apiRequest.ts` 삭제.
+- [x] **(스코프 확장, 사용자 확인 받음)** 호출자가 사라져 고아가 된 route.ts 4개(`auth/entry`, `auth/cookie`, `products/[id]/like`, `payment/complete`)도 함께 삭제 — `payment/complete`는 PortOne 웹훅용으로 남을 가능성이 문서에 있었지만 실제 웹훅 구현이 코드에 전혀 없어 지금은 정리, 필요해지면 그때 새로 만들기로 결정. 빈 디렉토리(`products/[id]/`, `payment/`)도 같이 제거.
+- [x] `src/app/api/CLAUDE.md`(Structure 트리, requireAuth 패턴 예시 목록), `src/client/CLAUDE.md`(apiRequest 제거 완료로 문구 갱신) 갱신.
+
+> **B4 실행 중 발견한 스코프 갭(2026-07-26)**:
+> 1. **TDD 게이트 최초 적용**: 직전 커밋(`4cc1903`)에서 fail-closed로 강화된 TDD 훅이 이번이 첫 실전 적용 대상이었다 — services/actions 테스트가 이 repo에 0개였고 hooks/route 컨테이너(`_components`) 테스트 컨벤션도 `TESTING_GUIDELINE.md`에 "아직 미작성"으로 명시돼 있었다. **사용자 확인 받고 이번에 처음 확립**: actions 테스트는 직접 협력자(`@/server/services`, `@/server/lib/jose`, `@/server/lib/cookies`)를 배럴 경로로 `vi.mock`하고 리턴값을 검증(서비스 자체의 DB 통합 테스트는 services 레이어 소관, actions는 그 위 얇은 오케스트레이션만 검증) — hooks는 `renderHook`(`@testing-library/react`), route 컨테이너는 일반 컴포넌트 테스트(`render`)로 작성. 8개 신규 테스트 파일(`issueEntryToken`/`completePayment`/`toggleProductLike`/`clearUserEmailCookie`.test.ts + `useEntry`/`usePortOnePayment`.test.ts + `ProductLikeBadge`/`UpdatePasswordForm`(change-pw).test.tsx), 41개 테스트, 전부 통과.
+> 2. **`strict:false`에서 discriminated union narrowing 함정**: `if (!result.success)`(또는 `if (result.success) {...} else {...}`)는 이 프로젝트 tsconfig(`strict:false`)에서 `APIResponse<T>`(`success:true|false` 리터럴 판별) narrowing이 안 된다 — `result.success === false`로 명시 비교해야 `result.error` 접근이 타입체크를 통과한다. 기존 코드(`UpdatePasswordForm.tsx`의 `state.success === true`)가 이미 이 패턴을 쓰고 있었는데 그 이유를 몰랐다가 이번에 원인을 확인했다 — `APIResponse`를 다루는 클라이언트 코드는 앞으로 전부 `=== true`/`=== false` 명시 비교로 짓는다(`!x.success`/암묵적 truthy 금지).
+> 3. **`syncPayment`/`payment.service.ts`는 여전히 테스트 0개**: B3이 "완료"로 기록됐지만 실제로는 이 서비스 자체의 DB 통합 테스트가 작성된 적이 없다(TDD 게이트가 그때는 느슨했다) — `completePayment` 액션 테스트는 `syncPayment`를 배럴 mock으로 대체했으므로 이 갭을 못 채운다. 후속 세션이 services 테스트 커버리지를 넓힐 때 `payment.service.ts`(PortOne SDK mock + Order/Product factory 필요)를 우선순위에 넣을 것.
+> 타입체크(`npx tsc --noEmit`)·lint(`npx eslint .`)·전체 테스트(`npx vitest run --coverage`, 11 파일 41 테스트, 전 파일 line coverage 80%+)·`npm run build` 전부 통과 확인.
 
 ## Phase B5 — 클라이언트 판단로직 제거
 
@@ -163,8 +171,10 @@
 2. Phase 1 구현(`global-error.tsx` 신규 작성, Phase 2 결과물 재사용).
 3. Phase 3-1 → 3-2 → 3-3 — 위 둘과 의존관계 없어 아무 때나/병행 가능.
 
-**트랙 B**(레이어 에러 계약): **B1·B2·B3·B6 완료 → B4 → B5**. 레거시 `HTTPError` 경로가 완전히 사라져서, 이제 코드에 남은 건 새 계약(`AppError`/`ErrorPayload`) 하나뿐이다.
+**트랙 B**(레이어 에러 계약): **B1·B2·B3·B4·B6 완료 → B5**. 레거시 `HTTPError`도, `apiRequest`도 코드에서 사라져서 남은 건 B5(클라이언트 판단로직 제거) 하나뿐이다.
 
-다음 착수: **B4**(`apiRequest` 삭제 + 호출자 4개 Server Action 이관) — 남은 범위 중 제일 크다. 그다음 **B5**(클라이언트 판단로직 제거) — B4와 대상이 겹쳐서(`ProductLikeBadge`/`useEntry`) B4 뒤가 자연스럽다.
+다음 착수: **B5**(`utils/error.ts`+`handleClientError` 삭제) — `ProductLikeBadge`/`useEntry`는 B4에서 이미 `category` 기반 직접 렌더로 바뀌어 끝났고, 남은 호출자는 `usePremiumFeatures` 하나뿐이라 B4보다 훨씬 작은 범위다. 이 호출자도 `useSWR`/`useActionState` 직접 렌더로 바꾸고 나면 `src/shared/utils/error.ts` 파일째 삭제.
+
+**TDD 게이트 관련 후속 세션 유의사항**: `4cc1903`부터 fail-closed TDD 훅이 Write/Edit/Bash 전부에 적용된다 — 새 파일이든 기존 파일 수정이든 콜로케이트 `.test.ts(x)`가 없으면 차단된다(예외는 `test-scope-exclude.json`뿐, 임의로 추가하지 말고 사용자에게 먼저 물을 것). B5에서 `usePremiumFeatures.ts`를 고치려면 `usePremiumFeatures.test.ts`부터 있어야 한다(현재 없음).
 
 **검증 환경 이슈(B2에서 테스트를 못 돌린 원인, B3에서 해소)**: `npx vitest run`을 막던 `@rolldown/binding-linux-x64-gnu` 누락은 코드 문제가 아니라 로컬 설치 문제였다 — `package-lock.json`엔 1.1.5로 잠겨 있는데 `node_modules/@rolldown/`엔 안 깔려 있었다(optional dep 설치 누락). `npm install @rolldown/binding-linux-x64-gnu@1.1.5 --no-save`로 채우면 실행된다(`--no-save`라 락파일 무변경, `node_modules`만 채움). **새 워크트리/클론에서 재발한다** — 테스트가 이 에러로 죽으면 이 명령부터 실행할 것.

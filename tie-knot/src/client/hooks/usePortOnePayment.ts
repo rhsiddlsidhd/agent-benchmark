@@ -3,9 +3,8 @@
 import { useState, useCallback } from "react";
 import PortOne from "@portone/browser-sdk/v2";
 import { PayStatus } from "@/server/models";
-import { apiRequest } from "@/client/apiRequest";
+import { completePayment, CreateOrderResult } from "@/server/actions";
 import { toast } from "sonner";
-import { CreateOrderResult } from "@/server/actions";
 const storeId = process.env.NEXT_PUBLIC_POST_ONE_STORE_ID;
 const channelKey = process.env.NEXT_PUBLIC_POST_ONE_CHANNELKEY;
 
@@ -72,17 +71,18 @@ export function usePortOnePayment({ onSuccess, onError }: UsePortOnePaymentOptio
           return;
         }
 
-        const result = await apiRequest<{ status: PayStatus }>(
-          "/api/payment/complete",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId: payment.paymentId }),
-          },
-        );
+        const result = await completePayment(payment.paymentId);
 
-        if (result.status !== "PAID") {
-          fail("결제 검증에 실패했습니다. 고객센터에 문의해주세요.", result.status);
+        if (result.success === false) {
+          fail(result.error.message);
+          return;
+        }
+
+        if (result.data.status !== "PAID") {
+          fail(
+            "결제 검증에 실패했습니다. 고객센터에 문의해주세요.",
+            result.data.status,
+          );
           return;
         }
 
