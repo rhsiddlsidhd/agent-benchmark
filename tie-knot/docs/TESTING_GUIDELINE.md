@@ -62,8 +62,8 @@ src/
 
 - `services/` 함수는 성격에 따라 assertion 방식을 나눈다(`src/server/services/CLAUDE.md` Critical Convention의 조회형/확인형 구분과 대응):
   - 조회/판별형(없는 게 정상 흐름 — `getUser`/`getAuth` 등) → `expect(await fn(...)).toBeNull()`
-  - 필수 존재/인가 확인형(없으면 요청 자체가 잘못됨 — `getUserById`/`getUserEmail`/`requireAuth` 등) → `await expect(fn(...)).rejects.toThrow(HTTPError)`에 더해 status code까지 구체적으로 검증한다(`.rejects.toMatchObject({ code: 401 })`). 이유: `instanceof`/`toThrow(HTTPError)`만 보면 401이 나와야 할 자리에 403이 나와도 테스트가 그린으로 남는다 — 인증/권한이 이 프로젝트 리스크가 큰 축이라 status code 자체가 계약이다.
-- `actions/` 함수는 throw를 기대하지 않는다 — 리턴값을 검증한다: `const result = await action(...); expect(result).toEqual({ success: false, ... })`. 이유: Server Action은 예상 가능한 실패를 리턴값으로 모델링하는 게 공식 계약(`src/server/actions/CLAUDE.md` 근거)이라, 여기서 throw를 기대하는 테스트를 쓰면 실제 계약과 어긋난 케이스를 검증하게 된다. 단, 서비스 레이어가 이미 던진 `HTTPError`를 액션이 받아 리턴값으로 번역하는 케이스(`src/server/actions/CLAUDE.md` Gotchas)는 액션 자체는 여전히 throw하지 않으므로 이 규칙 그대로 적용한다 — 리턴값 안의 번역된 message/code를 검증한다.
+  - 필수 존재/인가 확인형(없으면 요청 자체가 잘못됨 — `getUserById`/`getUserEmail`/`requireAuth` 등) → `await expect(fn(...)).rejects.toThrow(AppError)`에 더해 분류까지 구체적으로 검증한다(`.rejects.toMatchObject({ category: "UNAUTHENTICATED" })`). 이유: `instanceof`/`toThrow(AppError)`만 보면 `UNAUTHENTICATED`가 나와야 할 자리에 `FORBIDDEN`이 나와도 테스트가 그린으로 남는다 — 인증/권한이 이 프로젝트 리스크가 큰 축이라 분류 자체가 계약이다. services는 HTTP status를 모르므로(`src/CLAUDE.md` 에러 핸들링) status로 검증하지 않는다 — status 매핑 검증은 route.ts 경계(`response.ts`) 테스트 소관이다.
+- `actions/` 함수는 throw를 기대하지 않는다 — 리턴값을 검증한다: `const result = await action(...); expect(result).toEqual({ success: false, ... })`. 이유: Server Action은 예상 가능한 실패를 리턴값으로 모델링하는 게 공식 계약(`src/server/actions/CLAUDE.md` 근거)이라, 여기서 throw를 기대하는 테스트를 쓰면 실제 계약과 어긋난 케이스를 검증하게 된다. 단, 서비스 레이어가 이미 던진 `AppError`를 공용 핸들러(`handleActionError`)가 받아 리턴값으로 번역하는 케이스(`src/server/actions/CLAUDE.md` Gotchas)는 액션 자체는 여전히 throw하지 않으므로 이 규칙 그대로 적용한다 — 리턴값 안의 `ErrorPayload`(`category`/`message`/`fieldErrors`)를 검증한다.
 
 ### 컴포넌트 테스트
 
@@ -106,7 +106,7 @@ src/
 - `.claude/hooks/pre-commit-check.sh`가 lint → `test:coverage` → build 순서로 커밋을 막는다. `test:coverage`는 `vitest.config.ts`의 `coverage.thresholds`(`perFile: true, lines: 80`)로 **테스트가 존재하는 파일 각각**의 line coverage 80% 미만이면 실패한다. 커버리지 %는 "테스트가 있다"는 사실만 강제하는 Write/Edit 훅과 별개로 "그 테스트가 실제로 로직을 타는가"를 걸러내는 2차 게이트다 — 단, branch coverage는 아직 안 본다(line만), assertion이 의미있는지는 여전히 사람 리뷰 몫이다.
 - `coverage.include`는 `.test.ts(x)`가 실제로 존재하는 소스 파일 목록으로 `vitest.config.ts`가 매번 자동 스캔해서 채운다(`glob` 패키지, `src/**/*.test.{ts,tsx}` → `.test` 뗀 경로). 이유: `src/CLAUDE.md`의 배럴 전용 import 컨벤션 때문에 컴포넌트 하나만 import해도 배럴 연쇄(예: `@/components/atoms` → `sidebar.tsx` → `@/hooks` → `useAuth.ts`)로 무관한 파일이 대량으로 로드된다 — vitest 커버리지는 "직접 테스트한 파일"이 아니라 "테스트 실행 중 로드된 파일"을 리포트에 잡으므로, `include`로 명시하지 않으면 테스트 하나 추가할 때마다 무관한 레거시 파일들이 커버리지 미달로 같이 실패한다(`coverage.all: false`로는 못 막는다 — 그 파일들은 실제로 로드되므로 `all` 설정과 무관하게 리포트에 잡힌다).
 - 컴포넌트 테스트 컨벤션(위 "컴포넌트 테스트"/"컴포넌트 테스트 인프라 셋업" 섹션)은 `src/client/components/molecules/BaseSelect.tsx`(Radix Select 조합, 이 프로젝트 molecule 대표 사례)로 렌더링+상호작용 테스트를 실제로 작성해보며 검증했다 — `.env` 미로딩/cleanup 누락/jsdom Pointer Events 미구현 3가지를 실제로 겪고 고쳤다. 다만 `organisms`(여러 상호작용의 로컬 상태 오케스트레이션) 쪽은 아직 실제 작성된 테스트가 없어 그 부분 컨벤션은 미검증이다.
-- `services/` 함수의 조회형/확인형 에러 처리 이분법은 프로젝트 자체 규칙이 아니라 Next.js 공식 문서 두 곳(`node_modules/next/dist/docs/01-app/02-guides/authentication.md`의 `dal.ts` 예제, `data-security.md`의 `deletePost` 예제)에 각각 근거가 있다 — `HTTPError` 클래스와 401/404 같은 status code 매핑만 공식 문서에 없는 프로젝트 고유 확장이다(`src/server/services/CLAUDE.md` 참고). 이 구분을 무시하고 모든 services 함수를 한 가지 패턴으로 테스트하지 않는다.
+- `services/` 함수의 조회형/확인형 에러 처리 이분법은 프로젝트 자체 규칙이 아니라 Next.js 공식 문서 두 곳(`node_modules/next/dist/docs/01-app/02-guides/authentication.md`의 `dal.ts` 예제, `data-security.md`의 `deletePost` 예제)에 각각 근거가 있다 — `AppError` 클래스와 분류 taxonomy(`UNAUTHENTICATED`/`NOT_FOUND` 등)만 공식 문서에 없는 프로젝트 고유 확장이다(`src/server/services/CLAUDE.md` 참고). 이 구분을 무시하고 모든 services 함수를 한 가지 패턴으로 테스트하지 않는다.
 
 ## 관련 문서
 
