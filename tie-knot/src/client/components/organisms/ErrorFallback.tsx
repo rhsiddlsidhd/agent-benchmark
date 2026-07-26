@@ -8,7 +8,7 @@ import React from "react";
 
 interface ErrorFallbackProps {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
   title?: string;
   description?: string;
   backPath?: string;
@@ -17,7 +17,7 @@ interface ErrorFallbackProps {
 
 export function ErrorFallback({
   error,
-  reset,
+  retry,
   title = "오류가 발생했습니다",
   description = "요청을 처리하는 중 문제가 발생했습니다.",
   backPath = "/",
@@ -58,7 +58,7 @@ export function ErrorFallback({
 
           <div className="flex flex-col gap-3">
             <Button
-              onClick={reset}
+              onClick={retry}
               variant="default"
               size="lg"
               className="w-full"

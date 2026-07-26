@@ -31,7 +31,7 @@
 
 ## Phase 2 — `reset()` → `unstable_retry()` 마이그레이션
 
-**상태: 결정 완료, 코드 미착수**
+**상태: 완료.**
 
 **결정: 마이그레이션한다.**
 - 이유: `reset()`은 재fetch를 안 함 — Server Component가 던진 에러는 `reset()`으로 복구 안 됨(공식문서 명시). 이 프로젝트 대부분 페이지가 Server Component 데이터페칭이라, "다시 시도" 버튼이 실제로 안 고쳐주는 케이스가 있을 수 있는 기능 결함 리스크(스타일 문제 아님).
@@ -39,7 +39,13 @@
 **결정: `organisms/ErrorFallback.tsx`의 `reset` prop을 `retry`로 리네임한다.**
 - 이유: `reset={unstable_retry}`처럼 이름만 어긋나게 넘기면 나중에 읽는 사람이 "그냥 상태 초기화"로 착각함. 버튼 라벨이 이미 "다시 시도"라 `retry`가 실제 동작과 맞고, 이 리포 컨벤션(`src/CLAUDE.md`)이 이름-의미 일치에 엄격한 결과와도 맞음.
 
-**작업 대상**: `(main)/error.tsx`, `(main)/(products)/error.tsx`, `(main)/(admin)/error.tsx`, `organisms/ErrorFallback.tsx`(prop 리네임), 신규 `global-error.tsx`(Phase 1) — 전부 이 시그니처로.
+- [x] `organisms/ErrorFallback.tsx`: `reset` prop → `retry`로 리네임(내부 버튼 `onClick`도 같이).
+- [x] `(main)/error.tsx`, `(main)/(admin)/error.tsx`: Next.js가 넘겨주는 prop을 `unstable_retry`로 destructure하고 `ErrorFallback`에 `retry={unstable_retry}`로 전달.
+- [x] `(main)/(products)/error.tsx`: 이 파일만 `ErrorFallback`을 재사용하지 않고 자체 UI를 갖고 있다(기존부터 그랬음, 이번 마이그레이션에서 통합하지 않음 — 스코프 밖) — prop을 `unstable_retry`로 바꾸고 다시 시도 버튼 `onClick`에 직접 연결.
+
+> **Phase 2 실행 중 발견한 사항**: `(main)/(products)/error.tsx`(`ProductError`)의 `useEffect` 로깅이 `console.error("Admin error:", error)`로 돼 있다 — 다른 파일에서 복붙하면서 라벨을 안 고친 것으로 보이는 기존 버그다. 이번 마이그레이션 스코프(prop 시그니처 전환)와 무관해 손대지 않았다 — 후속 세션이 `ProductError` 관련 작업을 할 때 같이 고칠 것.
+> `organisms/ErrorFallback.tsx`는 이 repo에서 처음 작성되는 organism 테스트 대상이라(`TESTING_GUIDELINE.md` Gotchas가 "organisms 쪽은 아직 미검증"이라고 명시) `ErrorFallback.test.tsx`(렌더링/dev-prod 분기/retry 클릭/backPath 링크)를 먼저 작성 — TDD 게이트 대상. `error.tsx` 3개는 `test-scope-exclude.json`에 이미 있어 테스트 없이 수정 가능했다.
+> 타입체크·lint·전체 테스트(14 파일 56 테스트, 전 파일 line coverage 80%+)·`npm run build` 통과.
 
 ## Phase 3 — Client GET 페칭 컨벤션 위반 정리 (`kakaomap`)
 
@@ -169,16 +175,11 @@
 
 ## 다음 세션 시작 지점
 
-두 트랙 다 방향/규칙 확정, 코드 미착수. 트랙 A/B는 서로 독립 — 병행 가능.
-
-**트랙 A**(Phase 1~3):
-1. Phase 2 구현(`ErrorFallback` prop 리네임 + 기존 3개 error.tsx 시그니처 교체) — Phase 1의 `global-error.tsx`가 이 시그니처를 그대로 쓰므로 먼저.
-2. Phase 1 구현(`global-error.tsx` 신규 작성, Phase 2 결과물 재사용).
-3. Phase 3-1 → 3-2 → 3-3 — 위 둘과 의존관계 없어 아무 때나/병행 가능.
-
 **트랙 B**(레이어 에러 계약): **B1~B6 전부 완료.** 레거시 `HTTPError`도, `apiRequest`도, 클라이언트 판단로직(`handleClientError`)도 전부 코드에서 사라졌다 — 새 계약(`AppError`/`ErrorPayload`)만 남았다.
 
-다음 착수: 트랙 B는 종료, **트랙 A**(Phase 1~3)만 남았다 — 순서는 위 "트랙 A" 절 참고(Phase 2 → Phase 1 → Phase 3-1~3-3).
+**트랙 A**(Phase 1~3): **Phase 2 완료.** 남은 건 Phase 1(`global-error.tsx` 신규, Phase 2가 만든 `retry` 시그니처 그대로 재사용)과 Phase 3(kakaomap 페칭 정리, Phase 1과 무관 — 아무 때나/병행 가능).
+
+다음 착수: **Phase 1**(`src/app/global-error.tsx` 신규 작성) — `organisms/ErrorFallback.tsx` 재사용, `globals.css` 별도 import, `metadata` export 안 함(위 "Phase 1" 절 체크리스트 참고). 그다음 **Phase 3-1 → 3-2 → 3-3**.
 
 **TDD 게이트 관련 후속 세션 유의사항**: `4cc1903`부터 fail-closed TDD 훅이 Write/Edit/Bash 전부에 적용된다 — 새 파일이든 기존 파일 수정이든 콜로케이트 `.test.ts(x)`가 없으면 차단된다(예외는 `test-scope-exclude.json`뿐, 임의로 추가하지 말고 사용자에게 먼저 물을 것). 트랙 A(Phase 1~3)의 대상 파일(`error.tsx` 3개, 신규 `global-error.tsx`, `ErrorFallback.tsx`, `useNavigationGeo.ts`, `KakaoMap.tsx`)도 전부 이 게이트 대상이다 — 착수 전에 테스트 컨벤션부터 챙길 것.
 

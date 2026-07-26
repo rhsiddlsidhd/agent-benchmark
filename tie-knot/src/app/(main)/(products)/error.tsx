@@ -9,10 +9,10 @@ import { useEffect } from "react";
 
 interface ErrorProps {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 }
 
-export default function ProductError({ error, reset }: ErrorProps) {
+export default function ProductError({ error, unstable_retry }: ErrorProps) {
   const router = useRouter();
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function ProductError({ error, reset }: ErrorProps) {
           )}
 
           <div className="flex flex-col gap-3">
-            <Button onClick={reset} variant="default" size="lg">
+            <Button onClick={unstable_retry} variant="default" size="lg">
               다시 시도
             </Button>
             <Button onClick={() => router.push("/")} variant="outline" size="lg">
