@@ -1,6 +1,7 @@
 import { GuestbookModel, IGuestbook } from "@/server/models";
 import { GuestbookType } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
+import { AppError } from "@/shared/types";
 
 import mongoose from "mongoose";
 
@@ -11,16 +12,23 @@ export const createGuestbookService = async ({
 }) => {
   await dbConnect();
 
-  const res = await GuestbookModel.create(data);
-
-  if (!res) throw new Error("Failed to create guestbook");
-  return res;
+  return GuestbookModel.create(data).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "방명록 등록에 실패했습니다.",
+    );
+  });
 };
 
 export const getGuestbookService = async (
   id: string,
 ): Promise<IGuestbook[]> => {
   await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    return [];
+  }
+
   const coupleInfoId = new mongoose.Types.ObjectId(id);
   const guestbooks = await GuestbookModel.find({ coupleInfoId })
     .select("-__v -password -updatedAt")
@@ -40,6 +48,10 @@ export const getPrivateGuestbookService = async (
 ): Promise<IGuestbook | null> => {
   await dbConnect();
 
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    return null;
+  }
+
   const _id = new mongoose.Types.ObjectId(id);
   const guestbook = await GuestbookModel.findById(_id).lean();
 
@@ -56,6 +68,10 @@ export const deleteGuestbookService = async (
   id: string,
 ): Promise<{ acknowledged: boolean; deletedCount: number }> => {
   await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    return { acknowledged: false, deletedCount: 0 };
+  }
 
   const _id = new mongoose.Types.ObjectId(id);
   const result = await GuestbookModel.deleteOne({ _id });

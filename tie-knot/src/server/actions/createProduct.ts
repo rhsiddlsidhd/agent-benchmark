@@ -58,19 +58,12 @@ export const createProduct = async (
       previewUrl = await uploadProductImage(previewFile, "preview");
     }
 
-    const product = await createProductService({
+    await createProductService({
       ...parsed.data,
       authorId: userId,
       thumbnail: thumbnailUrl,
       previewUrl,
     });
-
-    if (!product) {
-      return {
-        success: false,
-        error: { category: "INTERNAL", message: "상품 등록에 실패하였습니다." },
-      };
-    }
 
     revalidatePath("/admin/products");
     revalidatePath("/products");

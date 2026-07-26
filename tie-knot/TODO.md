@@ -66,7 +66,7 @@ B-5 공통/운영
 - [ ] **3. 도메인 응집도** (B-1.2) — 문서 신규: 카테고리-feature 매핑 규칙. 카테고리별 허용 feature 목록, 신규 카테고리 추가 체크리스트, 프로젝트 CLAUDE.md "청첩장 하나만" 서술 현행화
   - branch: `docs/category-feature-mapping`
 
-- [ ] **4. 에러 처리** (B-5.2) — 문서 불필요 (`services/CLAUDE.md`에 null/throw 이분법 이미 있음). `coupleInfo.service.ts`, `product.service.ts` 코드만 수정
+- [x] **4. 에러 처리** (B-5.2) — 착수 중 발견: 기존 null/throw 이분법만으로 부족해서 `services/CLAUDE.md`를 mongoose 공식문서 기준 규칙 6개(에러 분류 INTERNAL 통일, ObjectId 사전검증→NOT_FOUND, lean 판단 기준, runValidators, dbConnect 근거)로 먼저 재확정한 뒤 코드 반영. 범위도 `coupleInfo`/`product` 2개에서 `guestbook.service.ts`까지 확장. `coupleInfo.service.ts`(create/update/getCoupleInfoById), `product.service.ts`(전체 함수), `guestbook.service.ts`(전체 함수) 수정 + `createProduct.ts` 액션 dead code 제거. `runValidators: true`는 이번 라운드 보류 — coupleInfo는 현재 스키마로 관찰 가능한 효과가 없고(required가 update에서 $unset 없인 안 걸림, 다른 validator 없음), product는 `subCategory` validator가 update 컨텍스트에서 깨져서 선행 수정 필요(#9). 부수 발견: DB 테스트 여러 개를 처음 같이 돌리며 크로스파일 오염 발견 → `vitest.config.ts`에 `fileParallelism: false` 추가, `docs/TESTING_GUIDELINE.md` DB 테스트 섹션 갱신.
   - branch: `refactor/service-error-null-throw`
 
 - [ ] **5. 인증 UI 가드** (B-2.1 연관) — 문서 신규: 페이지 레벨 접근 제어 패턴. redirect 사용 시점, 서버/클라이언트 컴포넌트 중 검증 위치 (proxy.ts는 이 용도 아님을 `src/CLAUDE.md`가 이미 명시)
@@ -80,6 +80,9 @@ B-5 공통/운영
 
 - [ ] **8. 빌드/툴링 아키텍처** (B-5.3) — 문서 신규: `scripts/CLAUDE.md` 신설. 스크립트별 목적, npm script 등록 여부, CI 연동 여부, 수동 실행 구분
   - branch: `docs/scripts-claude-md`
+
+- [ ] **9. product.model.ts subCategory validator를 update 컨텍스트 호환되게 수정** (`models/` 트랙 대기, #4 작업 중 발견) — `runValidators: true`를 `updateProductService`에 켜려면 선행 필요. 현재 validator가 `this.category`(document 전제)를 참조하는데, update validator 컨텍스트에선 `this`가 Query 객체라 update payload에 `category`가 없으면 항상 검증 실패함(mongoose 공식문서: "this is the Query, not the document being updated"). `this.get('category')` 방식으로 교체 필요. 고친 뒤 `updateProductService`의 `findOneAndUpdate`에 `runValidators: true` 추가.
+  - branch: `fix/product-subcategory-validator-update-context`
 
 ---
 
