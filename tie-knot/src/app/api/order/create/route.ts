@@ -1,5 +1,5 @@
 import { APIRouteResponse, apiFail } from "@/server/response";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { validateAndFlatten } from "@/shared/utils";
@@ -39,13 +39,13 @@ export const POST = async (
     );
 
     if (!parsed.success) {
-      throw new HTTPError("입력값을 확인해주세요", 400, parsed.error);
+      throw new AppError("VALIDATION", "입력값을 확인해주세요", parsed.error);
     }
 
     // TODO: 이 API는 아직 완전히 구현되지 않았습니다.
     // createOrderService를 사용하여 주문을 생성하고,
     // payment는 결제 완료 후 syncPayment로 생성됩니다.
-    throw new HTTPError("이 API는 현재 사용할 수 없습니다.", 501);
+    throw new AppError("DISABLED", "이 API는 현재 사용할 수 없습니다.");
   } catch (error) {
     return apiFail(error);
   }

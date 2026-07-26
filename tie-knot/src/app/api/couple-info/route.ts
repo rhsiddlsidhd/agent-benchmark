@@ -1,5 +1,5 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { requireAuth, getCoupleInfoById } from "@/server/services";
 import { ICoupleInfo } from "@/server/models";
 import { CoupleInfoResponse } from "@/shared/schemas";
@@ -24,12 +24,12 @@ export const GET = async (
 ): Promise<APIRouteResponse<CoupleInfoResponse>> => {
   try {
     const query = req.nextUrl.searchParams.get("q");
-    if (!query) throw new HTTPError("잘못된 접근 입니다.", 404);
+    if (!query) throw new AppError("NOT_FOUND", "잘못된 접근 입니다.");
 
     await requireAuth();
 
     const coupleInfo = await getCoupleInfoById(query);
-    if (!coupleInfo) throw new HTTPError("커플 정보를 찾을 수 없습니다.", 404);
+    if (!coupleInfo) throw new AppError("NOT_FOUND", "커플 정보를 찾을 수 없습니다.");
 
     return apiOk(toCoupleInfoResponse(coupleInfo));
   } catch (error) {

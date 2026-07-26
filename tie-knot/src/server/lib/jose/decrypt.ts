@@ -1,7 +1,7 @@
 import { JWTPayload, jwtVerify, JWTVerifyResult } from "jose";
 import { DecryptProps, EncryptProps } from "./type";
 import { ENTRY_ENCODED_KEY, JWT_ENCODED_KEY } from "./config";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 
 interface ExtractedPayload extends JWTPayload, Omit<EncryptProps, "type"> {}
 
@@ -23,7 +23,10 @@ export async function decrypt(
       "code" in error &&
       error.code === "ERR_JWT_EXPIRED"
     ) {
-      throw new HTTPError("ERR_JWT_EXPIRED", 401);
+      throw new AppError(
+        "UNAUTHENTICATED",
+        "유효하지 않거나 만료된 토큰입니다. 다시 로그인해주세요.",
+      );
     }
     throw error;
   }

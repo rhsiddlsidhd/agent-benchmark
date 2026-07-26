@@ -5,6 +5,7 @@ import { hashPassword } from "@/server/lib/bcrypt";
 
 import { GuestbookSchema } from "@/shared/schemas";
 import { createGuestbookService } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
 import { revalidatePath } from "next/cache";
 
@@ -24,7 +25,7 @@ export const createGuestbook = async (
   if (!parsed.success) {
     return {
       success: false,
-      error: { message: "입력값을 확인해주세요", code: 400, fieldErrors: parsed.error },
+      error: { category: "VALIDATION", message: "입력값을 확인해주세요", fieldErrors: parsed.error },
     };
   }
 
@@ -40,10 +41,7 @@ export const createGuestbook = async (
       success: true,
       data: { message: "방명록 작성이 완료되었습니다." },
     };
-  } catch {
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+  } catch (e) {
+    return handleActionError(e);
   }
 };

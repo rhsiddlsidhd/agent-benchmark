@@ -1,5 +1,5 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { requireAuth, updateProductLikeService } from "@/server/services";
 
 import { NextRequest } from "next/server";
@@ -14,9 +14,9 @@ export const POST = async (
 
     const updated = await updateProductLikeService(id, userId);
     if (!updated)
-      throw new HTTPError(
+      throw new AppError(
+        "NOT_FOUND",
         "상품을 찾을 수 없거나 좋아요 업데이트에 실패했습니다.",
-        404,
       );
 
     return apiOk({ message: "좋아요 업데이트에 성공하였습니다." });

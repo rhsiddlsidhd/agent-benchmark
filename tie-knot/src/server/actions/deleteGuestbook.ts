@@ -5,6 +5,7 @@ import { comparePasswords } from "@/server/lib/bcrypt";
 import { validateAndFlatten } from "@/shared/utils";
 import { GuestbookSchema } from "@/shared/schemas";
 import { getPrivateGuestbookService, deleteGuestbookService } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 import * as z from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -29,8 +30,8 @@ export const deleteGuestbook = async (
     return {
       success: false,
       error: {
+        category: "VALIDATION",
         message: "비밀번호 또는 게시글 ID 형식이 올바르지 않습니다.",
-        code: 400,
         fieldErrors: parsed.error,
       },
     };
@@ -41,7 +42,7 @@ export const deleteGuestbook = async (
     if (!guestbook) {
       return {
         success: false,
-        error: { message: "해당 게시글을 찾을 수 없습니다.", code: 404 },
+        error: { category: "NOT_FOUND", message: "해당 게시글을 찾을 수 없습니다." },
       };
     }
 
@@ -52,7 +53,7 @@ export const deleteGuestbook = async (
     if (!isPasswordValid) {
       return {
         success: false,
-        error: { message: "비밀번호가 일치하지 않습니다.", code: 401 },
+        error: { category: "UNAUTHENTICATED", message: "비밀번호가 일치하지 않습니다." },
       };
     }
 
@@ -61,7 +62,7 @@ export const deleteGuestbook = async (
     if (!deleteResult.acknowledged || deleteResult.deletedCount === 0) {
       return {
         success: false,
-        error: { message: "게시글 삭제에 실패했습니다.", code: 500 },
+        error: { category: "INTERNAL", message: "게시글 삭제에 실패했습니다." },
       };
     }
 
@@ -71,10 +72,7 @@ export const deleteGuestbook = async (
       success: true,
       data: { message: "게시글이 성공적으로 삭제되었습니다." },
     };
-  } catch {
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+  } catch (e) {
+    return handleActionError(e);
   }
 };

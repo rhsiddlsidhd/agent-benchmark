@@ -6,6 +6,7 @@ export * from "./createProduct";
 export * from "./deleteGuestbook";
 export * from "./deleteProduct";
 export * from "./findUserEmail";
+export * from "./handleActionError";
 export * from "./loginUser";
 export * from "./requestPasswordReset";
 export * from "./signupUser";

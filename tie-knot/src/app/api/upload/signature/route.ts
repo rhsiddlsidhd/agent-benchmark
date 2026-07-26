@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { getCookie } from "@/server/lib/cookies";
 import { decrypt } from "@/server/lib/jose";
 
@@ -22,20 +22,20 @@ export const POST = async (
     const cookie = await getCookie("token");
 
     if (!cookie?.value) {
-      throw new HTTPError("로그인이 필요합니다.", 401);
+      throw new AppError("UNAUTHENTICATED", "로그인이 필요합니다.");
     }
 
     const { payload } = await decrypt({ token: cookie.value, type: "REFRESH" });
 
     if (!payload.id) {
-      throw new HTTPError("유효하지 않은 토큰입니다.", 401);
+      throw new AppError("UNAUTHENTICATED", "유효하지 않은 토큰입니다.");
     }
 
     // 2. 요청 파싱
     const { folder } = await request.json();
 
     if (!folder) {
-      throw new HTTPError("folder 파라미터가 필요합니다.", 400);
+      throw new AppError("VALIDATION", "folder 파라미터가 필요합니다.");
     }
 
     // 3. 타임스탬프 생성

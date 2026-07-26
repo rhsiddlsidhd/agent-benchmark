@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { CoupleInfoForm } from "./_components";
 import { getCookie } from "@/server/lib/cookies";
 import { decrypt } from "@/server/lib/jose";
@@ -15,7 +15,7 @@ const Page = async ({
   const { q } = await searchParams;
 
   if (!q) {
-    throw new HTTPError("잘못된 접근입니다.", 400);
+    throw new AppError("VALIDATION", "잘못된 접근입니다.");
   }
 
   const cookie = await getCookie("token");

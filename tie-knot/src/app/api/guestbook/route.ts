@@ -1,5 +1,5 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { getGuestbookService } from "@/server/services";
 import { IGuestbook } from "@/server/models";
 import { GuestbookListResponse } from "@/shared/schemas";
@@ -23,7 +23,7 @@ export const GET = async (
 ): Promise<APIRouteResponse<GuestbookListResponse>> => {
   try {
     const id = req.nextUrl.searchParams.get("id");
-    if (!id) throw new HTTPError("coupleInfoId가 필요합니다.", 400);
+    if (!id) throw new AppError("VALIDATION", "coupleInfoId가 필요합니다.");
 
     const guestbooks = await getGuestbookService(id);
     return apiOk(toGuestbookListResponse(guestbooks));

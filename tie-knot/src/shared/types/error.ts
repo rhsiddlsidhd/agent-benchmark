@@ -30,16 +30,11 @@ export type SuccessResponse<T> = {
 };
 
 /**
- * Unified error response structure.
- * `fieldErrors` is optional and only present for validation-related errors.
+ * Unified error response structure — `error`는 `ErrorPayload`(아래 정의)를 그대로 싣는다.
  */
 export type ErrorResponse = {
   success: false;
-  error: {
-    message: string;
-    code: number;
-    fieldErrors?: Record<string, string[]>;
-  };
+  error: ErrorPayload;
 };
 
 /**

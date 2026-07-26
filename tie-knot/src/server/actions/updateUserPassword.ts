@@ -4,7 +4,7 @@ import { validateAndFlatten } from "@/shared/utils";
 import { PWConfirmSchema } from "@/shared/schemas";
 import { APIResponse } from "@/shared/types";
 import { changePassword } from "@/server/services";
-import { HTTPError } from "@/shared/types";
+import { handleActionError } from "@/server/actions/handleActionError";
 import { decrypt } from "@/server/lib/jose";
 import { deleteCookie } from "@/server/lib/cookies";
 
@@ -25,8 +25,8 @@ export const updateUserPassword = async (
     return {
       success: false,
       error: {
+        category: "VALIDATION",
         message: "입력한 정보가 올바르지 않습니다. 다시 확인해주세요.",
-        code: 400,
         fieldErrors: parsed.error,
       },
     };
@@ -41,9 +41,9 @@ export const updateUserPassword = async (
       return {
         success: false,
         error: {
+          category: "UNAUTHENTICATED",
           message:
             "유효하지 않거나 만료된 토큰입니다. 비밀번호 재설정을 다시 시도해주세요.",
-          code: 401,
         },
       };
     }
@@ -53,8 +53,8 @@ export const updateUserPassword = async (
       return {
         success: false,
         error: {
+          category: "NOT_FOUND",
           message: "해당 계정을 찾을 수 없습니다. 이메일 주소를 확인해주세요.",
-          code: 404,
         },
       };
     }
@@ -64,19 +64,6 @@ export const updateUserPassword = async (
       data: { message: "비밀번호가 성공적으로 변경되었습니다." },
     };
   } catch (e) {
-    if (e instanceof HTTPError) {
-      return {
-        success: false,
-        error: {
-          message:
-            "유효하지 않거나 만료된 토큰입니다. 비밀번호 재설정을 다시 시도해주세요.",
-          code: 401,
-        },
-      };
-    }
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+    return handleActionError(e);
   }
 };

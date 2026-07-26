@@ -4,6 +4,7 @@ import { APIResponse } from "@/shared/types";
 import { validateAndFlatten } from "@/shared/utils";
 import { premiumFeatureSchema } from "@/shared/schemas";
 import { updatePremiumFeatureService } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 import { revalidatePath } from "next/cache";
 
 export const updatePremiumFeature = async (
@@ -15,7 +16,7 @@ export const updatePremiumFeature = async (
   if (!featureId) {
     return {
       success: false,
-      error: { message: "기능 ID가 필요합니다.", code: 400 },
+      error: { category: "VALIDATION", message: "기능 ID가 필요합니다." },
     };
   }
 
@@ -31,7 +32,7 @@ export const updatePremiumFeature = async (
   if (!parsed.success) {
     return {
       success: false,
-      error: { message: "입력값을 확인해주세요", code: 400, fieldErrors: parsed.error },
+      error: { category: "VALIDATION", message: "입력값을 확인해주세요", fieldErrors: parsed.error },
     };
   }
 
@@ -44,10 +45,7 @@ export const updatePremiumFeature = async (
       success: true,
       data: { message: "프리미엄 기능이 수정되었습니다." },
     };
-  } catch {
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+  } catch (e) {
+    return handleActionError(e);
   }
 };
