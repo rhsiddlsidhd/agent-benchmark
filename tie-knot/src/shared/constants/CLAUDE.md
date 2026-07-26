@@ -12,7 +12,7 @@
 src/shared/constants/
 ├── index.ts           # 배럴
 ├── product.ts       # PRODUCT_SORT_KEYS, PRODUCT_SORT_OPTIONS 등 상품 도메인 상수
-├── theme.ts           # PRODUCT_THEME_MAP + getThemeByProductId 헬퍼
+├── theme.ts           # InvitationTheme, INVITATION_THEME_LABELS + getInvitationThemeOptions 헬퍼(관리자 폼 select용)
 └── ...                  # 목적당 파일 1개
 ```
 
@@ -23,7 +23,8 @@ src/shared/constants/
 
 ## Gotchas
 
-- `PRODUCT_SORT_OPTIONS`/`PRODUCT_PRICE_OPTIONS`/`PREMIUM_FEATURE_LABELS`/`PRODUCT_THEME_MAP`/`SUBMENU_PARENT_TITLES`는 값이 순수 리터럴(문자열)이라 SCREAMING_SNAKE_CASE 그대로 맞음 — `sidebar.ts`/`navigation.ts`의 camelCase 식별자(아이콘/함수 참조 섞인 값)와 헷갈려서 같이 고치지 않는다.
+- `PRODUCT_SORT_OPTIONS`/`PRODUCT_PRICE_OPTIONS`/`PREMIUM_FEATURE_LABELS`/`INVITATION_THEME_LABELS`/`SUBMENU_PARENT_TITLES`는 값이 순수 리터럴(문자열)이라 SCREAMING_SNAKE_CASE 그대로 맞음 — `sidebar.ts`/`navigation.ts`의 camelCase 식별자(아이콘/함수 참조 섞인 값)와 헷갈려서 같이 고치지 않는다.
+- `theme.ts`의 `PRODUCT_THEME_MAP`(상품ID→테마 하드코딩)은 제거됐다 — `product.model.ts`의 `theme` 필드(invitation discriminator 전용)로 대체, 관리자 폼에서 상품마다 직접 설정한다. `getThemeByProductId`도 같이 제거 — 소비처(`preview/[id]/page.tsx`)가 이제 `product.theme`를 직접 읽는다.
 
 ## 관련 문서
 

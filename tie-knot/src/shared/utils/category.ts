@@ -1,16 +1,12 @@
-export type ProductCategory = "invitation" | "business-card";
-export type InvitationSubCategory = "wedding" | "first-birthday" | "vip" | "business";
-export type BusinessCardSubCategory = "business" | "store" | "creator";
-export type SubCategory = InvitationSubCategory | BusinessCardSubCategory;
+export type ProductCategory = "invitation";
+export type SubCategory = "wedding" | "first-birthday" | "vip" | "business";
 
 export const SUB_CATEGORY_MAP: Record<ProductCategory, SubCategory[]> = {
   "invitation": ["wedding", "first-birthday", "vip", "business"],
-  "business-card": ["business", "store", "creator"],
 };
 
 export const productCategoryLabels: Record<ProductCategory, string> = {
   invitation: "초대장",
-  "business-card": "명함",
 };
 
 export const subCategoryLabels: Record<SubCategory, string> = {
@@ -18,8 +14,6 @@ export const subCategoryLabels: Record<SubCategory, string> = {
   "first-birthday": "돌잔치",
   vip: "VIP",
   business: "비즈니스",
-  store: "매장/샾",
-  creator: "크리에이터",
 };
 
 export const isProductCategory = (value: string): value is ProductCategory => {

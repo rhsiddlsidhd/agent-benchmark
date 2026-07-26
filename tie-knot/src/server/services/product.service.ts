@@ -3,6 +3,7 @@ import { ProductDto } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
 import { calculatePrice } from "@/shared/utils";
 import { AppError } from "@/shared/types";
+import { InvitationTheme } from "@/shared/constants";
 import mongoose, { Model, Types } from "mongoose";
 
 // Product 타입을 export (다른 파일에서 사용)
@@ -13,6 +14,7 @@ type LeanProduct = ProductDB & {
   createdAt: Date;
   updatedAt: Date;
   previewUrl?: string;
+  theme?: InvitationTheme;
   __v?: number;
 };
 

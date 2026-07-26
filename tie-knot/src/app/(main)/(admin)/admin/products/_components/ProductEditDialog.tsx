@@ -14,6 +14,7 @@ import { usePremiumFeature } from "@/client/hooks";
 
 
 import { getCategoryOptions, getSubCategoryOptions, ProductCategory, SubCategory } from "@/shared/utils";
+import { getInvitationThemeOptions, InvitationTheme } from "@/shared/constants";
 import { toast } from "sonner";
 import { useAdminModalStore } from "@/client/store";
 interface ProductEditDialogProps {
@@ -37,6 +38,7 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
   const [status, setStatus] = useState(product.status);
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>(product.category as ProductCategory);
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | "">(product.subCategory as SubCategory);
+  const [selectedTheme, setSelectedTheme] = useState<InvitationTheme>(product.theme ?? "default");
 
   useEffect(() => {
     if (state && state.success) {
@@ -216,6 +218,19 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
             required
           >
             서브 카테고리
+          </SelectField>
+        </div>
+
+        <div className="flex-1">
+          <SelectField
+            id="edit-theme"
+            name="theme"
+            defaultValue={selectedTheme}
+            onValueChange={(value) => setSelectedTheme(value as InvitationTheme)}
+            placeholder="테마를 선택하세요"
+            data={getInvitationThemeOptions()}
+          >
+            테마
           </SelectField>
         </div>
 

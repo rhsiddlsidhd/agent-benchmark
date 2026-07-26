@@ -58,4 +58,90 @@ describe("productResponseSchema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("category가 invitation이 아니면 실패한다", () => {
+    const result = productResponseSchema.safeParse(
+      buildValidProduct({ category: "business-card" }),
+    );
+
+    expect(result.success).toBe(false);
+  });
+
+  it("theme이 blossom/default가 아니면 실패한다", () => {
+    const result = productResponseSchema.safeParse(buildValidProduct({ theme: "sunset" }));
+
+    expect(result.success).toBe(false);
+  });
+
+  it("theme이 blossom이면 통과한다", () => {
+    const result = productResponseSchema.safeParse(buildValidProduct({ theme: "blossom" }));
+
+    expect(result.success).toBe(true);
+  });
+
+  it("theme을 생략하면 통과한다 (optional)", () => {
+    const data = buildValidProduct();
+    delete (data as { theme?: unknown }).theme;
+
+    const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("discount 필드가 없으면 실패한다 (optional 아님)", () => {
+    const data = buildValidProduct();
+    delete (data as { discount?: unknown }).discount;
+
+    const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(false);
+  });
+
+  it("discount.discountType이 rate/amount가 아니면 실패한다", () => {
+    const result = productResponseSchema.safeParse(
+      buildValidProduct({ discount: { discountType: "percent", value: 0 } }),
+    );
+
+    expect(result.success).toBe(false);
+  });
+
+  it("status가 허용된 값이 아니면 실패한다", () => {
+    const result = productResponseSchema.safeParse(buildValidProduct({ status: "unknown" }));
+
+    expect(result.success).toBe(false);
+  });
+
+  it("status가 없으면 실패한다 (optional 아님)", () => {
+    const data = buildValidProduct();
+    delete (data as { status?: unknown }).status;
+
+    const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(false);
+  });
+
+  it("likes 원소가 문자열이 아니면 실패한다", () => {
+    const result = productResponseSchema.safeParse(
+      buildValidProduct({ likes: [123] }),
+    );
+
+    expect(result.success).toBe(false);
+  });
+
+  it("previewUrl이 문자열이 아니면 실패한다", () => {
+    const result = productResponseSchema.safeParse(
+      buildValidProduct({ previewUrl: 123 }),
+    );
+
+    expect(result.success).toBe(false);
+  });
+
+  it("previewUrl을 생략하면 통과한다 (optional)", () => {
+    const data = buildValidProduct();
+    delete (data as { previewUrl?: unknown }).previewUrl;
+
+    const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(true);
+  });
 });

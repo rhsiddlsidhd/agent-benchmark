@@ -81,6 +81,8 @@ src/
 - `.env`는 vitest가 Next.js처럼 자동으로 읽지 않는다 — `vitest.config.ts`에서 `@next/env`(Next 내장, 별도 설치 불필요)의 `loadEnvConfig(process.cwd())`를 `defineConfig` 호출 이전에 실행해 로드한다. 이거 없으면 배럴 import를 타고 들어온 무관한 모듈(예: 인증 코드)이 환경변수 누락으로 테스트를 깨뜨릴 수 있다.
 - RTL의 자동 `afterEach(cleanup)`은 이 프로젝트의 `globals: false` 설정에서는 안 걸린다 — `src/test/testing-library-setup.ts`에 `afterEach(cleanup)`을 명시적으로 등록해뒀다. 이거 없으면 이전 테스트가 렌더한 DOM이 안 지워진 채 다음 테스트로 넘어가 쿼리가 여러 개 매칭되는 식으로 깨진다.
 - jsdom은 Pointer Events API(`hasPointerCapture`/`setPointerCapture`/`releasePointerCapture`)와 `scrollIntoView`를 구현하지 않는다 — Radix UI(Select/Dialog 등) 컴포넌트가 이 메서드들을 호출해서 폴리필 없으면 상호작용 테스트가 런타임에 터진다. `src/test/testing-library-setup.ts`에 폴리필을 이미 등록해뒀다.
+- jsdom은 `ResizeObserver`도 구현하지 않는다 — `@radix-ui/react-use-size`가 Select 트리거 크기 측정에 쓰는데, Select를 2개 이상 동시에 렌더링하는 폼(`ProductRegistrationForm` 테스트 작성 중 처음 발견)에서 마운트 즉시 던진다. `testing-library-setup.ts`에 mock 등록.
+- jsdom은 `DataTransfer`도 구현하지 않고, `HTMLInputElement.files` setter는 진짜 `FileList` 브랜드 체크를 한다 — `new DataTransfer() → input.files = dataTransfer.files` 패턴(파일 업로드 폼이 hidden input에 프로그래밍적으로 파일을 채울 때 흔한 방식)을 그대로 실행하면 던진다. `testing-library-setup.ts`에서 `DataTransfer`를 mock하고 `HTMLInputElement.prototype.files`의 setter/getter를 테스트 환경 한정으로 느슨하게 재정의해뒀다 — `user-event.upload()`가 쓰는 인스턴스 전용 대입과는 간섭하지 않는다.
 
 ### 스타일
 

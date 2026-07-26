@@ -4,6 +4,7 @@ import {
   SubCategory,
   SUB_CATEGORY_MAP,
 } from "@/shared/utils";
+import { InvitationTheme } from "@/shared/constants";
 
 export type { ProductCategory, SubCategory };
 export { SUB_CATEGORY_MAP };
@@ -58,6 +59,7 @@ export interface IProduct extends ProductDB {
 // invitation 카테고리 전용 필드 — mongoose discriminator로 base(IProduct)에 병합된다.
 export interface IInvitationProduct extends IProduct {
   previewUrl?: string;
+  theme?: InvitationTheme;
 }
 
 export interface ProductJSON extends Omit<ProductDB, "likes" | "featureIds" | "deletedAt"> {
@@ -65,6 +67,7 @@ export interface ProductJSON extends Omit<ProductDB, "likes" | "featureIds" | "d
   likes: string[];
   featureIds: string[];
   previewUrl?: string;
+  theme?: InvitationTheme;
   isLiked: boolean;
   discountedPrice: number;
   createdAt: string;
@@ -81,7 +84,7 @@ const productSchema = new Schema<IProduct>(
     price: { type: Number, required: true },
     category: {
       type: String,
-      enum: ["invitation", "business-card"],
+      enum: ["invitation"],
       required: true,
     },
     subCategory: {
@@ -145,6 +148,7 @@ export const ProductModel =
 
 const invitationProductSchema = new Schema<IInvitationProduct>({
   previewUrl: { type: String },
+  theme: { type: String, enum: ["blossom", "default"], default: "default" },
 });
 
 // discriminator 이름("invitation")이 곧 category 필드에 저장되는 값이다 —

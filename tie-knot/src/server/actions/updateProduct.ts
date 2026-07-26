@@ -22,6 +22,7 @@ export const updateProduct = async (
     title: formData.get("title"),
     category: formData.get("category"),
     subCategory: formData.get("subCategory"),
+    theme: (formData.get("theme") as string) || undefined,
     status: formData.get("status"),
     description: formData.get("description"),
     isFeatured: formData.get("isFeatured") === "true",

@@ -1,10 +1,12 @@
 export type InvitationTheme = "blossom" | "default";
 
-export const PRODUCT_THEME_MAP: Record<string, InvitationTheme> = {
-  "69afb24d31ac12bafa1a302c": "blossom",
+export const INVITATION_THEME_LABELS: Record<InvitationTheme, string> = {
+  default: "기본",
+  blossom: "벚꽃",
 };
 
-export const getThemeByProductId = (productId?: string): InvitationTheme => {
-  if (!productId) return "default";
-  return PRODUCT_THEME_MAP[productId] ?? "default";
-};
+export const getInvitationThemeOptions = () =>
+  Object.entries(INVITATION_THEME_LABELS).map(([value, label]) => ({
+    value: value as InvitationTheme,
+    label,
+  }));

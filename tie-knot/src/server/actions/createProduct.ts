@@ -21,6 +21,7 @@ export const createProduct = async (
     description: formData.get("description") as string,
     category: formData.get("category") as string,
     subCategory: formData.get("subCategory") as string,
+    theme: (formData.get("theme") as string) || undefined,
     price: Number(formData.get("price")),
     isPremium: formData.get("isPremium") === "true",
     featureIds: formData.getAll("featureIds") as string[],
