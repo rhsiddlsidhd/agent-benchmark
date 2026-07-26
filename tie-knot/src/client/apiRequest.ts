@@ -1,4 +1,4 @@
-import { ErrorResponse, SuccessResponse, HTTPError } from "@/shared/types";
+import { ErrorResponse, SuccessResponse } from "@/shared/types";
 
 // useSWR 없이 직접 호출하는 mutation 요청 전용(POST/DELETE/PATCH 등).
 // 인증 쿠키는 동일 origin이라 브라우저가 자동으로 실어준다.
@@ -14,5 +14,5 @@ export async function apiRequest<T>(
   }
 
   const body: ErrorResponse = await res.json();
-  throw new HTTPError(body.error.message, body.error.code);
+  throw body.error;
 }

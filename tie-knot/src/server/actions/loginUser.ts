@@ -9,6 +9,7 @@ import { setCookie } from "@/server/lib/cookies";
 import { getUser } from "@/server/services";
 import { UserRole } from "@/server/models";
 import { comparePasswords } from "@/server/lib/bcrypt";
+import { handleActionError } from "@/server/actions/handleActionError";
 
 export const loginUser = async (
   _prev: null,
@@ -23,7 +24,7 @@ export const loginUser = async (
   if (!data.email || !data.password) {
     return {
       success: false,
-      error: { message: "아이디와 비밀번호를 확인해주세요.", code: 400 },
+      error: { category: "VALIDATION", message: "아이디와 비밀번호를 확인해주세요." },
     };
   }
 
@@ -33,8 +34,8 @@ export const loginUser = async (
     return {
       success: false,
       error: {
+        category: "VALIDATION",
         message: "입력하신 정보의 형식이 올바르지 않습니다.",
-        code: 400,
         fieldErrors: parsed.error,
       },
     };
@@ -48,7 +49,7 @@ export const loginUser = async (
   if (!user) {
     return {
       success: false,
-      error: { message: "이메일 또는 비밀번호가 일치하지 않습니다.", code: 401 },
+      error: { category: "UNAUTHENTICATED", message: "이메일 또는 비밀번호가 일치하지 않습니다." },
     };
   }
 
@@ -57,7 +58,7 @@ export const loginUser = async (
   if (!isPasswordValid) {
     return {
       success: false,
-      error: { message: "이메일 또는 비밀번호가 일치하지 않습니다.", code: 401 },
+      error: { category: "UNAUTHENTICATED", message: "이메일 또는 비밀번호가 일치하지 않습니다." },
     };
   }
 
@@ -82,10 +83,7 @@ export const loginUser = async (
       success: true,
       data: { role: user.role, email: user.email, userId: user._id.toString() },
     };
-  } catch {
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+  } catch (e) {
+    return handleActionError(e);
   }
 };

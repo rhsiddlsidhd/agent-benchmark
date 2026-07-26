@@ -6,6 +6,7 @@ import { sendEmail } from "@/server/lib/nodemailer";
 import { emailSchema } from "@/shared/schemas";
 import { APIResponse } from "@/shared/types";
 import { checkEmailDuplicate } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 const createChangePWDomain = (token: string): string => {
   return process.env.NODE_ENV === "development"
     ? `http://localhost:3000/change-pw?t=${encodeURIComponent(token)}`
@@ -29,8 +30,8 @@ export const requestPasswordReset = async (
     return {
       success: false,
       error: {
+        category: "VALIDATION",
         message: "입력 값을 확인해주세요.",
-        code: 400,
         fieldErrors: parsed.error,
       },
     };
@@ -42,7 +43,7 @@ export const requestPasswordReset = async (
   if (!isEmail) {
     return {
       success: false,
-      error: { message: "등록되지 않은 이메일입니다.", code: 400 },
+      error: { category: "VALIDATION", message: "등록되지 않은 이메일입니다." },
     };
   }
 
@@ -59,10 +60,7 @@ export const requestPasswordReset = async (
       success: true,
       data: { message: "이메일 발송에 성공하였습니다.", email },
     };
-  } catch {
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+  } catch (e) {
+    return handleActionError(e);
   }
 };

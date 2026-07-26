@@ -1,8 +1,8 @@
 "use server";
 
 import { APIResponse } from "@/shared/types";
-import { HTTPError } from "@/shared/types";
 import { requireAuth, createCoupleInfoService, isValidSubwayStationName } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
 import { coupleInfoSchema } from "@/shared/schemas";
 
@@ -65,7 +65,7 @@ export const createCoupleInfo = async (
   if (!parsed.success) {
     return {
       success: false,
-      error: { message: "입력값을 확인해주세요", code: 400, fieldErrors: parsed.error },
+      error: { category: "VALIDATION", message: "입력값을 확인해주세요", fieldErrors: parsed.error },
     };
   }
 
@@ -76,8 +76,8 @@ export const createCoupleInfo = async (
     return {
       success: false,
       error: {
+        category: "VALIDATION",
         message: "입력값을 확인해주세요",
-        code: 400,
         fieldErrors: { subwayStation: ["존재하지 않는 지하철역입니다."] },
       },
     };
@@ -104,7 +104,7 @@ export const createCoupleInfo = async (
     if (!coupleInfo) {
       return {
         success: false,
-        error: { message: "커플 정보 등록에 실패하였습니다.", code: 500 },
+        error: { category: "INTERNAL", message: "커플 정보 등록에 실패하였습니다." },
       };
     }
 
@@ -116,12 +116,6 @@ export const createCoupleInfo = async (
       },
     };
   } catch (e) {
-    if (e instanceof HTTPError) {
-      return { success: false, error: { message: e.message, code: e.code } };
-    }
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+    return handleActionError(e);
   }
 };

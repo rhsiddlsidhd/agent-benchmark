@@ -1,7 +1,7 @@
 import { encrypt } from "@/server/lib/jose";
 import { type NextRequest } from "next/server";
 import { setCookie, deleteCookie } from "@/server/lib/cookies";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
 // entry 토큰을 발행하고 지정된 경로로 401 리다이렉트
 
@@ -10,7 +10,7 @@ export const POST = async (
 ): Promise<APIRouteResponse<{ path: string }>> => {
   try {
     const path = req.nextUrl.searchParams.get("next");
-    if (!path) throw new HTTPError("잘못된 요청입니다.", 401);
+    if (!path) throw new AppError("UNAUTHENTICATED", "잘못된 요청입니다.");
 
     const entryToken = await encrypt({ type: "ENTRY" });
     await deleteCookie("token");

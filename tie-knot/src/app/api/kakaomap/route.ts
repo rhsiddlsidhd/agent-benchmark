@@ -1,5 +1,5 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { KakaomapResponse } from "@/shared/schemas";
 import { NextRequest } from "next/server";
 
@@ -21,9 +21,9 @@ export const GET = async (
     const data = await response.json();
 
     if (!response.ok || data.errorType) {
-      throw new HTTPError(
+      throw new AppError(
+        "EXTERNAL_SERVICE",
         data.message ?? "주소 검색에 실패했습니다.",
-        response.status || 500,
       );
     }
 

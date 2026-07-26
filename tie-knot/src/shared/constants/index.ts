@@ -1,3 +1,4 @@
+export * from "./error";
 export * from "./navigation";
 export * from "./page";
 export * from "./payment";

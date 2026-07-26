@@ -1,9 +1,9 @@
 "use server";
 
 import { APIResponse } from "@/shared/types";
-import { HTTPError } from "@/shared/types";
 import { uploadProductImage } from "@/server/lib/cloudinary";
 import { requireAuth, updateProductService } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
 
 import { productSchema } from "@/shared/schemas";
@@ -36,7 +36,7 @@ export const updateProduct = async (
   if (!parsed.success) {
     return {
       success: false,
-      error: { message: "입력값을 확인해주세요", code: 400, fieldErrors: parsed.error },
+      error: { category: "VALIDATION", message: "입력값을 확인해주세요", fieldErrors: parsed.error },
     };
   }
 
@@ -45,7 +45,7 @@ export const updateProduct = async (
     if (role !== "ADMIN") {
       return {
         success: false,
-        error: { message: "관리자 권한이 필요합니다.", code: 403 },
+        error: { category: "FORBIDDEN", message: "관리자 권한이 필요합니다." },
       };
     }
 
@@ -76,12 +76,6 @@ export const updateProduct = async (
       data: { message: "상품이 성공적으로 수정되었습니다." },
     };
   } catch (e) {
-    if (e instanceof HTTPError) {
-      return { success: false, error: { message: e.message, code: e.code } };
-    }
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+    return handleActionError(e);
   }
 };

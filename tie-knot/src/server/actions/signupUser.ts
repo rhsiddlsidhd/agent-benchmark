@@ -7,6 +7,7 @@ import { hashPassword } from "@/server/lib/bcrypt";
 import { validateAndFlatten } from "@/shared/utils";
 import { RegisterSchema } from "@/shared/schemas";
 import { checkEmailDuplicate, createUser } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 export async function signupUser(
   prev: unknown,
   formData: FormData,
@@ -25,8 +26,8 @@ export async function signupUser(
     return {
       success: false,
       error: {
+        category: "VALIDATION",
         message: "입력값을 확인해주세요",
-        code: 400,
         fieldErrors: parsed.error,
       },
     };
@@ -39,7 +40,8 @@ export async function signupUser(
   if (isEmail) {
     return {
       success: false,
-      error: { message: "이미 존재하는 이메일 입니다.", code: 409 },
+      // 409 Conflict는 taxonomy(src/CLAUDE.md)에 없음 — 입력값(이메일) 자체의 문제라 VALIDATION으로 분류(400)
+      error: { category: "VALIDATION", message: "이미 존재하는 이메일 입니다." },
     };
   }
 
@@ -57,10 +59,7 @@ export async function signupUser(
       success: true,
       data: { message: `${data.email}님 회원가입을 축하드립니다.` },
     };
-  } catch {
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+  } catch (e) {
+    return handleActionError(e);
   }
 }

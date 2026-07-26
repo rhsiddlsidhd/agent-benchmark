@@ -91,24 +91,30 @@
 
 ## Phase B2 — 서버 공용 핸들러 (채널 A/B)
 
-**상태: 규칙 확정, 코드 미착수. B1 선행 완료.**
+**상태: 완료.**
 
-- 채널 A 핸들러: `AppError` 캐치 → 로깅 + 민감분류 일반화 + `ErrorPayload` 리턴.
-- 채널 B 핸들러(`response.ts`): `AppError` 캐치 → 로깅 + 민감분류 일반화 + `분류→HTTP status` 매핑 + body에 `ErrorPayload`.
-- `분류→안전문구`·`분류→HTTP status` lookup map을 A/B가 공유(데이터라 중복 아님).
-- `order/create/route.ts:48`의 `throw new HTTPError(..., 501)` → `AppError(DISABLED)`(매핑표에서 503).
-- **(스코프 확장)** route.ts 자체 검증 `HTTPError` throw 전환 포함: `guestbook`, `subway/[station]`, `couple-info`, `products/[id]/like`, `upload/signature`, `auth/entry`.
-- **(스코프 확장)** action 9개(`updateCoupleInfo`/`createOrder`/`updateUserPassword`/`deleteProduct`/`findUserEmail`/`createProduct`/`updateProduct`/`updateProductStatus`/`createCoupleInfo`)의 `if (e instanceof HTTPError)` catch 블록 → 공용 채널 A 핸들러로 대체.
-- **(스코프 확장)** `page.tsx` 2개(`couple-info`, `order/edit`) 렌더링 시점 `HTTPError` throw → `AppError`.
+- [x] 채널 A 핸들러: `src/server/actions/handleActionError.ts` 신설 — `AppError` 캐치 → 로깅 + 민감분류 일반화 + `ErrorPayload` 리턴. 15개 action 파일 전부(`createCoupleInfo`/`createGuestbook`/`createOrder`/`createPremiumFeature`/`createProduct`/`deleteGuestbook`/`deleteProduct`/`findUserEmail`/`loginUser`/`requestPasswordReset`/`signupUser`/`updateCoupleInfo`/`updatePremiumFeature`/`updateProduct`/`updateProductStatus`/`updateUserPassword`)가 이 핸들러로 통일 — 원래 스코프였던 9개 외에, 겉으로 `HTTPError`를 안 썼지만 zod 검증 실패를 `code` 리터럴로 직접 리턴하던 6개(`createGuestbook`/`createPremiumFeature`/`deleteGuestbook`/`loginUser`/`requestPasswordReset`/`signupUser`)도 wire 타입 변경으로 같이 걸림(아래 스코프 갭 참고).
+- [x] 채널 B 핸들러(`response.ts`): `AppError` 캐치 → 로깅 + 민감분류 일반화 + `ERROR_STATUS_MAP`(분류→HTTP status) 매핑 + body에 `ErrorPayload`.
+- [x] `분류→안전문구`(`ERROR_SAFE_MESSAGES`, `src/shared/constants/error.ts`) lookup map을 A/B가 공유. `분류→HTTP status`는 설계대로 `response.ts` 전용(채널 A는 HTTP 모름).
+- [x] `order/create/route.ts:48`의 `throw new HTTPError(..., 501)` → `AppError("DISABLED", ...)`(매핑표에서 503).
+- [x] route.ts 자체 검증 `HTTPError` throw 전환: `guestbook`, `subway/[station]`, `couple-info`, `products/[id]/like`, `upload/signature`, `auth/entry`. **(추가 발견)** `payment/complete`, `kakaomap`도 같은 패턴이라 같이 전환(원래 스코프 노트에 이름이 빠져있었음) — `kakaomap`은 외부 API의 원본 status를 그대로 전달하던 걸 `EXTERNAL_SERVICE`(고정 502)로 정규화, Kakao가 준 원본 status는 더 이상 그대로 노출 안 됨(의도된 정규화).
+- [x] `page.tsx` 2개(`couple-info`, `order/edit`) 렌더링 시점 `HTTPError` throw → `AppError`.
+
+> **B2 실행 중 발견한 스코프 갭 2건(2026-07-26)**:
+> 1. **wire 타입 변경 범위**: `ErrorResponse.error`를 `{message,code,fieldErrors?}` → `ErrorPayload{category,...}`로 바꾸는 순간, `code` 리터럴을 쓰는 모든 곳이 즉시 타입에러 — action 15개 전부(원래 짐작한 9개보다 많음, HTTPError 안 쓰던 6개도 포함), `fetcher.ts`/`apiRequest.ts`(`body.error.code`로 `HTTPError` 생성), `handleClientError`(`switch(error.code)`)까지. **결정: 전부 이번 B2에서 같이 전환**(원래 B4/B5로 미뤄뒀던 `fetcher`/`apiRequest`/`handleClientError` 부분) — `src/client/CLAUDE.md`가 이미 fetcher 목표 상태로 "ErrorPayload로 정규화해서 throw"를 명시하고 있어서, 두 번 건드리는 것보다 한 번에 맞추는 게 나음(사용자 확인 받은 결정, 옵션 A).
+> 2. **`signupUser`의 409 Conflict**: 7개 분류 taxonomy엔 Conflict가 없음 — "이미 존재하는 이메일" 케이스를 `VALIDATION`(400)으로 재분류(원래 409→400, 사소한 status 변경).
+> 3. **`updateUserPassword`가 의존하던 `decrypt.ts`(JWT 만료)**: 원래 B3 스코프였지만, catch 블록을 공용 핸들러로 통일하면서 `decrypt`가 여전히 `HTTPError("ERR_JWT_EXPIRED", 401)`(비유저용 원문)를 던지면 그대로 클라에 노출되는 회귀가 생겨 이 파일만 먼저 전환(`AppError("UNAUTHENTICATED", "유효하지 않거나 만료된 토큰입니다. 다시 로그인해주세요.")`) — B3 남은 범위에서 이 파일은 빠짐.
+> 4. **`fetcher`/`apiRequest`는 이제 `ErrorPayload`를 그대로 `throw`한다**(Error 인스턴스 아님, 위 결정 1 참고) — `useSWR`의 `error`/각 호출자의 `catch(e)`가 받는 게 plain `ErrorPayload` 객체.
+> 타입체크(`npx tsc --noEmit`) 전체 통과 확인. `npx vitest run`은 이 세션 환경 자체의 `@rolldown/binding-linux-x64-gnu` 네이티브 바인딩 누락으로 실행 불가(내 변경과 무관한 사전 존재 이슈) — 실제 테스트 실행 검증은 못 함.
 
 ## Phase B3 — services 계층 정리
 
-**상태: 규칙 확정, 코드 미착수. B1 선행 완료.**
+**상태: 규칙 확정, 코드 미착수. B1·B2 선행 완료. `decrypt.ts`는 B2에서 먼저 전환됨(위 스코프 갭 3번 참고), 아래 범위에서 제외.**
 
 - `requireAuth`: `HTTPError(401)` → `AppError(UNAUTHENTICATED)`.
 - 조회형(`getUser`/`getAuth`): 미존재만 `null`, DB 인프라 예외는 `AppError(INTERNAL)` throw로 구분.
 - 나머지 services 파일(`auth.service`/`payment.service`/`subway.service`/`user.service`)의 `HTTPError` throw 전체 `AppError`로 전환.
-- **(스코프 확장)** `src/server/lib/jose/decrypt.ts`(JWT 만료), `src/server/lib/cloudinary/upload.ts`(업로드 실패) — lib 레이어지만 같이 전환(어느 B phase에도 원래 안 적혀있던 파일).
+- **(스코프 확장)** `src/server/lib/cloudinary/upload.ts`(업로드 실패) — lib 레이어지만 같이 전환(어느 B phase에도 원래 안 적혀있던 파일). `src/server/lib/jose/decrypt.ts`는 이미 B2에서 전환 완료.
 
 ## Phase B4 — `apiRequest` 삭제 + 호출자 Server Action 이관
 
@@ -122,9 +128,9 @@
 
 **상태: 규칙 확정, 코드 미착수. B1·B2 선행(서버가 표시-안전 payload 생산해야 함).**
 
-- `utils/error.ts`(field/message/silent 판단) + `handleClientError` 삭제(내부 `HTTPError` 참조도 같이 사라짐).
+- `utils/error.ts`(field/message/silent 판단) + `handleClientError` 삭제 — **B2에서 이미 `category` 기반으로 갈아끼워둔 상태**(위 B2 스코프 갭 참고)라, B5는 이제 이 파일을 지우고 남은 3개 호출자(`ProductLikeBadge`/`useEntry`/`usePremiumFeatures`)를 `useActionState`/`useSWR` 직접 렌더로 바꾸는 게 핵심 — `ProductLikeBadge`/`useEntry`는 B4에서 Server Action 이관과 함께 처리됨.
 - 폼은 `useActionState` state(`ErrorPayload`) 직접 렌더(fieldErrors→input, message→전역), GET은 `useSWR` `error` 직접 렌더.
-- `fetcher.ts`의 `HTTPError` throw → `ErrorPayload` 기반으로 전환(GET 경로도 `HTTPError` 참조 제거 대상).
+- `fetcher.ts`는 B2에서 이미 `ErrorPayload` 직접 throw로 전환 완료 — B5에서 다시 안 건드림.
 
 ## Phase B6 — `HTTPError` 최종 삭제
 
@@ -146,6 +152,6 @@
 2. Phase 1 구현(`global-error.tsx` 신규 작성, Phase 2 결과물 재사용).
 3. Phase 3-1 → 3-2 → 3-3 — 위 둘과 의존관계 없어 아무 때나/병행 가능.
 
-**트랙 B**(레이어 에러 계약): **B1(완료) → (B2·B3 병행) → (B4·B5) → B6**. B4/B5는 B2 완료(서버가 `ErrorPayload` 생산) 후. B6(`HTTPError` 최종 삭제)는 B2~B5 전부 끝나고 참조 0건 확인 후 착수 — 스코프 갭 발견 경위는 위 결정 7번 아래 인용 블록 참고.
+**트랙 B**(레이어 에러 계약): **B1(완료) → B2(완료) → B3 → (B4·B5) → B6**. B2가 원래 B4/B5 몫이던 wire 타입 전환까지 끝내놔서, B4/B5 남은 범위는 이제 각각 "Server Action 이관"/"컴포넌트 렌더 전환"만 남았다(스코프 갭 1번 참고). B6(`HTTPError` 최종 삭제)는 B3~B5 전부 끝나고 참조 0건 확인 후 착수.
 
-다음 착수: **B2**(서버 공용 핸들러, 스코프 확장분 포함) — 순차 진행 정책상 B3와 동시 진행 안 하고 B2 먼저 끝낸 뒤 B3 착수 권장(리뷰 부담 분산).
+다음 착수: **B3**(services 계층 정리) — `auth.service`/`payment.service`/`subway.service`/`user.service`/`lib/cloudinary/upload.ts`의 남은 `HTTPError` throw를 `AppError`로 전환. B2가 끝나면서 wire 타입(`ErrorPayload`)·양쪽 공용 핸들러·`fetcher`/`apiRequest`/`handleClientError`까지 전부 이미 새 계약을 쓰고 있어서, B3는 이제 순수하게 "services가 남은 `HTTPError`를 `AppError`로 바꾸는" 기계적 작업만 남았다(레거시 브랜치가 그 사이 안전망 역할). 브랜치: `refactor/error-services-cleanup`(dev 기준으로 새로 분기).

@@ -9,7 +9,7 @@ import { APIResponse } from "@/shared/types";
 import { UserEmailSchema } from "@/shared/schemas";
 
 import { getUserEmail } from "@/server/services";
-import { HTTPError } from "@/shared/types";
+import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
 
 export const findUserEmail = async (
@@ -26,8 +26,8 @@ export const findUserEmail = async (
     return {
       success: false,
       error: {
+        category: "VALIDATION",
         message: "입력 값을 확인해주세요.",
-        code: 400,
         fieldErrors: parsed.error,
       },
     };
@@ -38,15 +38,6 @@ export const findUserEmail = async (
     const email = await getUserEmail({ name, phone });
     return { success: true, data: { email } };
   } catch (e) {
-    if (e instanceof HTTPError) {
-      return {
-        success: false,
-        error: { message: e.message, code: e.code, fieldErrors: e.fieldErrors },
-      };
-    }
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+    return handleActionError(e);
   }
 };

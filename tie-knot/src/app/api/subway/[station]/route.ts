@@ -1,5 +1,5 @@
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { parseSeoulOpenApiResponse } from "@/shared/utils";
 import { SUBWAY_LINE_COLORS, DEFAULT_SUBWAY_LINE_COLOR } from "@/shared/constants";
 import { SubwayStationLineInfoResponse } from "@/shared/schemas";
@@ -26,11 +26,11 @@ export const GET = async (
 
     const result = parseSeoulOpenApiResponse<SubwayNameSearchRow>(SERVICE_NAME, json);
     if (result.kind === "failure") {
-      throw new HTTPError(result.message, 502);
+      throw new AppError("EXTERNAL_SERVICE", result.message);
     }
 
     if (result.rows.length === 0) {
-      throw new HTTPError("해당 역을 찾을 수 없습니다.", 404);
+      throw new AppError("NOT_FOUND", "해당 역을 찾을 수 없습니다.");
     }
 
     const uniqueLineNames = [...new Set(result.rows.map((row) => row.LINE_NUM))];

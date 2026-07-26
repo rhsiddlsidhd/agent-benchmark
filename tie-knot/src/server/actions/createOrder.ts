@@ -1,11 +1,11 @@
 "use server";
 
 import { APIResponse } from "@/shared/types";
-import { HTTPError } from "@/shared/types";
 import { redirect } from "next/navigation";
 
 import { getCookie } from "@/server/lib/cookies";
 import { requireAuth, createOrderService } from "@/server/services";
+import { handleActionError } from "@/server/actions/handleActionError";
 
 import { validateAndFlatten } from "@/shared/utils";
 import { createOrderSchema } from "@/shared/schemas";
@@ -61,7 +61,7 @@ export async function createOrder(
   if (!parsed.success) {
     return {
       success: false,
-      error: { message: "입력값이 올바르지 않습니다.", code: 400, fieldErrors: parsed.error },
+      error: { category: "VALIDATION", message: "입력값이 올바르지 않습니다.", fieldErrors: parsed.error },
     };
   }
 
@@ -89,12 +89,6 @@ export async function createOrder(
       },
     };
   } catch (e) {
-    if (e instanceof HTTPError) {
-      return { success: false, error: { message: e.message, code: e.code } };
-    }
-    return {
-      success: false,
-      error: { message: "서버 오류가 발생했습니다.", code: 500 },
-    };
+    return handleActionError(e);
   }
 }
