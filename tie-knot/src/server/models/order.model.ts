@@ -91,6 +91,7 @@ export interface IOrder {
   cancelledAt?: Date;
   cancelReason?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const orderSchema = new Schema<IOrder>(

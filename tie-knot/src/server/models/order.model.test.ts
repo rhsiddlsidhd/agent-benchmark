@@ -34,4 +34,27 @@ describe("OrderModel", () => {
       }),
     ).rejects.toThrow(/coupleInfoId/);
   });
+
+  it("timestamps로 createdAt/updatedAt을 둘 다 생성한다", async () => {
+    const order = await OrderModel.create({
+      merchantUid: "ORDER-2",
+      coupleInfoId: new mongoose.Types.ObjectId(),
+      userId: new mongoose.Types.ObjectId(),
+      buyerName: "김철수",
+      buyerEmail: "buyer@example.com",
+      buyerPhone: "010-1234-5678",
+      product: {
+        productId: new mongoose.Types.ObjectId(),
+        title: "봄맞이 청첩장",
+        thumbnail: "https://example.com/thumbnail.jpg",
+        pricing: { originalPrice: 9900, discountedPrice: 9900 },
+        quantity: 1,
+        selectedFeatures: [],
+      },
+      payMethod: "CARD",
+    });
+
+    expect(order.createdAt).toBeInstanceOf(Date);
+    expect(order.updatedAt).toBeInstanceOf(Date);
+  });
 });

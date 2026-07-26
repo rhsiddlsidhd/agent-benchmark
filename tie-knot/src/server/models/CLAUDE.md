@@ -31,7 +31,7 @@ src/server/models/
 ## Gotchas
 
 - `order.model.ts`의 `orderSchema.pre("save", ...)`가 `finalPrice`(소계/할인율/고정할인/음수방지)를 계산한다 — 위 도메인 계산 금지 규칙 위반. `order.service.ts`의 `createOrderService`로 이관 예정(TODO #1 결제/트랜잭션 정합성 작업과 조율, 아직 미착수).
-- `product.model.ts`의 `subCategory` 커스텀 validator가 `this.category`를 참조한다 — document validation(`this`가 Document)에선 동작하지만 update validator(`this`가 Query, `runValidators: true` 켰을 때)에선 `this.category`가 `undefined`라 항상 검증 실패한다(mongoose 공식문서: "this is the Query, not the document being updated"). `this.get('category')`로 고쳤다 — Document/Query 둘 다 `.get(path)`를 지원해 양쪽에서 동작한다.
+- `product.model.ts`의 `subCategory` 커스텀 validator가 `this.category`를 참조했다 — document validation(`this`가 Document)에선 동작하지만 update validator(`this`가 Query, `runValidators: true` 켰을 때)에선 `this.category`가 `undefined`라 항상 검증 실패했다(mongoose 공식문서: "this is the Query, not the document being updated"). **`this.get('category')`로는 안 고쳐진다** — Query의 `.get()`은 이번 update payload에 있는 값만 리턴하고, payload에 `category`가 없으면 기존 문서 값을 안 가져온다(공식문서가 이 동작을 명시하지 않아 DB로 직접 검증). 실제 고친 방식: payload에 `category`가 없으면 `this.model.findOne(this.getQuery())`로 기존 문서를 비동기 조회해 폴백한다(mongoose 공식문서의 `pre('findOneAndUpdate')` 예제가 보여주는 패턴을 validator에 적용).
 
 ## 관련 문서
 

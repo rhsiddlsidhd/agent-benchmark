@@ -83,8 +83,19 @@ const productSchema = new Schema<IProduct>(
       type: String,
       required: true,
       validate: {
-        validator: function (this: IProduct, value: string) {
-          const allowed = SUB_CATEGORY_MAP[this.category];
+        validator: async function (
+          this: mongoose.Document<unknown, unknown, IProduct> | mongoose.Query<unknown, IProduct>,
+          value: string,
+        ) {
+          let category = this.get("category") as ProductCategory | undefined;
+          if (!category && "getQuery" in this) {
+            const existing = await (this.model as mongoose.Model<IProduct>)
+              .findOne(this.getQuery())
+              .select("category")
+              .lean();
+            category = existing?.category;
+          }
+          const allowed = SUB_CATEGORY_MAP[category as ProductCategory];
           return allowed?.includes(value as SubCategory) ?? false;
         },
         message: (props: { value: string }) =>
