@@ -1,5 +1,5 @@
 import * as PortOne from "@portone/server-sdk";
-import { PaymentModel, PayStatus, OrderModel } from "@/server/models";
+import { PaymentModel, PayStatus, OrderModel, ProductModel } from "@/server/models";
 
 import { getProductService } from "./product.service";
 import { getOrderSeviceByMerchantUid } from "./order.service";
@@ -175,6 +175,12 @@ export const syncPayment = async (paymentId: string) => {
       order.orderStatus = "CONFIRMED";
       order.paymentId = payment._id;
       await order.save();
+
+      // 6. 판매 수량 반영 — "판매 건수"가 아니라 quantity 합산 기준(수량 개념 있는
+      // 상품군 확장 대비, 지금은 quantity가 거의 항상 1).
+      await ProductModel.findByIdAndUpdate(order.product.productId, {
+        $inc: { salesCount: order.product.quantity },
+      });
 
       return {
         success: true,

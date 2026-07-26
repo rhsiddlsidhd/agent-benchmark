@@ -37,7 +37,7 @@ const transformProduct = (product: LeanProduct, userId?: string): ProductJSON =>
     discountedPrice: calculatePrice(product.price, product.discount),
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
-    ...(deletedAt && { deletedAt: deletedAt.toISOString() }),
+    deletedAt: deletedAt ? deletedAt.toISOString() : null,
   };
 };
 
@@ -89,6 +89,27 @@ export const getProductService = async (
   }).lean();
 
   return product ? transformProduct(product, userId) : null;
+};
+
+// 상품 상세페이지 방문 시 조회수 증가 — getProductService에는 안 넣는다.
+// payment.service.ts(결제 검증용 조회)와 (main)/page.tsx(고정 미리보기)도
+// getProductService를 호출하는데 그 두 호출까지 조회수로 잡히면 안 되기 때문.
+export const incrementProductViewsService = async (
+  productId: string,
+): Promise<boolean> => {
+  await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(productId)) {
+    return false;
+  }
+
+  const updated = await ProductModel.findOneAndUpdate(
+    { _id: productId, deletedAt: null },
+    { $inc: { views: 1 } },
+    { new: true },
+  );
+
+  return !!updated;
 };
 
 // 모든 상품 조회

@@ -45,7 +45,8 @@ export interface ProductDB {
     value: number;
   };
   status: Status;
-  deletedAt?: Date;
+  // 스키마가 default: null이라 모든 문서에 항상 존재한다 — optional이 아니라 nullable.
+  deletedAt: Date | null;
 }
 
 export interface IProduct extends ProductDB {
@@ -68,7 +69,7 @@ export interface ProductJSON extends Omit<ProductDB, "likes" | "featureIds" | "d
   discountedPrice: number;
   createdAt: string;
   updatedAt: string;
-  deletedAt?: string;
+  deletedAt: string | null;
 }
 
 const productSchema = new Schema<IProduct>(

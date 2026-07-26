@@ -9,6 +9,7 @@ export * from "./deleteGuestbook";
 export * from "./deleteProduct";
 export * from "./findUserEmail";
 export * from "./handleActionError";
+export * from "./incrementProductViews";
 export * from "./issueEntryToken";
 export * from "./loginUser";
 export * from "./requestPasswordReset";

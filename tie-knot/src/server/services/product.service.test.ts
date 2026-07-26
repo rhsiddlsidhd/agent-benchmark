@@ -8,6 +8,7 @@ import { ProductModel, InvitationProductModel } from "@/server/models";
 import {
   createProductService,
   getProductService,
+  incrementProductViewsService,
   getAllProductsService,
   getFeaturedTemplatesService,
   updateProductService,
@@ -107,6 +108,57 @@ describe("product.service", () => {
 
       expect(result?.isLiked).toBe(true);
       expect(result?.likes).toContain(userId);
+    });
+
+    it("삭제되지 않은 상품은 deletedAt을 null로 리턴한다 (optional이 아닌 nullable)", async () => {
+      const input = buildProductInput();
+      await createProductService(input);
+      const saved = await ProductModel.findOne({ title: input.title }).lean();
+
+      const result = await getProductService(saved!._id.toString());
+
+      expect(result?.deletedAt).toBeNull();
+    });
+  });
+
+  describe("incrementProductViewsService", () => {
+    it("views를 1 증가시키고 true를 리턴한다", async () => {
+      const input = buildProductInput();
+      await createProductService(input);
+      const saved = await ProductModel.findOne({ title: input.title }).lean();
+
+      const result = await incrementProductViewsService(saved!._id.toString());
+
+      expect(result).toBe(true);
+      const updated = await ProductModel.findById(saved!._id).lean();
+      expect(updated?.views).toBe(1);
+    });
+
+    it("여러 번 호출하면 그만큼 누적 증가한다", async () => {
+      const input = buildProductInput();
+      await createProductService(input);
+      const saved = await ProductModel.findOne({ title: input.title }).lean();
+
+      await incrementProductViewsService(saved!._id.toString());
+      await incrementProductViewsService(saved!._id.toString());
+      await incrementProductViewsService(saved!._id.toString());
+
+      const updated = await ProductModel.findById(saved!._id).lean();
+      expect(updated?.views).toBe(3);
+    });
+
+    it("존재하지 않는 id면 false를 리턴한다", async () => {
+      const missingId = new mongoose.Types.ObjectId().toString();
+
+      const result = await incrementProductViewsService(missingId);
+
+      expect(result).toBe(false);
+    });
+
+    it("id 형식이 잘못되면 false를 리턴한다", async () => {
+      const result = await incrementProductViewsService("not-a-valid-id");
+
+      expect(result).toBe(false);
     });
   });
 
