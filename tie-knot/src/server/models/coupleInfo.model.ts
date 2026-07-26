@@ -1,16 +1,5 @@
 import mongoose, { Schema, Model, Types } from "mongoose";
 
-// 공통 변환 함수 (중첩된 객체 내의 ObjectId를 찾아 string으로 변환)
-const transformIds = (obj: any) => {
-  if (!obj || typeof obj !== "object") return;
-  for (const key in obj) {
-    if (obj[key] instanceof mongoose.Types.ObjectId) {
-      obj[key] = obj[key].toString();
-    } else if (typeof obj[key] === "object") {
-      transformIds(obj[key]);
-    }
-  }
-};
 // 공통 타입 정의
 interface Person {
   name: string;
@@ -102,13 +91,7 @@ const coupleInfoSchema = new Schema<ICoupleInfo>(
   {
     timestamps: true,
     toJSON: {
-      virtuals: true,
       versionKey: false,
-      transform: (doc, ret: Record<string, any>) => {
-        // 모든 깊이의 ObjectId를 찾아 string으로 변환 (재귀 방식)
-        transformIds(ret);
-        return ret;
-      },
     },
   },
 );

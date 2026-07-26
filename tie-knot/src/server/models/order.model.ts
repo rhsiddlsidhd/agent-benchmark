@@ -143,59 +143,10 @@ const orderSchema = new Schema<IOrder>(
   {
     timestamps: true,
     toJSON: {
-      virtuals: true,
       versionKey: false,
-      transform: (doc, ret: Record<string, any>) => {
-        if (ret._id) {
-          ret._id = ret._id.toString();
-        }
-
-        if (ret.product) {
-          if (ret.product.productId) {
-            ret.product.productId = ret.product.productId.toString();
-          }
-
-          if (Array.isArray(ret.product.selectedFeatures)) {
-            ret.product.selectedFeatures.forEach((f: any) => {
-              if (f.featureId) {
-                f.featureId = f.featureId.toString();
-              }
-            });
-          }
-        }
-
-        delete ret.__v;
-
-        return ret;
-      },
     },
   },
 );
-
-orderSchema.pre("save", function (next) {
-  // const order = this;
-
-  // 1. 기본 금액 합산 (할인 전 상품가 * 수량 + 옵션가 총합)
-  const productTotal =
-    this.product.pricing.discountedPrice * this.product.quantity;
-  const optionsTotal = this.product.selectedFeatures.reduce(
-    (acc, f) => acc + f.price,
-    0,
-  );
-  const subTotal = productTotal + optionsTotal;
-
-  // 2. 할인 계산 (소수점 할인율 우선 적용 후 고정 할인액 차감)
-  // 예: 10,000원 상품에 0.1(10%) 할인율 적용 시 9,000원
-  let calculatedFinal = subTotal * (1 - (this.discountRate || 0));
-
-  // 3. 고정 할인액(discountAmount)이 있다면 추가 차감
-  calculatedFinal -= this.discountAmount || 0;
-
-  // 4. 최종 가격 결정 (음수 방지)
-  this.finalPrice = Math.max(0, Math.floor(calculatedFinal));
-
-  next();
-});
 
 export const OrderModel =
   (mongoose.models.Order as Model<IOrder>) ||

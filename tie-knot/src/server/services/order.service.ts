@@ -11,12 +11,25 @@ export const createOrderService = async (
 
   const merchantUid = generateUid("ORDER");
 
+  // 최종 결제가 계산: 상품가*수량 + 옵션 합산 → 할인율 적용 → 고정 할인 차감 → 음수 방지
+  const productTotal =
+    data.product.pricing.discountedPrice * data.product.quantity;
+  const optionsTotal = data.product.selectedFeatures.reduce(
+    (acc, f) => acc + f.price,
+    0,
+  );
+  const subTotal = productTotal + optionsTotal;
+  const discounted =
+    subTotal * (1 - (data.discountRate || 0)) - (data.discountAmount || 0);
+  const finalPrice = Math.max(0, Math.floor(discounted));
+
   // DB 저장을 위한 최종 데이터 가공(Trans)
   const orderData = {
     ...data,
     coupleInfoId: new mongoose.Types.ObjectId(data.coupleInfoId),
     userId: new mongoose.Types.ObjectId(data.userId),
     merchantUid,
+    finalPrice,
     product: {
       ...data.product,
       productId: new mongoose.Types.ObjectId(data.product.productId),
@@ -29,9 +42,7 @@ export const createOrderService = async (
 
   const order = await OrderModel.create(orderData);
 
-  const orderObj = order.toJSON();
-
-  return orderObj;
+  return order.toObject();
 };
 
 export const getOrderSeviceByMerchantUid = async (

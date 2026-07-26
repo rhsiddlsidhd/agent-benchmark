@@ -30,6 +30,105 @@ describe("order.service", () => {
       const saved = await OrderModel.findById(result._id).lean();
       expect(saved?.coupleInfoId?.toString()).toBe(input.coupleInfoId);
     });
+
+    describe("finalPrice 계산", () => {
+      it("할인 없으면 상품가*수량 + 옵션가 합산이 finalPrice다", async () => {
+        const input = buildOrderInput({
+          discountRate: 0,
+          discountAmount: 0,
+          product: {
+            productId: new mongoose.Types.ObjectId().toString(),
+            title: "봄맞이 청첩장",
+            thumbnail: "https://example.com/thumbnail.jpg",
+            pricing: { originalPrice: 10000, discountedPrice: 10000 },
+            quantity: 2,
+            selectedFeatures: [
+              { featureId: new mongoose.Types.ObjectId().toString(), code: "f1", label: "옵션1", price: 500 },
+            ],
+          },
+        });
+
+        const result = await createOrderService(input);
+
+        expect(result.finalPrice).toBe(10000 * 2 + 500);
+      });
+
+      it("discountRate를 소계에 적용한다", async () => {
+        const input = buildOrderInput({
+          discountRate: 0.1,
+          discountAmount: 0,
+          product: {
+            productId: new mongoose.Types.ObjectId().toString(),
+            title: "봄맞이 청첩장",
+            thumbnail: "https://example.com/thumbnail.jpg",
+            pricing: { originalPrice: 10000, discountedPrice: 10000 },
+            quantity: 1,
+            selectedFeatures: [],
+          },
+        });
+
+        const result = await createOrderService(input);
+
+        expect(result.finalPrice).toBe(9000);
+      });
+
+      it("discountRate 적용 후 discountAmount를 추가 차감한다", async () => {
+        const input = buildOrderInput({
+          discountRate: 0.1,
+          discountAmount: 500,
+          product: {
+            productId: new mongoose.Types.ObjectId().toString(),
+            title: "봄맞이 청첩장",
+            thumbnail: "https://example.com/thumbnail.jpg",
+            pricing: { originalPrice: 10000, discountedPrice: 10000 },
+            quantity: 1,
+            selectedFeatures: [],
+          },
+        });
+
+        const result = await createOrderService(input);
+
+        expect(result.finalPrice).toBe(8500);
+      });
+
+      it("계산 결과가 음수면 0으로 방지한다", async () => {
+        const input = buildOrderInput({
+          discountRate: 0,
+          discountAmount: 999999,
+          product: {
+            productId: new mongoose.Types.ObjectId().toString(),
+            title: "봄맞이 청첩장",
+            thumbnail: "https://example.com/thumbnail.jpg",
+            pricing: { originalPrice: 1000, discountedPrice: 1000 },
+            quantity: 1,
+            selectedFeatures: [],
+          },
+        });
+
+        const result = await createOrderService(input);
+
+        expect(result.finalPrice).toBe(0);
+      });
+
+      it("소수점 결과는 내림한다", async () => {
+        const input = buildOrderInput({
+          discountRate: 0.15,
+          discountAmount: 0,
+          product: {
+            productId: new mongoose.Types.ObjectId().toString(),
+            title: "봄맞이 청첩장",
+            thumbnail: "https://example.com/thumbnail.jpg",
+            pricing: { originalPrice: 999, discountedPrice: 999 },
+            quantity: 1,
+            selectedFeatures: [],
+          },
+        });
+
+        const result = await createOrderService(input);
+
+        expect(result.finalPrice).toBe(Math.floor(999 * 0.85));
+      });
+    });
   });
 
   describe("getOrderSeviceByMerchantUid", () => {
