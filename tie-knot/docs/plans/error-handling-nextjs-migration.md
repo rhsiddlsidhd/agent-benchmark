@@ -80,28 +80,35 @@
 6. `apiRequest`·채널 D·데이터접근표 row4 **삭제** — 브라우저 mutation 전부 Server Action.
 7. `DISABLED` HTTP status `501 → 503`.
 
+> **B1 실행 중 발견한 스코프 갭(2026-07-26)**: `HTTPError` 참조 파일이 26개 — B2~B5가 이름으로 명시한 범위보다 훨씬 넓음. 특히 `src/server/lib/jose/decrypt.ts`, `src/server/lib/cloudinary/upload.ts`(어느 B에도 안 적혀 있었음), route.ts 자체 검증 throw(services 안 거치는 것들: `guestbook`, `subway/[station]`, `couple-info`, `products/[id]/like`, `upload/signature`, `auth/entry`), action 9개의 `if (e instanceof HTTPError)` catch 블록, `page.tsx` 2개(`couple-info`, `order/edit`)까지 전부 전환 대상. **결정: `HTTPError`는 B1에서 삭제하지 않고 `AppError`와 병행 — 모든 참조가 사라진 뒤 별도 마무리 단계(B6)에서 삭제.** 이유: 26개 파일을 한 커밋에 다 바꾸지 않는 한 Phase별 독립 브랜치가 컴파일 안 되는 상태로 쪼개져야 함 — 기존 "Phase당 독립 브랜치+PR" 전략과 충돌하기 때문.
+
 ## Phase B1 — 에러 타입/계약 정의 (`src/shared/types/error.ts`)
 
-**상태: 규칙 확정, 코드 미착수. 나머지 B 전부 이 타입에 의존 — 선행 필수.**
+**상태: 완료.**
 
-- `AppError`(앱 고유 분류만, HTTP status 모름) 정의, `HTTPError` 제거.
-- 분류 taxonomy(전체 표는 `src/CLAUDE.md`) + `ErrorPayload { 분류, message, fieldErrors? }` 정의.
+- [x] `AppError`(앱 고유 분류만, HTTP status 모름) 정의 — `ERROR_CATEGORIES`/`ErrorCategory`/`ErrorPayload` 포함. `HTTPError`는 삭제하지 않고 유지(위 스코프 갭 참고, B6에서 삭제).
+- 타입체크 통과 확인(`npx tsc --noEmit`, 에러 0건) — 기존 코드 변경 없음, 순수 추가라 회귀 리스크 없음.
 
 ## Phase B2 — 서버 공용 핸들러 (채널 A/B)
 
-**상태: 규칙 확정, 코드 미착수. B1 선행.**
+**상태: 규칙 확정, 코드 미착수. B1 선행 완료.**
 
 - 채널 A 핸들러: `AppError` 캐치 → 로깅 + 민감분류 일반화 + `ErrorPayload` 리턴.
 - 채널 B 핸들러(`response.ts`): `AppError` 캐치 → 로깅 + 민감분류 일반화 + `분류→HTTP status` 매핑 + body에 `ErrorPayload`.
 - `분류→안전문구`·`분류→HTTP status` lookup map을 A/B가 공유(데이터라 중복 아님).
 - `order/create/route.ts:48`의 `throw new HTTPError(..., 501)` → `AppError(DISABLED)`(매핑표에서 503).
+- **(스코프 확장)** route.ts 자체 검증 `HTTPError` throw 전환 포함: `guestbook`, `subway/[station]`, `couple-info`, `products/[id]/like`, `upload/signature`, `auth/entry`.
+- **(스코프 확장)** action 9개(`updateCoupleInfo`/`createOrder`/`updateUserPassword`/`deleteProduct`/`findUserEmail`/`createProduct`/`updateProduct`/`updateProductStatus`/`createCoupleInfo`)의 `if (e instanceof HTTPError)` catch 블록 → 공용 채널 A 핸들러로 대체.
+- **(스코프 확장)** `page.tsx` 2개(`couple-info`, `order/edit`) 렌더링 시점 `HTTPError` throw → `AppError`.
 
 ## Phase B3 — services 계층 정리
 
-**상태: 규칙 확정, 코드 미착수. B1 선행.**
+**상태: 규칙 확정, 코드 미착수. B1 선행 완료.**
 
 - `requireAuth`: `HTTPError(401)` → `AppError(UNAUTHENTICATED)`.
 - 조회형(`getUser`/`getAuth`): 미존재만 `null`, DB 인프라 예외는 `AppError(INTERNAL)` throw로 구분.
+- 나머지 services 파일(`auth.service`/`payment.service`/`subway.service`/`user.service`)의 `HTTPError` throw 전체 `AppError`로 전환.
+- **(스코프 확장)** `src/server/lib/jose/decrypt.ts`(JWT 만료), `src/server/lib/cloudinary/upload.ts`(업로드 실패) — lib 레이어지만 같이 전환(어느 B phase에도 원래 안 적혀있던 파일).
 
 ## Phase B4 — `apiRequest` 삭제 + 호출자 Server Action 이관
 
@@ -109,14 +116,24 @@
 
 - 4개 호출자 → Server Action: `usePortOnePayment`(결제 검증 `/api/payment/complete` → `completePayment`), `useEntry`(entry 토큰), `ProductLikeBadge`(좋아요 토글), `UpdatePasswordForm`(로그아웃 쿠키 DELETE).
 - 결제: 브라우저 SDK(`PortOne.requestPayment`)는 클라 유지, 그 뒤 검증 POST만 Server Action. route.ts 엔드포인트는 PortOne 웹훅(서버→서버, 채널 B)용으로 남을 수 있음.
-- `apiRequest.ts` 삭제.
+- `apiRequest.ts` 삭제(내부 `HTTPError` 참조도 같이 사라짐).
 
 ## Phase B5 — 클라이언트 판단로직 제거
 
 **상태: 규칙 확정, 코드 미착수. B1·B2 선행(서버가 표시-안전 payload 생산해야 함).**
 
-- `utils/error.ts`(field/message/silent 판단) + `handleClientError` 삭제.
+- `utils/error.ts`(field/message/silent 판단) + `handleClientError` 삭제(내부 `HTTPError` 참조도 같이 사라짐).
 - 폼은 `useActionState` state(`ErrorPayload`) 직접 렌더(fieldErrors→input, message→전역), GET은 `useSWR` `error` 직접 렌더.
+- `fetcher.ts`의 `HTTPError` throw → `ErrorPayload` 기반으로 전환(GET 경로도 `HTTPError` 참조 제거 대상).
+
+## Phase B6 — `HTTPError` 최종 삭제
+
+**상태: 신규 추가. B2~B5 전부 완료 후 착수.**
+
+- `grep -rn "HTTPError" src`로 참조 0건 확인.
+- `src/shared/types/error.ts`에서 `HTTPError` 클래스 삭제.
+- `src/server/response.ts`의 재export 목록에서 `HTTPError` 제거.
+- 타입체크로 최종 확인.
 
 ---
 
@@ -129,4 +146,6 @@
 2. Phase 1 구현(`global-error.tsx` 신규 작성, Phase 2 결과물 재사용).
 3. Phase 3-1 → 3-2 → 3-3 — 위 둘과 의존관계 없어 아무 때나/병행 가능.
 
-**트랙 B**(레이어 에러 계약): **B1 → (B2·B3 병행) → (B4·B5)**. B1(타입 정의)이 모든 것의 기반이라 선행 필수. B4/B5는 B2 완료(서버가 `ErrorPayload` 생산) 후.
+**트랙 B**(레이어 에러 계약): **B1(완료) → (B2·B3 병행) → (B4·B5) → B6**. B4/B5는 B2 완료(서버가 `ErrorPayload` 생산) 후. B6(`HTTPError` 최종 삭제)는 B2~B5 전부 끝나고 참조 0건 확인 후 착수 — 스코프 갭 발견 경위는 위 결정 7번 아래 인용 블록 참고.
+
+다음 착수: **B2**(서버 공용 핸들러, 스코프 확장분 포함) — 순차 진행 정책상 B3와 동시 진행 안 하고 B2 먼저 끝낸 뒤 B3 착수 권장(리뷰 부담 분산).
