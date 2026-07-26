@@ -52,27 +52,26 @@
 
 ## Phase 3 — Client GET 페칭 컨벤션 위반 정리 (`kakaomap`)
 
-**상태: 방향 합의, 세부 Phase 미착수**
+**상태: 완료.**
 
-### Phase 3-1 — `useNavigationGeo.ts`: raw fetch → `useSWR`+`fetcher` 전환
+> **설계 변경(사용자 확인 받음)**: 원래 계획은 "`KakaoMap.tsx`가 `useNavigationGeo` 훅을 그대로 호출"이었지만, `useNavigationGeo`는 kakaomap 지오코딩(`target`)뿐 아니라 `navigator.geolocation` 브라우저 권한 프롬프트(`current`)까지 같이 트리거한다. `KakaoMap`은 지도 핀 표시용으로 `target`만 쓰고 `current`는 안 쓰는데, 유일한 사용처(`LocationSection.tsx`)가 이미 자체적으로 `useNavigationGeo`를 호출 중이라 그대로 통합하면 같은 트리 안에서 geolocation 권한 프롬프트가 2번 뜨는 새 부작용이 생긴다. **결정**: kakaomap 지오코딩만 뽑은 `useKakaomapGeocode.ts`를 신설하고, `useNavigationGeo`는 그 위에 `current`(geolocation)만 얹는 조합으로 리팩터 — `KakaoMap`은 `useKakaomapGeocode`만 호출.
 
-- route(`src/app/api/kakaomap/route.ts`)는 이미 `apiOk`/`apiFail` envelope라 route 쪽 변경 불필요 — client 쪽 호출 방식만 표준 경로로 전향.
-- `useSubwayLineInfo.ts` 패턴 그대로:
-  ```ts
-  const swrKey = address ? `/api/kakaomap?address=${address}` : null;
-  const { data, error } = useSWR(swrKey, (url) => fetcher<KakaomapResponse>(url));
-  ```
-- 기존 `try/catch` + `console.error` 에러 처리를 SWR의 `error` 반환값 기반으로 재구성.
+### Phase 3-1 — `useKakaomapGeocode.ts` 신설 + `useNavigationGeo.ts`가 이를 조합
+
+- [x] `useKakaomapGeocode.ts`(신규): `useSubwayLineInfo.ts` 패턴 그대로 `useSWR`+`fetcher`로 kakaomap 지오코딩 — route(`src/app/api/kakaomap/route.ts`)는 이미 `apiOk`/`apiFail` envelope라 route 쪽 변경 불필요.
+- [x] `useNavigationGeo.ts`: `target` 계산을 `useKakaomapGeocode(address)` 호출로 대체, `current`(geolocation) 로직은 그대로 유지.
+- [x] 기존 raw fetch `try/catch`를 SWR `error` 기반으로 재구성(에러는 콘솔 로그만, `target`은 null 유지 — 기존 동작과 동일).
 
 ### Phase 3-2 — `KakaoMap.tsx`: 중복 호출 제거
 
-- 지금 `KakaoMap.tsx`가 자체 `useEffect`로 `/api/kakaomap`을 또 호출 중(`useNavigationGeo.ts`와 별개 중복).
-- Phase 3-1 완료 후, `KakaoMap.tsx`가 자체 fetch 로직을 버리고 `useNavigationGeo` 훅을 호출하는 구조로 리팩터 — Phase 3-1 선행 필수(순서 있음).
+- [x] 자체 `useEffect` raw fetch 삭제, `useKakaomapGeocode(address)` 호출로 대체 — `LocationSection.tsx`가 이미 쓰는 `useNavigationGeo`와 달리 geolocation 트리거 없이 지오코딩만 공유(위 설계 변경 참고).
+- `LocationSection.tsx`는 `useNavigationGeo(fullAddress)`, `KakaoMap`은 `address`(addressDetail 제외)로 인자가 달라 SWR 키가 다를 수 있다 — addressDetail이 없는 흔한 케이스는 키가 같아져 SWR 캐시로 중복 호출이 실제로 제거된다. addressDetail이 있는 케이스(키 불일치)는 이번 스코프에서 안 건드림(기존부터 `address`/`fullAddress`를 다르게 쓰던 기존 동작, 지도 핀은 상세주소 없이도 되는 게 의도로 보임).
 
 ### Phase 3-3 — `navigator.geolocation` 부분 회귀 확인
 
-- `useNavigationGeo.ts`의 `current`(브라우저 geolocation) 쪽은 이번 마이그레이션 대상 아님 — `useState`+`useEffect` 그대로 유지.
-- Phase 3-1/3-2 리팩터 후 이 부분이 실수로 같이 안 건드려졌는지만 확인.
+- [x] `useNavigationGeo.ts`의 `current`(브라우저 geolocation) 로직은 리팩터 전후로 문자 그대로 동일 — `getCurrentCoordinates`/`useState`/`useEffect` 변경 없음, 확인 완료.
+
+> 타입체크·lint·전체 테스트(18 파일 66 테스트, 전 파일 line coverage 80%+)·`npm run build` 통과. 신규 `useKakaomapGeocode.ts`도 hooks 배럴(`src/client/hooks/index.ts`)에 등록.
 
 ---
 
@@ -178,11 +177,7 @@
 
 ## 다음 세션 시작 지점
 
-**트랙 B**(레이어 에러 계약): **B1~B6 전부 완료.** 레거시 `HTTPError`도, `apiRequest`도, 클라이언트 판단로직(`handleClientError`)도 전부 코드에서 사라졌다 — 새 계약(`AppError`/`ErrorPayload`)만 남았다.
-
-**트랙 A**(Phase 1~3): **Phase 1·2 완료.** 남은 건 Phase 3(kakaomap 페칭 정리) 하나뿐 — 앞의 둘과 의존관계 없음.
-
-다음 착수: **Phase 3-1**(`useNavigationGeo.ts`: raw fetch → `useSWR`+`fetcher` 전환) → **3-2**(`KakaoMap.tsx` 중복 호출 제거) → **3-3**(`navigator.geolocation` 부분 회귀 확인). 이 셋이 끝나면 이 plan 문서(트랙 A/B 전부)가 종료된다.
+**트랙 A·B 전부 완료.** 이 plan 문서가 다루던 두 트랙(레이어 에러 계약 마이그레이션 B1~B6, React 렌더링 에러 경계+client GET 페칭 정리 Phase 1~3) 모두 끝났다 — 이 문서 기준으로는 후속 착수 항목이 없다. 새 에러 핸들링 관련 작업이 생기면 이 문서를 이어쓰지 말고 새 plan 문서를 만들 것(이 문서는 종료 기록으로 남긴다).
 
 **TDD 게이트 관련 후속 세션 유의사항**: `4cc1903`부터 fail-closed TDD 훅이 Write/Edit/Bash 전부에 적용된다 — 새 파일이든 기존 파일 수정이든 콜로케이트 `.test.ts(x)`가 없으면 차단된다(예외는 `test-scope-exclude.json`뿐, 임의로 추가하지 말고 사용자에게 먼저 물을 것). 트랙 A(Phase 1~3)의 대상 파일(`error.tsx` 3개, 신규 `global-error.tsx`, `ErrorFallback.tsx`, `useNavigationGeo.ts`, `KakaoMap.tsx`)도 전부 이 게이트 대상이다 — 착수 전에 테스트 컨벤션부터 챙길 것.
 
