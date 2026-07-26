@@ -143,11 +143,16 @@
 
 ## Phase B5 — 클라이언트 판단로직 제거
 
-**상태: 규칙 확정, 코드 미착수. B1·B2 선행(서버가 표시-안전 payload 생산해야 함).**
+**상태: 완료.**
 
-- `utils/error.ts`(field/message/silent 판단) + `handleClientError` 삭제 — **B2에서 이미 `category` 기반으로 갈아끼워둔 상태**(위 B2 스코프 갭 참고)라, B5는 이제 이 파일을 지우고 남은 3개 호출자(`ProductLikeBadge`/`useEntry`/`usePremiumFeatures`)를 `useActionState`/`useSWR` 직접 렌더로 바꾸는 게 핵심 — `ProductLikeBadge`/`useEntry`는 B4에서 Server Action 이관과 함께 처리됨.
-- 폼은 `useActionState` state(`ErrorPayload`) 직접 렌더(fieldErrors→input, message→전역), GET은 `useSWR` `error` 직접 렌더.
-- `fetcher.ts`는 B2에서 이미 `ErrorPayload` 직접 throw로 전환 완료 — B5에서 다시 안 건드림.
+- [x] `ProductLikeBadge`/`useEntry`는 B4에서 이미 처리 완료 — 남은 호출자는 `usePremiumFeatures.ts` 하나뿐이었다.
+- [x] `usePremiumFeature`의 `handleClientError` 판단 분기 삭제 — `useSWR`이 준 `error`(`ErrorPayload`)의 `message`를 그대로 `toast.error(error.message)`로 렌더(서버가 이미 표시-안전하게 만든 message라 클라 판단 불필요).
+- [x] `src/shared/utils/error.ts`에서 `handleClientError` + `ClientFieldErrors`/`ClientMessageError` 타입 삭제. **단, `getFieldError`/`hasFieldErrors`는 유지** — 서버가 채워준 `fieldErrors`를 그대로 읽기만 할 뿐 "무엇을 보여줄지" 판단하지 않아서 제거 대상이 아니었다(`src/shared/utils/CLAUDE.md`의 "파일째 삭제" 서술이 이 둘의 존재를 놓치고 있었던 부정확한 기록이라 정정).
+- [x] `src/shared/utils/CLAUDE.md` Gotchas 정정.
+
+> **B5 실행 중 발견한 스코프 갭(2026-07-26)**: `src/shared/utils/CLAUDE.md`가 "`utils/error.ts`는 마이그레이션에서 파일째 삭제"라고 적어뒀었는데, 실제로는 그 파일에 `getFieldError`/`hasFieldErrors`(폼 다수가 여전히 쓰는, 제거 대상이 아닌 유틸)가 같이 들어있어 파일 전체 삭제는 불가능했다 — `handleClientError`와 그 전용 타입 2개만 제거하고 파일은 남겼다. 문서를 실제 코드와 맞게 정정.
+> `usePremiumFeatures.ts`도 TDD 게이트 대상이라 `usePremiumFeatures.test.ts`(swr 배럴 mock, `renderHook`)를 먼저 작성 — `src/shared/utils/error.ts`도 마찬가지로 `error.test.ts`(`getFieldError`/`hasFieldErrors` 케이스) 선작성.
+> 타입체크·lint·전체 테스트(`npx vitest run --coverage`, 13 파일 51 테스트, 전 파일 line coverage 80%+)·`npm run build` 전부 통과 확인.
 
 ## Phase B6 — `HTTPError` 최종 삭제
 
@@ -171,10 +176,10 @@
 2. Phase 1 구현(`global-error.tsx` 신규 작성, Phase 2 결과물 재사용).
 3. Phase 3-1 → 3-2 → 3-3 — 위 둘과 의존관계 없어 아무 때나/병행 가능.
 
-**트랙 B**(레이어 에러 계약): **B1·B2·B3·B4·B6 완료 → B5**. 레거시 `HTTPError`도, `apiRequest`도 코드에서 사라져서 남은 건 B5(클라이언트 판단로직 제거) 하나뿐이다.
+**트랙 B**(레이어 에러 계약): **B1~B6 전부 완료.** 레거시 `HTTPError`도, `apiRequest`도, 클라이언트 판단로직(`handleClientError`)도 전부 코드에서 사라졌다 — 새 계약(`AppError`/`ErrorPayload`)만 남았다.
 
-다음 착수: **B5**(`utils/error.ts`+`handleClientError` 삭제) — `ProductLikeBadge`/`useEntry`는 B4에서 이미 `category` 기반 직접 렌더로 바뀌어 끝났고, 남은 호출자는 `usePremiumFeatures` 하나뿐이라 B4보다 훨씬 작은 범위다. 이 호출자도 `useSWR`/`useActionState` 직접 렌더로 바꾸고 나면 `src/shared/utils/error.ts` 파일째 삭제.
+다음 착수: 트랙 B는 종료, **트랙 A**(Phase 1~3)만 남았다 — 순서는 위 "트랙 A" 절 참고(Phase 2 → Phase 1 → Phase 3-1~3-3).
 
-**TDD 게이트 관련 후속 세션 유의사항**: `4cc1903`부터 fail-closed TDD 훅이 Write/Edit/Bash 전부에 적용된다 — 새 파일이든 기존 파일 수정이든 콜로케이트 `.test.ts(x)`가 없으면 차단된다(예외는 `test-scope-exclude.json`뿐, 임의로 추가하지 말고 사용자에게 먼저 물을 것). B5에서 `usePremiumFeatures.ts`를 고치려면 `usePremiumFeatures.test.ts`부터 있어야 한다(현재 없음).
+**TDD 게이트 관련 후속 세션 유의사항**: `4cc1903`부터 fail-closed TDD 훅이 Write/Edit/Bash 전부에 적용된다 — 새 파일이든 기존 파일 수정이든 콜로케이트 `.test.ts(x)`가 없으면 차단된다(예외는 `test-scope-exclude.json`뿐, 임의로 추가하지 말고 사용자에게 먼저 물을 것). 트랙 A(Phase 1~3)의 대상 파일(`error.tsx` 3개, 신규 `global-error.tsx`, `ErrorFallback.tsx`, `useNavigationGeo.ts`, `KakaoMap.tsx`)도 전부 이 게이트 대상이다 — 착수 전에 테스트 컨벤션부터 챙길 것.
 
 **검증 환경 이슈(B2에서 테스트를 못 돌린 원인, B3에서 해소)**: `npx vitest run`을 막던 `@rolldown/binding-linux-x64-gnu` 누락은 코드 문제가 아니라 로컬 설치 문제였다 — `package-lock.json`엔 1.1.5로 잠겨 있는데 `node_modules/@rolldown/`엔 안 깔려 있었다(optional dep 설치 누락). `npm install @rolldown/binding-linux-x64-gnu@1.1.5 --no-save`로 채우면 실행된다(`--no-save`라 락파일 무변경, `node_modules`만 채움). **새 워크트리/클론에서 재발한다** — 테스트가 이 에러로 죽으면 이 명령부터 실행할 것.
