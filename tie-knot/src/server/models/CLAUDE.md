@@ -24,11 +24,14 @@ src/server/models/
 - DB 저장 shape과 별도로 API 응답용 JSON shape이 필요하면 서로 구분되는 이름을 쓴다(`ProductJSON`처럼) — 이름이 섞이면 "지금 이게 DB raw인지 API 응답인지" 판단 불가능해짐.
 - 개발 환경 HMR로 인한 모델 재컴파일 에러를 피하려면 `(mongoose.models.{Model} as Model<I{Domain}>) || mongoose.model<I{Domain}>(...)` 가드를 쓴다 — **캐스팅을 생략하지 않는다.** `mongoose.models.X`는 타입이 `Model<any>`라, 캐스팅 없이 `mongoose.model<I{Domain}>(...)`과 `||`로 묶으면 두 오버로드 시그니처가 합쳐지면서 TS가 `.find()`/`.findOne()` 등 호출을 전부 "This expression is not callable"로 막는다(실제로 이 문서의 예전 버전이 "캐스팅 없는 `||` 가드가 기본"이라고 잘못 적어놨다가 전수 리팩토링 중 8개 서비스 파일에서 이 에러로 드러남 — 원래 `user.model.ts`가 캐스팅 없이도 동작했던 건 `const X: Model<I{Domain}> = ...`처럼 좌변에 명시 타입 annotation을 달아 같은 효과를 냈기 때문이었다).
 - 모델 인스턴스에서 `._id`를 쓰는 곳이 있으면 `I{Domain}`에 `_id: Types.ObjectId`를 명시한다 — `Document`를 안 extend하므로 자동으로 안 붙는다.
+- 스키마 옵션에 `{ timestamps: true }`를 쓰면 인터페이스에 `createdAt`/`updatedAt` 둘 다 선언한다 — mongoose가 이 옵션으로 두 필드를 다 만드는데 인터페이스에 하나만 선언하면 실제 DB 문서와 타입이 어긋난다.
 - **모델 파일(`*.model.ts`)의 pre/post 훅(미들웨어)에 도메인 계산·비즈니스 규칙을 두지 않는다** — 훅은 그 문서 자체의 형태를 다루는 관심사(필드 정규화, 캐스팅 보정 등)에 한정한다. 가격 계산 같은 도메인 로직은 `services/`가 소유한다(`src/server/services/CLAUDE.md` Overview: "DB 접근 + 비즈니스 로직"). 위반하면 그 로직이 mongoose 생명주기에 암묵적으로 종속된다 — `pre('save')` 훅은 `save()`에서만 발화하고 `updateOne()`/`findOneAndUpdate()`에선 발화하지 않는다(mongoose 공식 문서: "Pre and post save() hooks are not executed on update(), findOneAndUpdate(), etc."), 그래서 같은 문서를 다른 경로로 수정하는 순간 로직이 조용히 스킵된다.
+- ObjectId→string 변환을 스키마 `toJSON` transform에 두지 않는다 — `.lean()` 결과엔 스키마 `toJSON` 옵션이 적용되지 않는다(mongoose 공식문서: lean 쿼리는 Document를 생성하지 않아 `.toJSON()`이 없음). 읽기 경로 기본값이 `.lean()`인데(`services/CLAUDE.md`) 모델 transform은 hydrated Document 경로에만 적용돼 커버리지가 갈린다. 변환은 services에서 명시적으로 한다.
 
 ## Gotchas
 
 - `order.model.ts`의 `orderSchema.pre("save", ...)`가 `finalPrice`(소계/할인율/고정할인/음수방지)를 계산한다 — 위 도메인 계산 금지 규칙 위반. `order.service.ts`의 `createOrderService`로 이관 예정(TODO #1 결제/트랜잭션 정합성 작업과 조율, 아직 미착수).
+- `product.model.ts`의 `subCategory` 커스텀 validator가 `this.category`를 참조한다 — document validation(`this`가 Document)에선 동작하지만 update validator(`this`가 Query, `runValidators: true` 켰을 때)에선 `this.category`가 `undefined`라 항상 검증 실패한다(mongoose 공식문서: "this is the Query, not the document being updated"). `this.get('category')`로 고쳤다 — Document/Query 둘 다 `.get(path)`를 지원해 양쪽에서 동작한다.
 
 ## 관련 문서
 
