@@ -1,6 +1,6 @@
 export const revalidate = 300;
 
-import { getCoupleInfoById, getActiveOrderInfoByCoupleInfoId } from "@/server/services";
+import { getCoupleInfoById, getActiveOrderInfoByCoupleInfoId, getProductService } from "@/server/services";
 
 import React from "react";
 import {
@@ -23,7 +23,6 @@ import {
   mapCoupleInfoToThumbnails,
 } from "./_utils";
 import { CloudImage } from "@/client/components/molecules";
-import { getThemeByProductId } from "@/shared/constants";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
@@ -41,7 +40,8 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   if (!coupleInfoData) notFound();
 
   const { features: activeFeatures, productId } = orderInfo;
-  const theme = getThemeByProductId(productId ?? undefined);
+  const product = productId ? await getProductService(productId) : null;
+  const theme = product?.theme ?? "default";
   const heroProps = mapCoupleInfoToHeroProps(coupleInfoData);
   const calendarProps = mapCoupleInfoToCalendarProps(coupleInfoData);
   const galleryProps = mapCoupleInfoToGalleryProps(

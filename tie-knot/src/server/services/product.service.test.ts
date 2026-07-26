@@ -58,17 +58,22 @@ describe("product.service", () => {
       expect(saved?.previewUrl).toBe("https://example.com/preview.jpg");
     });
 
-    it("business-card 카테고리는 previewUrl을 보내도 저장되지 않는다 (discriminator 전용 필드)", async () => {
-      const input = buildProductInput({
-        category: "business-card",
-        subCategory: "business",
-        previewUrl: "https://example.com/preview.jpg",
-      });
+    it("theme을 지정하지 않으면 기본값 default가 저장된다", async () => {
+      const input = buildProductInput();
 
       await createProductService(input);
 
-      const saved = await ProductModel.findOne({ title: input.title }).lean<{ previewUrl?: string }>();
-      expect(saved?.previewUrl).toBeUndefined();
+      const saved = await InvitationProductModel.findOne({ title: input.title }).lean();
+      expect(saved?.theme).toBe("default");
+    });
+
+    it("theme을 지정하면 그 값으로 저장된다", async () => {
+      const input = buildProductInput({ theme: "blossom" });
+
+      await createProductService(input);
+
+      const saved = await InvitationProductModel.findOne({ title: input.title }).lean();
+      expect(saved?.theme).toBe("blossom");
     });
   });
 
@@ -165,33 +170,22 @@ describe("product.service", () => {
   describe("getAllProductsService", () => {
     it("카테고리 없이 호출하면 전체 상품을 리턴한다", async () => {
       await createProductService(buildProductInput({ title: "상품1" }));
-      await createProductService(
-        buildProductInput({
-          title: "상품2",
-          category: "business-card",
-          subCategory: "business",
-        }),
-      );
+      await createProductService(buildProductInput({ title: "상품2" }));
 
       const result = await getAllProductsService();
 
       expect(result).toHaveLength(2);
     });
 
-    it("카테고리를 지정하면 해당 카테고리만 리턴한다", async () => {
+    it("카테고리를 지정하면 해당 카테고리에 속하는 상품만 리턴한다", async () => {
       await createProductService(buildProductInput({ title: "상품1" }));
-      await createProductService(
-        buildProductInput({
-          title: "상품2",
-          category: "business-card",
-          subCategory: "business",
-        }),
-      );
+      await createProductService(buildProductInput({ title: "상품2" }));
 
       const result = await getAllProductsService("invitation");
+      const noMatch = await getAllProductsService("nonexistent");
 
-      expect(result).toHaveLength(1);
-      expect(result[0].title).toBe("상품1");
+      expect(result).toHaveLength(2);
+      expect(noMatch).toHaveLength(0);
     });
   });
 

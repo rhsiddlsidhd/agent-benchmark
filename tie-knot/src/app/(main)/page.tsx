@@ -12,10 +12,9 @@ const page = async () => {
   const previewProductId = process.env.NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID;
   const infoId = process.env.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID;
 
-  const [product, invitation, businessCard] = await Promise.all([
+  const [product, invitation] = await Promise.all([
     previewProductId ? getProductService(previewProductId) : null,
     getFeaturedTemplatesService("invitation").catch(() => [] as Product[]),
-    getFeaturedTemplatesService("business-card").catch(() => [] as Product[]),
   ]);
 
   return (
@@ -23,7 +22,7 @@ const page = async () => {
       <EcommerceHero />
 
       {/* 추천 템플릿 섹션: 데이터가 있을 경우에만 렌더링 */}
-      {(invitation.length > 0 || businessCard.length > 0) && (
+      {invitation.length > 0 && (
         <section className="bg-white py-24">
           <div className="container mx-auto px-4">
             <div className="mb-16 text-center">
@@ -36,21 +35,11 @@ const page = async () => {
             </div>
 
             <div className="space-y-24">
-              {invitation.length > 0 && (
-                <TemplateCarouselGroup
-                  data={invitation}
-                  title="초대장"
-                  description="소중한 순간을 함께할 분들께 마음을 전하는 초대장"
-                />
-              )}
-
-              {businessCard.length > 0 && (
-                <TemplateCarouselGroup
-                  data={businessCard}
-                  title="명함"
-                  description="나를 가장 잘 표현하는 세련된 디지털 명함"
-                />
-              )}
+              <TemplateCarouselGroup
+                data={invitation}
+                title="초대장"
+                description="소중한 순간을 함께할 분들께 마음을 전하는 초대장"
+              />
             </div>
           </div>
         </section>

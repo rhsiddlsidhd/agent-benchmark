@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Butto
 
 import { getCategoryOptions, getSubCategoryOptions, ProductCategory } from "@/shared/utils";
 import { getFieldError } from "@/shared/utils";
+import { getInvitationThemeOptions } from "@/shared/constants";
 import { APIResponse } from "@/shared/types";
 
 interface ProductRegistrationFormProps {
@@ -82,6 +83,7 @@ export function ProductRegistrationForm({
   const descriptionError = getFieldError(state, "description");
   const categoryError = getFieldError(state, "category");
   const subCategoryError = getFieldError(state, "subCategory");
+  const themeError = getFieldError(state, "theme");
   const priceError = getFieldError(state, "price");
   const priorityError = getFieldError(state, "priority");
   const thumbnailError = getFieldError(state, "thumbnail");
@@ -149,6 +151,17 @@ export function ProductRegistrationForm({
                   required
                 >
                   서브 카테고리
+                </SelectField>
+
+                <SelectField
+                  id="theme"
+                  name="theme"
+                  defaultValue="default"
+                  placeholder="테마를 선택하세요"
+                  data={getInvitationThemeOptions()}
+                  error={themeError}
+                >
+                  테마
                 </SelectField>
               </div>
             </CardContent>
