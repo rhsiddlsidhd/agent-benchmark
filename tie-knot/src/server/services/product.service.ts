@@ -148,8 +148,13 @@ export const updateProductService = async (
   const updatedProduct = await ProductModel.findOneAndUpdate(
     { _id: productId, deletedAt: null },
     updateData,
-    { new: true, lean: true },
-  );
+    { new: true, lean: true, runValidators: true },
+  ).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "상품 수정에 실패했습니다.",
+    );
+  });
 
   return updatedProduct ? transformProduct(updatedProduct) : null;
 };

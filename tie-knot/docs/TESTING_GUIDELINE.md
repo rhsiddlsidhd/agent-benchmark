@@ -45,6 +45,7 @@ src/
 
 - 1차 커버 범위는 순수 로직(`schemas/`의 zod 스키마, `utils/`)부터 시작한다 — DB 셋업 없이 vitest 자체(config, alias 해석)부터 검증할 수 있어서다. 그 다음 `services/`+`actions/`(결제 금액 검증, 소유권 재검증 등 리스크가 큰 로직)로 확장한다.
 - `app/api/`의 `route.ts`는 후순위로 둔다 — `services/`+`actions/`가 이미 커버되면 그 위 얇은 wrapper라 테스트 내용이 중복된다.
+- **`src/server/models/`는 독립된 테스트 대상이 아니다**(`test-scope-exclude.json`에 등록) — 대부분 선언적 스키마 코드(`required`/`type`/`default`)라, `services/` 통합 테스트가 실제 DB(mongodb-memory-server)로 이미 간접 검증한다(예: `createCoupleInfoService` 테스트가 `CoupleInfoModel.create()`를 실제로 태우면서 필수 필드 검증도 같이 확인됨). 모델에 커스텀 validator처럼 진짜 로직이 있으면(예: `product.model.ts`의 `subCategory` validator) 그 로직을 호출하는 `services/` 테스트(예: `updateProductService`)에서 검증한다 — 모델 파일에 별도 `.model.test.ts`를 만들지 않는다. 이유: 별도 테스트 파일이 생기면 그 모델 파일 전체가 mutation testing 대상(`stryker.config.mjs`)에 끌려들어가는데, 스키마 필드 선언 위주 코드는 mutate 가능한 지점만 많고 실제로 의미 있게 죽일 로직은 적어서 mutation score만 깎아먹는다(실제로 겪음 — PR #48에서 `.model.test.ts` 4개 추가했다가 mutation score가 threshold 밑으로 떨어짐).
 
 ### DB 테스트
 

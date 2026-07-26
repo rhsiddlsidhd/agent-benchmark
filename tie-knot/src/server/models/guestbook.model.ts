@@ -9,6 +9,7 @@ export interface IGuestbook {
   password: string; // 수정/삭제를 위한 비밀번호
   isPrivate: boolean; // 주인만 보기 여부
   createdAt: Date;
+  updatedAt: Date;
 }
 
 // Mongoose 스키마 정의

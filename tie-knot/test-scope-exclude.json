@@ -2,6 +2,7 @@
   "src/test/**",
   "src/shared/types/**",
   "src/shared/constants/**",
+  "src/server/models/**",
   "src/client/components/atoms/**",
   "src/app/**/page.tsx",
   "src/app/**/layout.tsx",
