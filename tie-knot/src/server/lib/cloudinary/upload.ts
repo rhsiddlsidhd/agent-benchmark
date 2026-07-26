@@ -1,4 +1,4 @@
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { CloudinaryResource } from "./type";
 
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
@@ -16,7 +16,7 @@ const uploadToCloudinary = async <T>(file: File, folder: string) => {
   });
 
   if (!res.ok) {
-    throw new HTTPError("이미지 업로드에 실패했습니다.", 500);
+    throw new AppError("EXTERNAL_SERVICE", "이미지 업로드에 실패했습니다.");
   }
 
   const data: T = await res.json();
@@ -57,9 +57,9 @@ async function uploadWithSignature(
   const signatureJson = await signatureRes.json();
 
   if (!signatureRes.ok || !signatureJson.success) {
-    throw new HTTPError(
+    throw new AppError(
+      "INTERNAL",
       signatureJson.error?.message ?? "서명 요청 실패",
-      signatureRes.status,
     );
   }
 
@@ -83,7 +83,7 @@ async function uploadWithSignature(
     });
 
     if (!res.ok) {
-      throw new HTTPError(`업로드 실패: ${file.name}`, res.status);
+      throw new AppError("EXTERNAL_SERVICE", `업로드 실패: ${file.name}`);
     }
 
     const data = await res.json();

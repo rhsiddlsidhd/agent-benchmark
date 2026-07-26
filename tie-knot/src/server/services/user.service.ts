@@ -1,4 +1,4 @@
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { UserModel, BaseUser, IUser } from "@/server/models";
 import bcrypt from "bcryptjs";
 import { dbConnect } from "@/server/lib/mongodb";
@@ -26,7 +26,7 @@ export const getUserEmail = async ({
 }): Promise<string> => {
   await dbConnect();
   const user = await UserModel.findOne({ name, phone }).lean<BaseUser>();
-  if (!user) throw new HTTPError("유저를 찾을 수가 없습니다.", 404);
+  if (!user) throw new AppError("NOT_FOUND", "유저를 찾을 수가 없습니다.");
   return user.email;
 };
 
@@ -34,7 +34,7 @@ export const getUserEmail = async ({
 export const getUserById = async (id: string): Promise<IUser> => {
   await dbConnect();
   const user = await UserModel.findById(id).lean<IUser>();
-  if (!user) throw new HTTPError("유저를 찾을 수가 없습니다.", 404);
+  if (!user) throw new AppError("NOT_FOUND", "유저를 찾을 수가 없습니다.");
   return user;
 };
 
