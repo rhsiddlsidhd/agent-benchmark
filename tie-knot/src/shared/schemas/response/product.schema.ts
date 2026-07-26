@@ -30,7 +30,7 @@ export const productResponseSchema = z.object({
   discountedPrice: z.number(),
   createdAt: isoDateString,
   updatedAt: isoDateString,
-  deletedAt: isoDateString.optional(),
+  deletedAt: isoDateString.nullable(),
 });
 
 export const productsResponseSchema = z.array(productResponseSchema);

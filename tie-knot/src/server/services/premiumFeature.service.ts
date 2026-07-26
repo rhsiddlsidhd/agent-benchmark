@@ -1,18 +1,8 @@
-import { FeatureModel } from "@/server/models";
+import { FeatureModel, IFeature } from "@/server/models";
 import { PremiumFeatureDto } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
 
 import mongoose from "mongoose";
-interface FeatureLeanDoc {
-  _id: mongoose.Types.ObjectId;
-  code: string;
-  label: string;
-  description?: string;
-  additionalPrice: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
 // FeatureJSON을 재사용
 export type PremiumFeature = {
   _id: string;
@@ -25,7 +15,7 @@ export type PremiumFeature = {
 };
 
 // Mapper 함수: DB 결과를 PremiumFeature로 변환
-const mapToPremiumFeature = (doc: FeatureLeanDoc): PremiumFeature => ({
+const mapToPremiumFeature = (doc: IFeature): PremiumFeature => ({
   _id: String(doc._id),
   code: doc.code,
   label: doc.label,
@@ -47,7 +37,7 @@ export const getAllPremiumFeatureService = async (): Promise<
   PremiumFeature[]
 > => {
   await dbConnect();
-  const features = await FeatureModel.find().lean<FeatureLeanDoc[]>();
+  const features = await FeatureModel.find().lean<IFeature[]>();
   return features.map(mapToPremiumFeature);
 };
 
@@ -56,7 +46,7 @@ export const getPremiumFeatureService = async (ids: string[] | []) => {
   await dbConnect();
   const _ids = ids.map((id) => new mongoose.Types.ObjectId(id));
   const features = await FeatureModel.find({ _id: { $in: _ids } }).lean<
-    FeatureLeanDoc[]
+    IFeature[]
   >();
   return features.map(mapToPremiumFeature);
 };
