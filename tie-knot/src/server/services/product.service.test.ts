@@ -4,7 +4,7 @@ import { dbConnect } from "@/server/lib/mongodb";
 import { clearCollections } from "@/test/db";
 import { buildProductInput } from "@/test/factories/product.factory";
 import { AppError } from "@/shared/types";
-import { ProductModel } from "@/server/models";
+import { ProductModel, InvitationProductModel } from "@/server/models";
 import {
   createProductService,
   getProductService,
@@ -46,6 +46,28 @@ describe("product.service", () => {
       await expect(createProductService(input)).rejects.toMatchObject({
         category: "INTERNAL",
       });
+    });
+
+    it("invitation 카테고리는 previewUrl이 discriminator 스키마에 실제로 저장된다", async () => {
+      const input = buildProductInput({ previewUrl: "https://example.com/preview.jpg" });
+
+      await createProductService(input);
+
+      const saved = await InvitationProductModel.findOne({ title: input.title }).lean();
+      expect(saved?.previewUrl).toBe("https://example.com/preview.jpg");
+    });
+
+    it("business-card 카테고리는 previewUrl을 보내도 저장되지 않는다 (discriminator 전용 필드)", async () => {
+      const input = buildProductInput({
+        category: "business-card",
+        subCategory: "business",
+        previewUrl: "https://example.com/preview.jpg",
+      });
+
+      await createProductService(input);
+
+      const saved = await ProductModel.findOne({ title: input.title }).lean<{ previewUrl?: string }>();
+      expect(saved?.previewUrl).toBeUndefined();
     });
   });
 
@@ -202,6 +224,19 @@ describe("product.service", () => {
           subCategory: "store",
         }),
       ).rejects.toMatchObject({ category: "INTERNAL" });
+    });
+
+    it("invitation 상품의 previewUrl을 category와 함께 보내면 갱신된다 (discriminator 모델 경유)", async () => {
+      const input = buildProductInput();
+      await createProductService(input);
+      const saved = await ProductModel.findOne({ title: input.title }).lean();
+
+      const result = await updateProductService(saved!._id.toString(), {
+        category: "invitation",
+        previewUrl: "https://example.com/updated-preview.jpg",
+      });
+
+      expect(result?.previewUrl).toBe("https://example.com/updated-preview.jpg");
     });
   });
 

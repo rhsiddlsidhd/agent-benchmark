@@ -30,7 +30,6 @@ export interface ProductDB {
   title: string;
   description: string;
   thumbnail: string;
-  previewUrl?: string;
   price: number;
   category: ProductCategory;
   subCategory: SubCategory;
@@ -55,10 +54,16 @@ export interface IProduct extends ProductDB {
   updatedAt: Date;
 }
 
+// invitation 카테고리 전용 필드 — mongoose discriminator로 base(IProduct)에 병합된다.
+export interface IInvitationProduct extends IProduct {
+  previewUrl?: string;
+}
+
 export interface ProductJSON extends Omit<ProductDB, "likes" | "featureIds" | "deletedAt"> {
   _id: string;
   likes: string[];
   featureIds: string[];
+  previewUrl?: string;
   isLiked: boolean;
   discountedPrice: number;
   createdAt: string;
@@ -72,7 +77,6 @@ const productSchema = new Schema<IProduct>(
     title: { type: String, required: true },
     description: { type: String, required: true },
     thumbnail: { type: String, required: true },
-    previewUrl: { type: String },
     price: { type: Number, required: true },
     category: {
       type: String,
@@ -128,9 +132,23 @@ const productSchema = new Schema<IProduct>(
   },
   {
     timestamps: true,
+    // 이미 존재하는 category 필드를 판별키로 재사용한다 — 카테고리별 discriminator를
+    // 추가할 때 새 필드를 만들지 않는다(src/server/models/CLAUDE.md 참고).
+    discriminatorKey: "category",
   },
 );
 
 export const ProductModel =
   (mongoose.models.Product as Model<IProduct>) ||
   model<IProduct>("Product", productSchema);
+
+const invitationProductSchema = new Schema<IInvitationProduct>({
+  previewUrl: { type: String },
+});
+
+// discriminator 이름("invitation")이 곧 category 필드에 저장되는 값이다 —
+// 기존 category enum 값과 그대로 일치시킨다. HMR 재컴파일 시 이미 등록된
+// discriminator를 재사용해 "Cannot overwrite discriminator" 에러를 피한다.
+export const InvitationProductModel =
+  (ProductModel.discriminators?.invitation as Model<IInvitationProduct>) ||
+  ProductModel.discriminator<IInvitationProduct>("invitation", invitationProductSchema);

@@ -1,9 +1,9 @@
-import { ProductModel, ProductJSON, ProductDB } from "@/server/models";
+import { ProductModel, InvitationProductModel, ProductJSON, ProductDB, IProduct } from "@/server/models";
 import { ProductDto } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
 import { calculatePrice } from "@/shared/utils";
 import { AppError } from "@/shared/types";
-import mongoose, { Types } from "mongoose";
+import mongoose, { Model, Types } from "mongoose";
 
 // Product 타입을 export (다른 파일에서 사용)
 export type Product = ProductJSON;
@@ -12,8 +12,16 @@ type LeanProduct = ProductDB & {
   _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  previewUrl?: string;
   __v?: number;
 };
+
+// previewUrl은 invitation 카테고리 discriminator 전용 필드라 base ProductModel로
+// 쓰면 strict 모드에 의해 조용히 버려진다 — 생성/수정 시 카테고리별로 모델을 골라야 한다.
+// Model<IProduct>로 통일해서 리턴한다 — discriminator Model과 base Model의 union을
+// 그대로 리턴하면 오버로드 시그니처가 갈라져 findOneAndUpdate 호출이 막힌다.
+const getWritableProductModel = (category: string): Model<IProduct> =>
+  category === "invitation" ? (InvitationProductModel as Model<IProduct>) : ProductModel;
 
 const transformProduct = (product: LeanProduct, userId?: string): ProductJSON => {
   const { deletedAt, _id, featureIds, likes, createdAt, updatedAt, ...rest } = product;
@@ -43,7 +51,9 @@ export const createProductService = async (
 ): Promise<boolean> => {
   await dbConnect();
 
-  const newProduct = await new ProductModel({
+  const WritableProductModel = getWritableProductModel(data.category);
+
+  const newProduct = await new WritableProductModel({
     ...data,
     status: data.status || "active",
     featureIds:
@@ -145,7 +155,11 @@ export const updateProductService = async (
         : [],
   };
 
-  const updatedProduct = await ProductModel.findOneAndUpdate(
+  const WritableProductModel = data.category
+    ? getWritableProductModel(data.category)
+    : ProductModel;
+
+  const updatedProduct = await WritableProductModel.findOneAndUpdate(
     { _id: productId, deletedAt: null },
     updateData,
     { new: true, lean: true, runValidators: true },
