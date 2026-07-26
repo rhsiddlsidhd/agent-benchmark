@@ -84,6 +84,19 @@ B-5 공통/운영
 - [x] **9. models/CLAUDE.md mongoose 공식문서 기준 전면 재검토** (`#4` 작업 중 발견한 subCategory validator 버그가 시작점, 범위가 models 전체로 확장) — mongoose 공식문서 근거로 규칙 3개 추가: 모델 pre/post 훅에 도메인 로직 금지, ObjectId→string 변환은 services 소관(`.lean()`엔 스키마 toJSON 옵션 안 먹힘), `timestamps:true`면 인터페이스에 createdAt/updatedAt 둘 다 선언. 코드 반영: `order.model.ts` `require`→`required` 오타(검증 누락 버그) 수정 + `order.service.ts` 죽은 코드 정리, `IGuestbook`/`IOrder`에 `updatedAt` 추가, `product.model.ts` subCategory validator를 `this.get()` + `this.model.findOne(this.getQuery())` 폴백 방식으로 수정(`this.get()`만으론 안 됨, DB로 직접 검증함) 후 `updateProductService`에 `runValidators: true` 적용. 실제 스키마와 어긋나 있던 `coupleInfo.guide.md` 삭제. 규칙 위반 전수 점검에서 `order.model.ts`(`pre("save")` finalPrice 계산 + toJSON transform)와 `coupleInfo.model.ts`(toJSON transform) 2건 추가 발견 — CI mutation score 미달(59.44 < 60, 새 model.test.ts가 기존 미검증 코드까지 mutate 대상으로 끌어들여서) 계기로 바로 `order.service.ts`/`coupleInfo.service.ts`로 이관 완료.
   - branch: `refactor/models-mongoose-convention`
 
+- [ ] **10. `payment.model.ts` PortOne 결제수단별 상세정보 스키마 재설계** (`#9` 작업 중 필드 감사에서 발견 — `payment.model.ts`의 카드/가상계좌 필드 8개가 전부 미사용으로 확인됨) — 현재 `cardName`/`cardNumber`/`cardQuote`/`vbankName`/`vbankNum`/`vbankHolder`/`vbankIssuedAt`/`vbankDueAt` 8개 필드가 평평하게 나열돼있고 `payment.service.ts` 어디서도 안 채움. 이 프로젝트가 실제 노출하는 결제수단은 4개(`PaymentMethodSelector.tsx`: CARD/VIRTUAL_ACCOUNT/TRANSFER/MOBILE)지만, 스키마 설계는 PortOne 서버 SDK(`@portone/server-sdk`)가 실제 지원하는 7종 전체(Card/VirtualAccount/Transfer/Mobile/EasyPay/GiftCertificate/ConvenienceStore) + `Unrecognized` 폴백을 포함해서 진행하기로 확정(향후 결제수단 노출 확장 대비).
+  - **설계 확정 사항**: PortOne의 `PaymentMethod`가 discriminated union이므로(`type` 필드로 구분), 지금처럼 모든 방법의 필드를 최상위에 평평하게 두지 않고 `methodDetail: { type, card?, virtualAccount?, transfer?, mobile?, easyPay?, giftCertificate?, convenienceStore? }` 형태의 서브 객체로 재구성한다. 필드명은 PortOne 원문 그대로 쓴다(한글 의미 기반 재명명 안 함 — 예: `vbankHolder`가 아니라 `remitteeName`) — API 응답과 1:1 매핑 유지, 번역 없이 그대로 소비.
+  - **각 타입 필드 전체 목록**(`@portone/server-sdk` `dist/generated/payment/*.d.ts` 기준, 공식 SDK 자동생성 타입이라 신뢰도 높음):
+    - Card: `card{publisher,issuer,brand,type,ownerType,bin,name,number}`, `approvalNumber`, `installment{month,isInterestFree}`, `pointUsed`
+    - VirtualAccount: `bank`, `accountNumber`(필수), `accountType`, `remitteeName`, `remitterName`, `expiredAt`, `issuedAt`, `refundStatus`
+    - Transfer: `bank`, `accountNumber`
+    - Mobile: `phoneNumber`
+    - EasyPay: `provider`, `easyPayMethod`
+    - GiftCertificate: `giftCertificateType`, `approvalNumber`(필수)
+    - ConvenienceStore: `convenienceStoreBrand`, `confirmationNumber`, `receiptNumber`, `paymentDeadline`
+  - **미해결**: 이 PortOne 스토어에 테스트 결제가 0건(`getPayments()`로 직접 확인함, `POST_ONE_API_KEY` 유효) — 어떤 결제수단이 실제로 모의 테스트 가능한지(PG사별로 테스트 채널 동작 다름) 미확인. 실제 매핑 코드 검증하려면 결제를 최소 1건 만들어봐야 하는데, `npm run dev`가 `MONGO_TEST_URI` 없이 실제 Atlas DB(`DB_USER`/`DB_PASSWORD`)에 붙는 것으로 확인돼(격리된 로컬 DB 아님) Playwright로 실제 체크아웃 진행하는 건 보류함 — 어느 DB인지(프로덕션/공유 dev/버려도 되는 테스트용) 확인 먼저 필요.
+  - branch: 미정
+
 ---
 
 ## Stage C — 신기능/UI (병렬, 오늘 진행 안 함)
