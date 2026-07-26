@@ -14,11 +14,21 @@
         ]
       },
       {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/tdd-gate.js",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "Write",
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-test-first.js",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/tdd-gate.js",
             "timeout": 10
           }
         ]
@@ -28,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-test-first.js",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/tdd-gate.js",
             "timeout": 10
           }
         ]
