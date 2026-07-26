@@ -14,7 +14,7 @@ export const createOrderService = async (
   // DB 저장을 위한 최종 데이터 가공(Trans)
   const orderData = {
     ...data,
-    coupleInfo: new mongoose.Types.ObjectId(data.coupleInfoId),
+    coupleInfoId: new mongoose.Types.ObjectId(data.coupleInfoId),
     userId: new mongoose.Types.ObjectId(data.userId),
     merchantUid,
     product: {

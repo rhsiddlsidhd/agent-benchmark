@@ -1,6 +1,6 @@
 # CLAUDE.md — src/server/models/
 
-> Last updated: 2026-07-18
+> Last updated: 2026-07-26
 > 이 폴더는 프로젝트 고유 선택 — DB 스키마 계약 레이어.
 
 ## Overview
@@ -24,10 +24,11 @@ src/server/models/
 - DB 저장 shape과 별도로 API 응답용 JSON shape이 필요하면 서로 구분되는 이름을 쓴다(`ProductJSON`처럼) — 이름이 섞이면 "지금 이게 DB raw인지 API 응답인지" 판단 불가능해짐.
 - 개발 환경 HMR로 인한 모델 재컴파일 에러를 피하려면 `(mongoose.models.{Model} as Model<I{Domain}>) || mongoose.model<I{Domain}>(...)` 가드를 쓴다 — **캐스팅을 생략하지 않는다.** `mongoose.models.X`는 타입이 `Model<any>`라, 캐스팅 없이 `mongoose.model<I{Domain}>(...)`과 `||`로 묶으면 두 오버로드 시그니처가 합쳐지면서 TS가 `.find()`/`.findOne()` 등 호출을 전부 "This expression is not callable"로 막는다(실제로 이 문서의 예전 버전이 "캐스팅 없는 `||` 가드가 기본"이라고 잘못 적어놨다가 전수 리팩토링 중 8개 서비스 파일에서 이 에러로 드러남 — 원래 `user.model.ts`가 캐스팅 없이도 동작했던 건 `const X: Model<I{Domain}> = ...`처럼 좌변에 명시 타입 annotation을 달아 같은 효과를 냈기 때문이었다).
 - 모델 인스턴스에서 `._id`를 쓰는 곳이 있으면 `I{Domain}`에 `_id: Types.ObjectId`를 명시한다 — `Document`를 안 extend하므로 자동으로 안 붙는다.
+- **모델 파일(`*.model.ts`)의 pre/post 훅(미들웨어)에 도메인 계산·비즈니스 규칙을 두지 않는다** — 훅은 그 문서 자체의 형태를 다루는 관심사(필드 정규화, 캐스팅 보정 등)에 한정한다. 가격 계산 같은 도메인 로직은 `services/`가 소유한다(`src/server/services/CLAUDE.md` Overview: "DB 접근 + 비즈니스 로직"). 위반하면 그 로직이 mongoose 생명주기에 암묵적으로 종속된다 — `pre('save')` 훅은 `save()`에서만 발화하고 `updateOne()`/`findOneAndUpdate()`에선 발화하지 않는다(mongoose 공식 문서: "Pre and post save() hooks are not executed on update(), findOneAndUpdate(), etc."), 그래서 같은 문서를 다른 경로로 수정하는 순간 로직이 조용히 스킵된다.
 
 ## Gotchas
 
-- `coupleInfo.guide.md` — 코드 아니라 "스키마 필드 가이드 + UI 생성 프롬프트" 문서가 이 폴더에 같이 있음. 스키마와 강결합된 사람이 읽는 참고 문서라 여기 둔 것으로 보이나, 다른 모델엔 이런 가이드 문서가 없어 왜 `coupleInfo`만 있는지 불명확 — 새로 만들 때 이 패턴을 다른 모델까지 확대할지는 아직 미정.
+- `order.model.ts`의 `orderSchema.pre("save", ...)`가 `finalPrice`(소계/할인율/고정할인/음수방지)를 계산한다 — 위 도메인 계산 금지 규칙 위반. `order.service.ts`의 `createOrderService`로 이관 예정(TODO #1 결제/트랜잭션 정합성 작업과 조율, 아직 미착수).
 
 ## 관련 문서
 

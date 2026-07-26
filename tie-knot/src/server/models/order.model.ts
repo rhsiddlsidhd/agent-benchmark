@@ -100,7 +100,7 @@ const orderSchema = new Schema<IOrder>(
     coupleInfoId: {
       type: Schema.Types.ObjectId,
       ref: "CoupleInfo",
-      require: true,
+      required: true,
     },
 
     // 구매자
