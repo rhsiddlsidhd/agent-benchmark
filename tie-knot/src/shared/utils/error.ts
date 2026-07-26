@@ -1,4 +1,4 @@
-import { APIResponse, ErrorResponse, ErrorPayload } from "@/shared/types";
+import { APIResponse, ErrorResponse } from "@/shared/types";
 
 /**
  * API 응답에서 특정 필드의 에러 메시지를 안전하게 추출합니다.
@@ -40,56 +40,4 @@ export const hasFieldErrors = (error: ErrorResponse["error"]): boolean => {
   return Boolean(
     error.fieldErrors && Object.keys(error.fieldErrors).length > 0,
   );
-};
-
-export type ClientFieldErrors = { fieldErrors: Record<string, string[]> };
-export type ClientMessageError = { message: string };
-
-/**
- * fetcher/apiRequest가 throw한 `ErrorPayload`를 받아 클라이언트가
- * 무엇을 보여줄지 결정한다 — 필드 에러 우선, 없으면 분류별 메시지/void.
- */
-export const handleClientError = (
-  e: unknown,
-): ClientFieldErrors | ClientMessageError | void => {
-  let error: ErrorPayload;
-
-  // 1. 다양한 형태의 에러를 일관된 `error` 객체로 정규화합니다.
-  if (typeof e === "object" && e && "category" in e && "message" in e) {
-    // 이미 ErrorPayload 형태를 가진 객체일 경우
-    error = e as ErrorPayload;
-  } else {
-    // 그 외 모든 알 수 없는 에러 처리
-    console.error("Unknown error:", e);
-    error = { category: "INTERNAL", message: "알 수 없는 오류가 발생했습니다." };
-  }
-
-  // 2. 필드 에러가 존재하면 다른 것을 확인하지 않고 즉시 반환합니다.
-  if (error.fieldErrors && Object.keys(error.fieldErrors).length > 0) {
-    return { fieldErrors: error.fieldErrors };
-  }
-
-  // 3. 필드 에러가 없는 경우, 분류를 기반으로 메시지를 반환합니다.
-  switch (error.category) {
-    case "VALIDATION": // 필드 에러가 없는 VALIDATION은 메시지만 반환합니다.
-      return { message: error.message };
-
-    case "UNAUTHENTICATED": // 인증 에러는 리다이렉션 등을 위해 void를 반환합니다.
-      if (process.env.NODE_ENV === "development") {
-        console.error(`세션이 만료되었습니다. 다시 로그인해주세요.`);
-      }
-
-      return;
-
-    case "FORBIDDEN":
-    case "NOT_FOUND":
-    case "INTERNAL":
-    case "DISABLED":
-    case "EXTERNAL_SERVICE":
-    default: // 그 외 서버 에러는 통일된 메시지를 반환합니다.
-      console.error(`Error ${error.category}: ${error.message}`);
-      return {
-        message: "예상치 못한 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      };
-  }
 };

@@ -2,7 +2,6 @@
 
 import useSWR from "swr";
 import { fetcher } from "@/client/fetcher";
-import { handleClientError } from "@/shared/utils";
 import { PremiumFeature } from "@/server/services";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -15,10 +14,7 @@ const usePremiumFeature = () => {
 
   useEffect(() => {
     if (!error) return;
-    const result = handleClientError(error);
-    if (result && "message" in result) {
-      toast.error(result.message);
-    }
+    toast.error(error.message);
   }, [error]);
 
   return { premiumFeatures: data?.features ?? [], loading: isLoading };
