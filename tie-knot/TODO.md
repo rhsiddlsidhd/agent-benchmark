@@ -81,8 +81,8 @@ B-5 공통/운영
 - [ ] **8. 빌드/툴링 아키텍처** (B-5.3) — 문서 신규: `scripts/CLAUDE.md` 신설. 스크립트별 목적, npm script 등록 여부, CI 연동 여부, 수동 실행 구분
   - branch: `docs/scripts-claude-md`
 
-- [ ] **9. product.model.ts subCategory validator를 update 컨텍스트 호환되게 수정** (`models/` 트랙 대기, #4 작업 중 발견) — `runValidators: true`를 `updateProductService`에 켜려면 선행 필요. 현재 validator가 `this.category`(document 전제)를 참조하는데, update validator 컨텍스트에선 `this`가 Query 객체라 update payload에 `category`가 없으면 항상 검증 실패함(mongoose 공식문서: "this is the Query, not the document being updated"). `this.get('category')` 방식으로 교체 필요. 고친 뒤 `updateProductService`의 `findOneAndUpdate`에 `runValidators: true` 추가.
-  - branch: `fix/product-subcategory-validator-update-context`
+- [x] **9. models/CLAUDE.md mongoose 공식문서 기준 전면 재검토** (`#4` 작업 중 발견한 subCategory validator 버그가 시작점, 범위가 models 전체로 확장) — mongoose 공식문서 근거로 규칙 3개 추가: 모델 pre/post 훅에 도메인 로직 금지, ObjectId→string 변환은 services 소관(`.lean()`엔 스키마 toJSON 옵션 안 먹힘), `timestamps:true`면 인터페이스에 createdAt/updatedAt 둘 다 선언. 코드 반영: `order.model.ts` `require`→`required` 오타(검증 누락 버그) 수정 + `order.service.ts` 죽은 코드 정리, `IGuestbook`/`IOrder`에 `updatedAt` 추가, `product.model.ts` subCategory validator를 `this.get()` + `this.model.findOne(this.getQuery())` 폴백 방식으로 수정(`this.get()`만으론 안 됨, DB로 직접 검증함) 후 `updateProductService`에 `runValidators: true` 적용. 실제 스키마와 어긋나 있던 `coupleInfo.guide.md` 삭제. `order.model.ts`의 `pre("save")` finalPrice 계산 로직 이관은 TODO #1(결제/트랜잭션 정합성)과 조율 필요해 미착수, `models/CLAUDE.md` Gotchas에 기록.
+  - branch: `refactor/models-mongoose-convention`
 
 ---
 
