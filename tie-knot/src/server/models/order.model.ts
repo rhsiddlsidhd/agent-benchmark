@@ -100,10 +100,16 @@ const orderSchema = new Schema<IOrder>(
       type: Schema.Types.ObjectId,
       ref: "CoupleInfo",
       required: true,
+      index: true, // getActiveOrderInfoByCoupleInfoId가 이 필드로 조회한다
     },
 
     // 구매자
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true, // getOrdersByUserId가 이 필드로 조회한다
+    },
 
     // 공통 Dto
     buyerName: { type: String, required: true },
