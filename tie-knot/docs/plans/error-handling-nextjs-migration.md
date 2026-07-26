@@ -19,15 +19,18 @@
 
 ## Phase 1 — `global-error.tsx` 추가
 
-**상태: 문서화 완료, 코드 미착수**
+**상태: 완료.**
 
 - [x] `src/app/CLAUDE.md`에 `## global-error.tsx` 독립 섹션 추가(규칙 + 제약 표: Provider 소멸/CSS 재import/metadata 미지원).
-- [ ] `src/app/global-error.tsx` 구현.
+- [x] `src/app/global-error.tsx` 구현.
   - `'use client'`, 자체 `<html>`/`<body>`.
-  - `organisms/ErrorFallback.tsx` 재사용(atoms만 조합, provider 의존 없어서 안전).
-  - `globals.css` 별도 import 필수(root layout이 담당하던 게 같이 대체됨).
+  - `organisms/ErrorFallback.tsx` 재사용(atoms만 조합, provider 의존 없어서 안전) — 기본 props(title/description/backPath/backLabel)만 사용, root 레벨이라 페이지별 커스터마이징 불필요.
+  - `globals.css` 별도 import(root layout이 담당하던 게 같이 대체되므로).
   - `metadata`/`generateMetadata` export 안 함(Client Component라 미지원).
-  - prop 시그니처는 Phase 2 결정에 따라감 — Phase 2 먼저 정하고 처음부터 `unstable_retry`로 만들 것(구버전 `reset`으로 만들었다가 또 고치지 않기 위해).
+  - Phase 2에서 이미 정한 `unstable_retry` 시그니처 그대로 사용 — `retry={unstable_retry}`로 `ErrorFallback`에 전달.
+
+> **Phase 1 실행 중 발견한 사항**: `global-error.tsx`는 `test-scope-exclude.json`의 `src/app/**/error.tsx` 글롭에 안 걸린다 — 파일명이 `error.tsx`가 아니라 `global-error.tsx`라 리터럴 매치가 안 된다. TDD 게이트 대상이라 `global-error.test.tsx`를 먼저 작성(RTL로 `<html>/<body>`를 포함한 컴포넌트를 그대로 render — jsdom이 중첩 html/body를 허용해서 문제없이 통과했다).
+> 타입체크·lint·전체 테스트(15 파일 58 테스트, 전 파일 line coverage 80%+)·`npm run build` 통과.
 
 ## Phase 2 — `reset()` → `unstable_retry()` 마이그레이션
 
@@ -177,9 +180,9 @@
 
 **트랙 B**(레이어 에러 계약): **B1~B6 전부 완료.** 레거시 `HTTPError`도, `apiRequest`도, 클라이언트 판단로직(`handleClientError`)도 전부 코드에서 사라졌다 — 새 계약(`AppError`/`ErrorPayload`)만 남았다.
 
-**트랙 A**(Phase 1~3): **Phase 2 완료.** 남은 건 Phase 1(`global-error.tsx` 신규, Phase 2가 만든 `retry` 시그니처 그대로 재사용)과 Phase 3(kakaomap 페칭 정리, Phase 1과 무관 — 아무 때나/병행 가능).
+**트랙 A**(Phase 1~3): **Phase 1·2 완료.** 남은 건 Phase 3(kakaomap 페칭 정리) 하나뿐 — 앞의 둘과 의존관계 없음.
 
-다음 착수: **Phase 1**(`src/app/global-error.tsx` 신규 작성) — `organisms/ErrorFallback.tsx` 재사용, `globals.css` 별도 import, `metadata` export 안 함(위 "Phase 1" 절 체크리스트 참고). 그다음 **Phase 3-1 → 3-2 → 3-3**.
+다음 착수: **Phase 3-1**(`useNavigationGeo.ts`: raw fetch → `useSWR`+`fetcher` 전환) → **3-2**(`KakaoMap.tsx` 중복 호출 제거) → **3-3**(`navigator.geolocation` 부분 회귀 확인). 이 셋이 끝나면 이 plan 문서(트랙 A/B 전부)가 종료된다.
 
 **TDD 게이트 관련 후속 세션 유의사항**: `4cc1903`부터 fail-closed TDD 훅이 Write/Edit/Bash 전부에 적용된다 — 새 파일이든 기존 파일 수정이든 콜로케이트 `.test.ts(x)`가 없으면 차단된다(예외는 `test-scope-exclude.json`뿐, 임의로 추가하지 말고 사용자에게 먼저 물을 것). 트랙 A(Phase 1~3)의 대상 파일(`error.tsx` 3개, 신규 `global-error.tsx`, `ErrorFallback.tsx`, `useNavigationGeo.ts`, `KakaoMap.tsx`)도 전부 이 게이트 대상이다 — 착수 전에 테스트 컨벤션부터 챙길 것.
 
