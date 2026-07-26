@@ -2,6 +2,7 @@ import { ProductModel, ProductJSON, ProductDB } from "@/server/models";
 import { ProductDto } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
 import { calculatePrice } from "@/shared/utils";
+import { AppError } from "@/shared/types";
 import mongoose, { Types } from "mongoose";
 
 // Product 타입을 export (다른 파일에서 사용)
@@ -41,27 +42,24 @@ export const createProductService = async (
   },
 ): Promise<boolean> => {
   await dbConnect();
-  try {
-    const newProduct = await new ProductModel({
-      ...data,
-      status: data.status || "active",
-      featureIds:
-        data.isPremium && data.featureIds
-          ? data.featureIds.map((value) => new mongoose.Types.ObjectId(value))
-          : [],
-    }).save();
 
-    return !!newProduct;
-  } catch (error: unknown) {
-    const err = error as { message?: string; errors?: Record<string, { message: string }> };
-    console.error("Mongoose Save Error Detailed:", err.message);
-    if (err.errors) {
-      Object.keys(err.errors).forEach((key) => {
-        console.error(`Field [${key}]:`, err.errors![key].message);
-      });
-    }
-    return false;
-  }
+  const newProduct = await new ProductModel({
+    ...data,
+    status: data.status || "active",
+    featureIds:
+      data.isPremium && data.featureIds
+        ? data.featureIds.map((value) => new mongoose.Types.ObjectId(value))
+        : [],
+  })
+    .save()
+    .catch((err) => {
+      throw new AppError(
+        "INTERNAL",
+        err instanceof Error ? err.message : "상품 등록에 실패했습니다.",
+      );
+    });
+
+  return !!newProduct;
 };
 
 // 단일 상품 조회
@@ -70,6 +68,10 @@ export const getProductService = async (
   userId?: string,
 ): Promise<ProductJSON | null> => {
   await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(productId)) {
+    return null;
+  }
 
   const product = await ProductModel.findOne({
     _id: productId,
@@ -131,6 +133,10 @@ export const updateProductService = async (
 ): Promise<ProductJSON | null> => {
   await dbConnect();
 
+  if (!mongoose.isObjectIdOrHexString(productId)) {
+    return null;
+  }
+
   const updateData = {
     ...data,
     featureIds:
@@ -154,6 +160,10 @@ export const deleteProductService = async (
 ): Promise<boolean> => {
   await dbConnect();
 
+  if (!mongoose.isObjectIdOrHexString(productId)) {
+    return false;
+  }
+
   const deletedProduct = await ProductModel.findOneAndUpdate(
     { _id: productId, deletedAt: null },
     { status: "deleted", deletedAt: new Date() },
@@ -169,6 +179,10 @@ export const updateProductLikeService = async (
   userId: string,
 ): Promise<boolean> => {
   await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(productId)) {
+    return false;
+  }
 
   const userObjectId = new mongoose.Types.ObjectId(userId);
 
