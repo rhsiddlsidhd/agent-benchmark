@@ -97,6 +97,15 @@ B-5 공통/운영
   - **미해결**: 이 PortOne 스토어에 테스트 결제가 0건(`getPayments()`로 직접 확인함, `POST_ONE_API_KEY` 유효) — 어떤 결제수단이 실제로 모의 테스트 가능한지(PG사별로 테스트 채널 동작 다름) 미확인. 실제 매핑 코드 검증하려면 결제를 최소 1건 만들어봐야 하는데, `npm run dev`가 `MONGO_TEST_URI` 없이 실제 Atlas DB(`DB_USER`/`DB_PASSWORD`)에 붙는 것으로 확인돼(격리된 로컬 DB 아님) Playwright로 실제 체크아웃 진행하는 건 보류함 — 어느 DB인지(프로덕션/공유 dev/버려도 되는 테스트용) 확인 먼저 필요.
   - branch: 미정
 
+- [ ] **11. 모델 필드 감사 후속 정리 4건** (fork로 7개 모델 필드 전수 조사, `#10` 발견 계기) — 사이즈 작고 서로 독립적이라 branch 하나로 묶음
+  - `product.model.ts`의 `views`/`salesCount` — 읽기(관리자 테이블, 응답 스키마)만 있고 증가 로직 전무해서 항상 0이던 죽은 카운터였는데, 실무 이커머스에서 흔히 쓰는 지표라 삭제 대신 **구현**하기로 확정:
+    - `views`: `products/[id]/page.tsx`(실제 상세페이지 렌더)에서만 증가. `payment.service.ts`(결제 검증용 조회)와 `(main)/page.tsx`(고정 미리보기 샘플)의 `getProductService` 호출은 증가 대상 아님 — `getProductService` 자체에 넣으면 이 두 호출도 조회수로 잡혀서 안 됨, 상세페이지 쪽에서 별도 호출로 증가시킨다.
+    - `salesCount`: `payment.service.ts`의 `syncPayment`가 `order.orderStatus = "CONFIRMED"`로 전이시키는 지점(결제 PAID 확정 시점)에서 `order.product.quantity`만큼 증가 — "판매 건수"가 아니라 "판매 수량" 기준(지금은 quantity가 거의 항상 1이지만, 수량 개념 있는 상품군 확장 대비).
+  - `product.model.ts`의 `deletedAt?: Date` — 스키마 `default: null`이라 실제로는 모든 문서에 항상 존재하는데 타입은 optional로 선언돼있음, 타입/실체 불일치 수정.
+  - `premiumFeature.service.ts:5-13`의 `FeatureLeanDoc`이 `product.feature.model.ts`의 `IFeature`와 완전히 같은 shape을 로컬 재정의함 — 모델 타입 import해서 쓰도록 정리.
+  - `order.model.ts`의 `cancelledAt`/`cancelReason` — 완전 미사용 확인됨(`payment.service.ts`가 주문 취소 시 `orderStatus`만 바꾸고 이 필드들은 안 건드림). TODO #1(결제/트랜잭션 정합성)과 범위 겹쳐서 이번엔 보류, 취소 사유를 어디서 받는지(PortOne webhook/관리자 수동/사용자 요청)부터 결제 플로우 전체 재검토 시 같이 정리.
+  - branch: 미정
+
 ---
 
 ## Stage C — 신기능/UI (병렬, 오늘 진행 안 함)
