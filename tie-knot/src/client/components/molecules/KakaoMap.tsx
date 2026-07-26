@@ -1,39 +1,14 @@
 "use client";
 
 import { useKakaoLoader } from "@/client/lib/kakao";
-import React, { useEffect, useState } from "react";
+import { useKakaomapGeocode } from "@/client/hooks";
 import { Map, MapMarker } from "react-kakao-maps-sdk";
 import { MapPin } from "lucide-react";
 
 const KakaoMap = ({ address }: { address: string }) => {
   useKakaoLoader();
 
-  const [geoState, setGeoState] = useState<{
-    lng: number | null;
-    lat: number | null;
-  }>({ lng: null, lat: null });
-
-  useEffect(() => {
-    const getCoordinates = async (address: string) => {
-      try {
-        const res = await fetch(`/api/kakaomap?address=${address}`);
-
-        const json = await res.json();
-        if (!res.ok || !json.success) {
-          throw new Error(json.error?.message ?? "서버 오류가 발생하였습니다.");
-        }
-
-        const { x, y } = json.data.documents[0];
-        setGeoState({ lat: y, lng: x });
-      } catch (e) {
-        const message =
-          e instanceof Error ? e.message : "서버 오류가 발생하였습니다.";
-        console.error(message);
-      }
-    };
-
-    getCoordinates(address);
-  }, [address]);
+  const geoState = useKakaomapGeocode(address);
 
   return (
     <div className="flex justify-center">

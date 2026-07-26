@@ -11,6 +11,7 @@ export * from "./useFetchCoupleInfo";
 export * from "./useImageList";
 export * from "./useImageUpload";
 export * from "./useIntervalIndex";
+export * from "./useKakaomapGeocode";
 export * from "./useMobile";
 export * from "./useNavigationGeo";
 export * from "./usePortOnePayment";
