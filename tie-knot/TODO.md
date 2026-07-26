@@ -63,8 +63,15 @@ B-5 공통/운영
 - [ ] **2. 상태/컨텍스트 구조** (B-4.1) — 문서 불필요 (`src/CLAUDE.md`에 "서버 데이터 Zustand 직접 이관 금지" 이미 명시). `useAuth.ts` 코드만 수정
   - branch: `refactor/use-auth-zustand-split`
 
-- [ ] **3. 도메인 응집도** (B-1.2) — 문서 신규: 카테고리-feature 매핑 규칙. 카테고리별 허용 feature 목록, 신규 카테고리 추가 체크리스트, 프로젝트 CLAUDE.md "청첩장 하나만" 서술 현행화
-  - branch: `docs/category-feature-mapping`
+- [ ] **3. 도메인 응집도 — product 스키마를 mongoose discriminator로 재구성** (B-1.2, `#11` 필드 감사 중 논의 확장) — 프로젝트가 "모바일 청첩장 하나만"에서 이커머스 다품목(답례품/웨딩 소품/방명록 굿즈/예식 용품)으로 확장 예정인데, 지금 `product.model.ts`는 단일 평면 스키마라 invitation 전용 개념(미리보기 링크 등)과 공통 개념이 안 나뉘어 있음. mongoose 공식 discriminator(스키마 상속, 한 컬렉션에 여러 타입 저장)로 재구성하기로 확정.
+  - **확정된 설계**:
+    - `category`(기존 필드)를 discriminatorKey로 그대로 재사용 — 별도 `__t` 필드 안 둠, "분류"와 "스키마 구분"이 같은 개념이라 필드 하나로 통일.
+    - `category` enum에서 `business-card`(레거시, 로드맵과 무관) 제거.
+    - **base(공통) 필드**: `authorId`, `title`, `description`, `thumbnail`, `price`, `category`, `subCategory`(필드는 공통 슬롯, 유효값 검증은 discriminator별로 각자), `isPremium`, `featureIds`(재분류 — `Feature`/유료 옵션 시스템 자체는 카테고리 무관 재사용 가능한 범용 메커니즘으로 판단), `isFeatured`, `priority`, `likes`, `views`, `salesCount`, `discount`, `status`, `deletedAt`
+    - **invitation 전용 필드**: `previewUrl`, `theme`(신규 — `shared/constants/theme.ts`의 `PRODUCT_THEME_MAP`이 상품ID→테마를 하드코딩 중이었음, 실제 상품마다 값이 다른 게 코드로 이미 증명돼있어서 정식 필드로 승격. 관리자 폼으로 설정 가능하게, 상수 파일 하드코딩 제거)
+    - 검토했지만 필드화 안 하기로 한 것: 썸네일 업로드 개수 제한(`coupleInfo.schema.ts` 하드코딩 "최대 10장") — 상품마다 달라야 한다는 실제 근거 없어서 플랫폼 공통 상수로 유지. 나중에 실제 필요 생기면 옵션 필드로 추가(breaking 아님).
+  - **범위 밖**: 답례품/웨딩소품/방명록굿즈/예식용품 등 미착수 카테고리의 구체적 필드는 지금 안 정한다 — 실제로 그 카테고리 만들 때 그 시점 요구사항으로 정의(가정으로 필드 자리 미리 안 만듦).
+  - branch: `refactor/product-discriminator`
 
 - [x] **4. 에러 처리** (B-5.2) — 착수 중 발견: 기존 null/throw 이분법만으로 부족해서 `services/CLAUDE.md`를 mongoose 공식문서 기준 규칙 6개(에러 분류 INTERNAL 통일, ObjectId 사전검증→NOT_FOUND, lean 판단 기준, runValidators, dbConnect 근거)로 먼저 재확정한 뒤 코드 반영. 범위도 `coupleInfo`/`product` 2개에서 `guestbook.service.ts`까지 확장. `coupleInfo.service.ts`(create/update/getCoupleInfoById), `product.service.ts`(전체 함수), `guestbook.service.ts`(전체 함수) 수정 + `createProduct.ts` 액션 dead code 제거. `runValidators: true`는 이번 라운드 보류 — coupleInfo는 현재 스키마로 관찰 가능한 효과가 없고(required가 update에서 $unset 없인 안 걸림, 다른 validator 없음), product는 `subCategory` validator가 update 컨텍스트에서 깨져서 선행 수정 필요(#9). 부수 발견: DB 테스트 여러 개를 처음 같이 돌리며 크로스파일 오염 발견 → `vitest.config.ts`에 `fileParallelism: false` 추가, `docs/TESTING_GUIDELINE.md` DB 테스트 섹션 갱신.
   - branch: `refactor/service-error-null-throw`
