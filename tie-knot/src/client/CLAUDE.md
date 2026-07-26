@@ -7,7 +7,7 @@
 
 `components`/`hooks`/`store`/`context`/`lib`/`fetcher.ts` — "누가 import하는가" 기준으로 브라우저에서만 도는 코드를 모은 최상위 폴더.
 
-`fetcher`는 **`useSWR`에 전달할 용도로만 좁힌다** — 시그니처는 `(url: string) => Promise<T>`(SWR fetcher 계약) 하나로 고정, 캐싱이 의미 있는 GET 조회 전용(`useBanks`/`useAuth`/`useFetchCoupleInfo`/`useProducts`/`GuestbookSection`). 브라우저 mutation은 이 폴더의 fetch가 아니라 Server Action(`src/server/actions/`)으로 간다 — 클라이언트에 mutation용 fetch 래퍼를 두지 않는다(과거 `apiRequest`는 제거 대상, Structure 참고).
+`fetcher`는 **`useSWR`에 전달할 용도로만 좁힌다** — 시그니처는 `(url: string) => Promise<T>`(SWR fetcher 계약) 하나로 고정, 캐싱이 의미 있는 GET 조회 전용(`useBanks`/`useAuth`/`useFetchCoupleInfo`/`useProducts`/`GuestbookSection`). 브라우저 mutation은 이 폴더의 fetch가 아니라 Server Action(`src/server/actions/`)으로 간다 — 클라이언트에 mutation용 fetch 래퍼를 두지 않는다(과거 있던 `apiRequest`는 제거 완료, Gotchas 참고).
 
 ## Structure
 
@@ -20,8 +20,6 @@ src/client/
 ├── lib/          # 브라우저 전용 외부 연동(kakao) + cn — src/client/lib/CLAUDE.md
 └── fetcher.ts    # useSWR 전용 — (url: string) => Promise<T>. src/server/response.ts envelope 파싱, 실패 시 ErrorPayload로 정규화해서 throw(세부는 아래 "에러 처리" 참고). 인증 쿠키는 동일 origin이라 브라우저가 자동으로 실어준다(수동 토큰 주입/401 refresh 로직 없음, Gotchas 참고).
 ```
-
-> `apiRequest.ts`는 제거한다 — 브라우저 mutation은 전부 Server Action으로 이관한다(`src/CLAUDE.md` 데이터접근표 row 2). 남아있던 호출자(좋아요 토글/로그아웃/결제 검증/entry 토큰)는 Server Action으로 옮긴다.
 
 ## 에러 처리(목표 설계, 마이그레이션 진행 중)
 
@@ -40,6 +38,7 @@ src/client/
 
 ## Gotchas
 
+- `apiRequest.ts`(mutation용 fetch 래퍼)는 제거됐다 — 남아있던 호출자 4곳(좋아요 토글/로그아웃 쿠키 정리/결제 검증/entry 토큰)은 전부 Server Action(`src/server/actions/toggleProductLike.ts`/`clearUserEmailCookie.ts`/`completePayment.ts`/`issueEntryToken.ts`)으로 이관 완료.
 - 폴더명이 이전엔 `api`(`src/api/`)의 일부였다 — 실제로는 Route Handler·Client fetch 둘 사이의 계약 중 클라이언트 절반(`fetcher`)만 여기 있다. 서버 절반(`response.ts`)은 `src/server/`.
 - 서비스 레이어가 던지는 에러 타입(`src/shared/types/error.ts`)은 이 경계 + 서비스 레이어 전용이다 — 서비스 함수가 이미 이 타입을 던지는 경우 Server Action이 받아서 리턴값으로 번역한다(`src/server/actions/CLAUDE.md` Gotchas 참고).
 - access token은 Bearer 헤더가 아니라 httpOnly 쿠키로 전달된다(트레이드오프는 `src/CLAUDE.md` 참고) — `fetcher`는 토큰을 다루지 않는다(쿠키가 동일 origin이라 자동으로 실림), `useAuthStore`에도 `token` 필드가 없다.

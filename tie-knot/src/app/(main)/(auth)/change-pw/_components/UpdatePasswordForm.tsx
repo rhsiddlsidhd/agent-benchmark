@@ -4,18 +4,10 @@ import { useActionState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { updateUserPassword } from "@/server/actions";
-import { apiRequest } from "@/client/apiRequest";
+import { updateUserPassword, clearUserEmailCookie } from "@/server/actions";
 import { hasFieldErrors } from "@/shared/utils";
 import { APIResponse } from "@/shared/types";
 import { UpdatePasswordForm as PureUpdatePasswordForm } from "@/client/components/organisms";
-const deleteCookieToUserEmail = async (): Promise<void> => {
-  try {
-    await apiRequest<void>("/api/auth/cookie", { method: "DELETE" });
-  } catch (error) {
-    console.debug("Cookie deletion failed during cleanup:", error);
-  }
-};
 
 export function UpdatePasswordForm() {
   const router = useRouter();
@@ -40,7 +32,9 @@ export function UpdatePasswordForm() {
 
   useEffect(() => {
     return () => {
-      deleteCookieToUserEmail();
+      clearUserEmailCookie().catch((error) => {
+        console.debug("Cookie deletion failed during cleanup:", error);
+      });
     };
   }, []);
 

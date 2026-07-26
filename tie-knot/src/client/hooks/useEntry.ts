@@ -1,7 +1,7 @@
 "use client";
 
-import { handleClientError } from "@/shared/utils";
-import { apiRequest } from "@/client/apiRequest";
+import { useTransition } from "react";
+import { issueEntryToken } from "@/server/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -12,23 +12,19 @@ import { toast } from "sonner";
  */
 export const useEntry = (nextPath: string) => {
   const router = useRouter();
+  const [, startTransition] = useTransition();
 
-  const handleEntry = async () => {
-    try {
-      // Entry 토큰 발급 및 진입점 유효성 확인
-      await apiRequest<{ path: string }>(
-        `/api/auth/entry?next=${encodeURIComponent(nextPath)}`,
-        { method: "POST" },
-      );
-      
-      // 토큰 발급 성공 시 목적지로 이동
-      router.push(nextPath);
-    } catch (e) {
-      const result = handleClientError(e);
-      if (result && "message" in result) {
-        toast.error(result.message);
+  const handleEntry = () => {
+    startTransition(async () => {
+      const result = await issueEntryToken(nextPath);
+
+      if (result.success === false) {
+        toast.error(result.error.message);
+        return;
       }
-    }
+
+      router.push(result.data.path);
+    });
   };
 
   return { handleEntry };

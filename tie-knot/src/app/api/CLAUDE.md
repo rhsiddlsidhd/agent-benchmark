@@ -10,8 +10,7 @@
 
 ```
 src/app/api/
-├── auth/{cookie,entry,logout,me}/route.ts
-├── products/[id]/like/route.ts
+├── auth/{logout,me}/route.ts
 └── ...                        # 라우트 세그먼트당 route.ts 1개
 ```
 
@@ -29,7 +28,7 @@ src/app/api/
 ## Gotchas
 
 - 수동 refresh 라우트(`auth/refresh`/`auth/verify`)는 없다 — access token이 httpOnly 쿠키라 클라이언트가 수동으로 refresh를 트리거할 필요가 없고, `services/auth.service.ts`의 `getAuth()`가 라우트 호출 시점에 자동으로 처리한다(`src/CLAUDE.md` 참고).
-- 인증이 필요한 Route Handler는 Bearer 헤더를 직접 파싱하지 않고 `services/auth.service.ts`의 `requireAuth()`를 호출한다(세션 없으면 401 throw) — `couple-info`/`order/create`/`payment/complete`/`products/[id]/like`가 이 패턴을 따른다. `kakaomap`의 `Authorization` 헤더는 별개(외부 Kakao API 인증용)라 해당 없음.
+- 인증이 필요한 Route Handler는 Bearer 헤더를 직접 파싱하지 않고 `services/auth.service.ts`의 `requireAuth()`를 호출한다(세션 없으면 401 throw) — `couple-info`/`order/create`가 이 패턴을 따른다. `kakaomap`의 `Authorization` 헤더는 별개(외부 Kakao API 인증용)라 해당 없음.
 
 ## 관련 문서
 
