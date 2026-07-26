@@ -109,12 +109,21 @@
 
 ## Phase B3 — services 계층 정리
 
-**상태: 규칙 확정, 코드 미착수. B1·B2 선행 완료. `decrypt.ts`는 B2에서 먼저 전환됨(위 스코프 갭 3번 참고), 아래 범위에서 제외.**
+**상태: 완료.** `decrypt.ts`는 B2에서 먼저 전환됨(위 스코프 갭 3번 참고), 아래 범위에서 제외.
 
-- `requireAuth`: `HTTPError(401)` → `AppError(UNAUTHENTICATED)`.
-- 조회형(`getUser`/`getAuth`): 미존재만 `null`, DB 인프라 예외는 `AppError(INTERNAL)` throw로 구분.
-- 나머지 services 파일(`auth.service`/`payment.service`/`subway.service`/`user.service`)의 `HTTPError` throw 전체 `AppError`로 전환.
-- **(스코프 확장)** `src/server/lib/cloudinary/upload.ts`(업로드 실패) — lib 레이어지만 같이 전환(어느 B phase에도 원래 안 적혀있던 파일). `src/server/lib/jose/decrypt.ts`는 이미 B2에서 전환 완료.
+- [x] `requireAuth`: `HTTPError(401)` → `AppError("UNAUTHENTICATED")`.
+- [x] 조회형(`getUser`/`getAuth`): 미존재만 `null` — 이미 이 계약을 지키고 있어 코드 변경 없음. DB 인프라 예외를 삼키는 `catch`는 없었다(`getAuth`의 `catch`는 토큰 검증 실패 폴백 전용).
+- [x] 나머지 services 파일의 `HTTPError` throw 전체 `AppError`로 전환:
+  - `user.service`: `getUserEmail`/`getUserById` 미존재 → `NOT_FOUND`(기존 404 유지).
+  - `subway.service`: 서울 열린데이터 API 실패 → `EXTERNAL_SERVICE`(기존 502 유지).
+  - `payment.service`: 주문 미존재 → `NOT_FOUND`(404 유지), 결제 검증 실패 → `VALIDATION`(400 유지), `mapPortOneStatus` 미지원 상태 2건 + `PortOneError` → `EXTERNAL_SERVICE`.
+- [x] **(스코프 확장)** `src/server/lib/cloudinary/upload.ts`: Cloudinary 업로드 실패 2건 → `EXTERNAL_SERVICE`, 자체 서명 API(`/api/upload/signature`) 실패 → `INTERNAL`. `src/server/lib/jose/decrypt.ts`는 이미 B2에서 전환 완료.
+- 타입체크(`npx tsc --noEmit`) 통과, `npx vitest run` 통과(3파일 20테스트) — B2에서 못 돌렸던 테스트 실행이 이번엔 됐다(아래 검증 환경 이슈 참고). `grep -rn "HTTPError" src` 결과 **throw 사이트 0건** — 남은 참조는 A/B 공용 핸들러의 레거시 catch 분기와 클래스 정의뿐(전부 B6 소관).
+
+> **B3 실행 중 발견한 스코프 갭(2026-07-26)**:
+> 1. **status 변경 3건**: `payment.service`가 외부 원인 에러를 400으로 내보내던 걸 `EXTERNAL_SERVICE`(502)로 재분류했다 — `mapPortOneStatus`가 보는 status와 `PortOneError`는 전부 PortOne 응답에서 오는 값이라, 클라이언트 입력 잘못을 뜻하는 400이 애초에 오분류였다. `cloudinary` 업로드 실패도 500 → 502. 셋 다 `EXTERNAL_SERVICE`라 원문 message는 로그만 남고 클라엔 안전문구가 나간다.
+> 2. **`mapPortOneStatus`의 `console.error` 2줄 제거**: 공용 핸들러가 같은 내용을 이미 로깅하는데 원문 message가 `AppError`로 옮겨가면서 중복이 됐다. 대신 원문에만 있던 정보(`typeof status`)를 `AppError` message에 합쳤다.
+> 3. **B6 선행조건 앞당겨짐**: 원래 "B2~B5 전부 완료 후"였지만, B4(`apiRequest` 삭제)·B5(클라 판단로직 제거)는 `HTTPError`를 더 이상 참조하지 않는다(B2에서 이미 정리됨). B3이 끝난 지금 참조가 레거시 catch 분기 2곳+정의뿐이라 **B6은 B4/B5와 무관하게 바로 착수 가능**하다.
 
 ## Phase B4 — `apiRequest` 삭제 + 호출자 Server Action 이관
 
@@ -134,7 +143,7 @@
 
 ## Phase B6 — `HTTPError` 최종 삭제
 
-**상태: 신규 추가. B2~B5 전부 완료 후 착수.**
+**상태: 착수 가능(B3 완료로 선행조건 충족 — B4/B5 대기 불필요, B3 스코프 갭 3번 참고).**
 
 - `grep -rn "HTTPError" src`로 참조 0건 확인.
 - `src/shared/types/error.ts`에서 `HTTPError` 클래스 삭제.
@@ -152,6 +161,11 @@
 2. Phase 1 구현(`global-error.tsx` 신규 작성, Phase 2 결과물 재사용).
 3. Phase 3-1 → 3-2 → 3-3 — 위 둘과 의존관계 없어 아무 때나/병행 가능.
 
-**트랙 B**(레이어 에러 계약): **B1(완료) → B2(완료) → B3 → (B4·B5) → B6**. B2가 원래 B4/B5 몫이던 wire 타입 전환까지 끝내놔서, B4/B5 남은 범위는 이제 각각 "Server Action 이관"/"컴포넌트 렌더 전환"만 남았다(스코프 갭 1번 참고). B6(`HTTPError` 최종 삭제)는 B3~B5 전부 끝나고 참조 0건 확인 후 착수.
+**트랙 B**(레이어 에러 계약): **B1(완료) → B2(완료) → B3(완료) → B6 / B4·B5**. B2가 원래 B4/B5 몫이던 wire 타입 전환까지 끝내놨고(스코프 갭 1번), B3이 throw 사이트를 다 없앴다 — 남은 셋은 서로 의존관계가 없어 아무 순서로나/병행 가능하다.
 
-다음 착수: **B3**(services 계층 정리) — `auth.service`/`payment.service`/`subway.service`/`user.service`/`lib/cloudinary/upload.ts`의 남은 `HTTPError` throw를 `AppError`로 전환. B2가 끝나면서 wire 타입(`ErrorPayload`)·양쪽 공용 핸들러·`fetcher`/`apiRequest`/`handleClientError`까지 전부 이미 새 계약을 쓰고 있어서, B3는 이제 순수하게 "services가 남은 `HTTPError`를 `AppError`로 바꾸는" 기계적 작업만 남았다(레거시 브랜치가 그 사이 안전망 역할). 브랜치: `refactor/error-services-cleanup`(dev 기준으로 새로 분기).
+다음 착수 후보:
+- **B6**(`HTTPError` 최종 삭제) — 가장 짧다. 레거시 catch 분기 2곳(`handleActionError.ts`, `response.ts`) + 클래스 정의 + `response.ts` 재export만 지우면 끝. 브랜치: `refactor/error-httperror-removal`.
+- **B4**(`apiRequest` 삭제 + 호출자 4개 Server Action 이관) — 남은 범위 중 제일 크다.
+- **B5**(클라이언트 판단로직 제거) — B4와 대상이 겹친다(`ProductLikeBadge`/`useEntry`), B4 먼저가 자연스럽다.
+
+**검증 환경 이슈(B2에서 테스트를 못 돌린 원인, B3에서 해소)**: `npx vitest run`을 막던 `@rolldown/binding-linux-x64-gnu` 누락은 코드 문제가 아니라 로컬 설치 문제였다 — `package-lock.json`엔 1.1.5로 잠겨 있는데 `node_modules/@rolldown/`엔 안 깔려 있었다(optional dep 설치 누락). `npm install @rolldown/binding-linux-x64-gnu@1.1.5 --no-save`로 채우면 실행된다(`--no-save`라 락파일 무변경, `node_modules`만 채움). **새 워크트리/클론에서 재발한다** — 테스트가 이 에러로 죽으면 이 명령부터 실행할 것.

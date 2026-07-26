@@ -3,7 +3,7 @@ import { PaymentModel, PayStatus, OrderModel } from "@/server/models";
 
 import { getProductService } from "./product.service";
 import { getOrderSeviceByMerchantUid } from "./order.service";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { dbConnect } from "@/server/lib/mongodb";
 
 // 환경 변수 확인
@@ -30,8 +30,10 @@ type FailedPayment = Extract<GetPaymentResult, { status: "FAILED" }>;
  */
 function mapPortOneStatus(status: unknown): PayStatus {
   if (typeof status !== "string") {
-    console.error(`[mapPortOneStatus] Invalid status type: ${typeof status}`);
-    throw new HTTPError("유효하지 않은 결제 상태입니다.", 400);
+    throw new AppError(
+      "EXTERNAL_SERVICE",
+      `유효하지 않은 결제 상태 타입: ${typeof status}`,
+    );
   }
 
   const statusMap: Record<string, PayStatus> = {
@@ -44,8 +46,7 @@ function mapPortOneStatus(status: unknown): PayStatus {
   };
 
   if (!(status in statusMap)) {
-    console.error(`[mapPortOneStatus] Unknown status: ${status}`);
-    throw new HTTPError(`알 수 없는 결제 상태: ${status}`, 400);
+    throw new AppError("EXTERNAL_SERVICE", `알 수 없는 결제 상태: ${status}`);
   }
 
   return statusMap[status];
@@ -130,7 +131,7 @@ export const syncPayment = async (paymentId: string) => {
     const order = await OrderModel.findOne({ merchantUid: paymentId });
 
     if (!order) {
-      throw new HTTPError("주문을 찾을 수 없습니다.", 404);
+      throw new AppError("NOT_FOUND", "주문을 찾을 수 없습니다.");
     }
 
     // 3. 결제가 완료(PAID)된 경우에만 검증 및 DB 반영
@@ -138,9 +139,9 @@ export const syncPayment = async (paymentId: string) => {
       const isValid = await verifyPayment(actualPayment as PaidPayment);
 
       if (!isValid) {
-        throw new HTTPError(
+        throw new AppError(
+          "VALIDATION",
           "결제 검증에 실패했습니다. 금액 불일치 또는 데이터 오류",
-          400,
         );
       }
 
@@ -223,7 +224,7 @@ export const syncPayment = async (paymentId: string) => {
     return { success: false, status: mapPortOneStatus(actualPayment.status) };
   } catch (e) {
     if (e instanceof PortOne.PortOneError) {
-      throw new HTTPError(`포트원 오류: ${e.message}`, 400);
+      throw new AppError("EXTERNAL_SERVICE", `포트원 오류: ${e.message}`);
     }
     throw e;
   }

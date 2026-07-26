@@ -3,7 +3,7 @@ import { dbConnect } from "@/server/lib/mongodb";
 import { getCookie, setCookie, deleteCookie } from "@/server/lib/cookies";
 import { decrypt, encrypt } from "@/server/lib/jose";
 import mongoose from "mongoose";
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { AuthSession } from "@/shared/schemas";
 
 export type LeanUser = {
@@ -109,11 +109,12 @@ export async function getAuth(): Promise<AuthResult> {
   }
 }
 
-// 인증이 반드시 필요한 Route Handler에서 호출한다 — 세션이 없으면 401을 throw한다.
+// 인증이 반드시 필요한 Route Handler/Server Action에서 호출한다 — 세션이 없으면 UNAUTHENTICATED를 throw한다.
+// HTTP status(401)로의 번역은 route.ts 경계(`response.ts`)가 담당한다.
 export async function requireAuth(): Promise<AuthSession> {
   const session = await getAuth();
   if (!session) {
-    throw new HTTPError("인증이 필요합니다.", 401);
+    throw new AppError("UNAUTHENTICATED", "인증이 필요합니다.");
   }
   return session;
 }

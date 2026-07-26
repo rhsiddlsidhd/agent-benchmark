@@ -1,4 +1,4 @@
-import { HTTPError } from "@/shared/types";
+import { AppError } from "@/shared/types";
 import { parseSeoulOpenApiResponse } from "@/shared/utils";
 
 const SERVICE_NAME = "SearchSTNBySubwayLineInfo";
@@ -18,7 +18,7 @@ export async function getAllSubwayStationNames(): Promise<string[]> {
 
   const result = parseSeoulOpenApiResponse<SubwayLineInfoRow>(SERVICE_NAME, json);
   if (result.kind === "failure") {
-    throw new HTTPError(result.message, 502);
+    throw new AppError("EXTERNAL_SERVICE", result.message);
   }
 
   return [...new Set(result.rows.map((row) => row.STATION_NM))];
