@@ -1,7 +1,7 @@
 # docs/TESTING_GUIDELINE.md
 
-> Last updated: 2026-07-23
-> vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup.ts` globalSetup, `src/server/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. 실제 테스트 파일은 현재 `src/shared/utils/price.test.ts`, `src/server/lib/mongodb/connect.test.ts` 2개뿐이고, `src/test/factories/`는 아직 만들어지지 않았다(services/actions DB 테스트 착수 시 필요해지는 시점에 생성).
+> Last updated: 2026-07-26
+> vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup.ts` globalSetup, `src/server/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. `src/test/factories/`에 `coupleInfo`/`product`/`guestbook` 팩토리가 있다(services DB 테스트 착수하며 생성).
 
 ## Overview
 
@@ -48,8 +48,9 @@ src/
 
 ### DB 테스트
 
-- DB가 걸린 로직은 `mongodb-memory-server`로 실제 mongoose 쿼리를 실행해 검증한다 — mongoose model을 `vi.mock`으로 대체하지 않는다. 이유: mock은 쿼리 정확성(필터 조건, `.lean()`/`.toJSON()` 결과 shape)을 검증하지 못하고, `services/`는 계획된 리팩터(`doc.md` 트레이드오프 정리) 대상이라 구현 디테일에 묶인 mock은 리팩터마다 재작성해야 한다 — 계약(입출력)만 보는 통합 테스트가 리팩터에 더 강하다.
+- DB가 걸린 로직은 `mongodb-memory-server`로 실제 mongoose 쿼리를 실행해 검증한다 — mongoose model을 `vi.mock`으로 대체하지 않는다. 이유: mock은 쿼리 정확성(필터 조건, `.lean()`/`.toJSON()` 결과 shape)을 검증하지 못하고, 구현 디테일에 묶인 mock은 리팩터마다 재작성해야 한다 — 계약(입출력)만 보는 통합 테스트가 리팩터에 더 강하다.
 - `mongodb-memory-server` 인스턴스는 vitest `globalSetup`(`src/test/setup.ts`)에서 테스트 스위트 전체당 1개만 띄운다 — 테스트 파일마다 새 인스턴스를 만들지 않는다. 이유: 파일마다 기동하면 스위트 전체 시간이 선형으로 늘어난다. 테스트 간 격리는 각 `beforeEach`에서 관련 컬렉션을 `deleteMany`로 비워 확보한다(`src/test/db.ts`).
+- **이 격리는 테스트 파일들이 순차 실행될 때만 유효하다** — `vitest.config.ts`에 `fileParallelism: false`를 설정해 DB 테스트 파일들이 병렬이 아니라 순차로 돈다. 이유: 인스턴스를 스위트당 1개만 띄우는 설계상 여러 파일이 같은 DB를 공유하는데, vitest 기본값(파일 병렬 실행)에서는 파일 A의 `beforeEach`(`deleteMany`)가 파일 B가 막 써넣은 데이터를 지워버리는 크로스파일 오염이 생긴다 — 실제로 `coupleInfo`/`product`/`guestbook` service 테스트 3개를 처음 같이 추가했을 때 이 레이스로 무더기 실패가 재현됐다(파일 단독 실행은 통과, 전체 스위트 실행은 랜덤 실패).
 - mongoose 테스트 데이터는 `src/test/factories/{도메인}.factory.ts`의 팩토리 함수(`buildUser(overrides?)` 등)로 만든다 — 매 테스트 파일에 객체 리터럴을 인라인으로 반복하지 않는다. 이유: 모델 스키마에 필수 필드가 추가되면 인라인 방식은 테스트 파일 전부 고쳐야 하지만 팩토리는 한 곳만 고치면 된다.
 
 ### 목킹 정책
@@ -102,7 +103,7 @@ src/
 
 ## Gotchas
 
-- `mongodb-memory-server`는 설치·연동 완료됐고 `connect.test.ts`로 실제 연결까지 검증했다 — 다만 이건 인프라 배선(`dbConnect()` 자체)만 검증한 것이고, `beforeEach`의 `clearCollections`(`src/test/db.ts`)로 테스트 간 격리가 실제로 깨지지 않는지, 팩토리(`src/test/factories/`) 패턴이 실동작하는지는 `services/`·`actions/` 테스트를 실제로 작성하며 검증해야 한다(아직 안 함).
+- `mongodb-memory-server`는 설치·연동 완료됐고 `connect.test.ts`로 실제 연결까지 검증했다. `coupleInfo`/`product`/`guestbook` service 테스트를 실제로 추가하며 `beforeEach`의 `clearCollections` 격리와 팩토리 패턴을 검증했는데, 이 과정에서 크로스파일 오염 문제가 드러나 `fileParallelism: false`로 고쳤다(위 "DB 테스트" 섹션 참고) — 파일 단독 실행은 통과하는데 전체 스위트 실행에서만 랜덤 실패하는 증상이었다.
 - `.claude/hooks/pre-commit-check.sh`가 lint → `test:coverage` → build 순서로 커밋을 막는다. `test:coverage`는 `vitest.config.ts`의 `coverage.thresholds`(`perFile: true, lines: 80`)로 **테스트가 존재하는 파일 각각**의 line coverage 80% 미만이면 실패한다. 커버리지 %는 "테스트가 있다"는 사실만 강제하는 `.claude/hooks/tdd-gate.js` 훅(Write/Edit는 `file_path`를, Bash는 명령문에서 뽑은 쓰기 대상 경로를 같은 규칙에 태운다. 제외 목록은 루트 `test-scope-exclude.json` — `coverage.exclude`와 같은 파일을 공유한다)과 별개로 "그 테스트가 실제로 로직을 타는가"를 걸러내는 2차 게이트다 — 단, branch coverage는 아직 안 본다(line만), assertion이 의미있는지는 여전히 사람 리뷰 몫이다.
 - `coverage.include`는 `.test.ts(x)`가 실제로 존재하는 소스 파일 목록으로 `vitest.config.ts`가 매번 자동 스캔해서 채운다(`glob` 패키지, `src/**/*.test.{ts,tsx}` → `.test` 뗀 경로). 이유: `src/CLAUDE.md`의 배럴 전용 import 컨벤션 때문에 컴포넌트 하나만 import해도 배럴 연쇄(예: `@/components/atoms` → `sidebar.tsx` → `@/hooks` → `useAuth.ts`)로 무관한 파일이 대량으로 로드된다 — vitest 커버리지는 "직접 테스트한 파일"이 아니라 "테스트 실행 중 로드된 파일"을 리포트에 잡으므로, `include`로 명시하지 않으면 테스트 하나 추가할 때마다 무관한 레거시 파일들이 커버리지 미달로 같이 실패한다(`coverage.all: false`로는 못 막는다 — 그 파일들은 실제로 로드되므로 `all` 설정과 무관하게 리포트에 잡힌다).
 - 컴포넌트 테스트 컨벤션(위 "컴포넌트 테스트"/"컴포넌트 테스트 인프라 셋업" 섹션)은 `src/client/components/molecules/BaseSelect.tsx`(Radix Select 조합, 이 프로젝트 molecule 대표 사례)로 렌더링+상호작용 테스트를 실제로 작성해보며 검증했다 — `.env` 미로딩/cleanup 누락/jsdom Pointer Events 미구현 3가지를 실제로 겪고 고쳤다. 다만 `organisms`(여러 상호작용의 로컬 상태 오케스트레이션) 쪽은 아직 실제 작성된 테스트가 없어 그 부분 컨벤션은 미검증이다.
