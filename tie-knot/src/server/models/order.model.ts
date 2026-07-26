@@ -62,8 +62,6 @@ const ProductSnapShotSchema = new Schema<ProductSnapShot>(
   { _id: false },
 );
 
-// 학습중
-
 const ORDER_STATUS = [
   "PENDING",
   "CONFIRMED",
@@ -114,7 +112,7 @@ const orderSchema = new Schema<IOrder>(
 
     // 상품정보
     product: { type: ProductSnapShotSchema, required: true },
-    finalPrice: { type: Number },
+    finalPrice: { type: Number, required: true },
     discountRate: { type: Number, default: 0, min: 0, max: 1 },
     discountAmount: { type: Number, default: 0 },
 
