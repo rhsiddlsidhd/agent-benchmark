@@ -4,7 +4,12 @@ import { dbConnect } from "@/server/lib/mongodb";
 import { clearCollections } from "@/test/db";
 import { buildOrderInput } from "@/test/factories/order.factory";
 import { OrderModel } from "@/server/models";
-import { createOrderService } from "./order.service";
+import {
+  createOrderService,
+  getOrderSeviceByMerchantUid,
+  getActiveOrderInfoByCoupleInfoId,
+  getOrdersByUserId,
+} from "./order.service";
 
 describe("order.service", () => {
   beforeEach(async () => {
@@ -24,6 +29,63 @@ describe("order.service", () => {
 
       const saved = await OrderModel.findById(result._id).lean();
       expect(saved?.coupleInfoId?.toString()).toBe(input.coupleInfoId);
+    });
+  });
+
+  describe("getOrderSeviceByMerchantUid", () => {
+    it("존재하는 merchantUid면 주문을 리턴한다", async () => {
+      const input = buildOrderInput();
+      const created = await createOrderService(input);
+
+      const result = await getOrderSeviceByMerchantUid(created.merchantUid);
+
+      expect(result?.merchantUid).toBe(created.merchantUid);
+    });
+
+    it("존재하지 않는 merchantUid면 null을 리턴한다", async () => {
+      const result = await getOrderSeviceByMerchantUid("NOT-EXIST");
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("getActiveOrderInfoByCoupleInfoId", () => {
+    it("CONFIRMED/COMPLETED 상태 주문이 없으면 빈 값을 리턴한다", async () => {
+      const input = buildOrderInput();
+      await createOrderService(input);
+
+      const result = await getActiveOrderInfoByCoupleInfoId(
+        input.coupleInfoId,
+      );
+
+      expect(result).toEqual({ features: [], productId: null });
+    });
+
+    it("CONFIRMED 상태 주문이 있으면 feature/productId를 리턴한다", async () => {
+      const input = buildOrderInput();
+      const created = await createOrderService(input);
+      await OrderModel.updateOne(
+        { _id: created._id },
+        { orderStatus: "CONFIRMED" },
+      );
+
+      const result = await getActiveOrderInfoByCoupleInfoId(
+        input.coupleInfoId,
+      );
+
+      expect(result.productId).toBe(input.product.productId);
+      expect(result.features).toEqual([]);
+    });
+  });
+
+  describe("getOrdersByUserId", () => {
+    it("해당 유저의 주문 목록을 리턴한다", async () => {
+      const input = buildOrderInput();
+      await createOrderService(input);
+
+      const result = await getOrdersByUserId(input.userId);
+
+      expect(result).toHaveLength(1);
     });
   });
 });

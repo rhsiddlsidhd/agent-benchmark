@@ -179,6 +179,30 @@ describe("product.service", () => {
 
       expect(result?.featureIds).toEqual([featureId]);
     });
+
+    it("category 없이 맞는 subCategory로 바꾸면 통과한다 (runValidators)", async () => {
+      const input = buildProductInput();
+      await createProductService(input);
+      const saved = await ProductModel.findOne({ title: input.title }).lean();
+
+      const result = await updateProductService(saved!._id.toString(), {
+        subCategory: "vip",
+      });
+
+      expect(result?.subCategory).toBe("vip");
+    });
+
+    it("category 없이 맞지 않는 subCategory로 바꾸면 AppError(INTERNAL)를 던진다 (runValidators)", async () => {
+      const input = buildProductInput();
+      await createProductService(input);
+      const saved = await ProductModel.findOne({ title: input.title }).lean();
+
+      await expect(
+        updateProductService(saved!._id.toString(), {
+          subCategory: "store",
+        }),
+      ).rejects.toMatchObject({ category: "INTERNAL" });
+    });
   });
 
   describe("deleteProductService", () => {
