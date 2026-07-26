@@ -1,6 +1,7 @@
 import { CoupleInfoModel, ICoupleInfo } from "@/server/models";
 import { CoupleInfoSchemaDto } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
+import { AppError } from "@/shared/types";
 
 import mongoose from "mongoose";
 
@@ -27,8 +28,10 @@ export const createCoupleInfoService = async (
 
   const newCoupleInfo = await CoupleInfoModel.create(coupleInfo).catch(
     (err) => {
-      console.error("Mongoose create error:", err);
-      throw err;
+      throw new AppError(
+        "INTERNAL",
+        err instanceof Error ? err.message : "커플 정보 생성에 실패했습니다.",
+      );
     },
   );
 
@@ -39,6 +42,10 @@ export const getCoupleInfoById = async (
   coupleInfoId: string,
 ): Promise<ICoupleInfo | null> => {
   await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(coupleInfoId)) {
+    return null;
+  }
 
   const coupleInfo = await CoupleInfoModel.findById(
     new mongoose.Types.ObjectId(coupleInfoId),
@@ -54,17 +61,21 @@ export const updateCoupleInfoService = async (
 ): Promise<boolean> => {
   await dbConnect();
 
+  if (!mongoose.isObjectIdOrHexString(coupleInfoId)) {
+    throw new AppError("NOT_FOUND", "커플 정보를 찾을 수 없습니다.");
+  }
+
   // 1. 권한 확인: 해당 coupleInfo가 현재 유저의 것인지 확인
   const coupleInfo = await CoupleInfoModel.findById(
     new mongoose.Types.ObjectId(coupleInfoId),
   );
 
   if (!coupleInfo) {
-    return false; // 문서가 존재하지 않음
+    throw new AppError("NOT_FOUND", "커플 정보를 찾을 수 없습니다.");
   }
 
   if (coupleInfo.userId.toString() !== userId) {
-    throw new Error("권한이 없습니다."); // 권한 없음
+    throw new AppError("FORBIDDEN", "권한이 없습니다.");
   }
 
   // 2. weddingDateTime 변환 (createCoupleInfoService와 동일)
