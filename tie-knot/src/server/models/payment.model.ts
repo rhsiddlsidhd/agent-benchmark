@@ -15,6 +15,70 @@ export type PayStatus =
   | "PARTIAL_CANCELLED"
   | "REFUNDED";
 
+// PortOne 결제수단 판별값(@portone/server-sdk PaymentMethod.type) + 미인식 폴백.
+export type PaymentMethodDetailType =
+  | "PaymentMethodCard"
+  | "PaymentMethodVirtualAccount"
+  | "PaymentMethodTransfer"
+  | "PaymentMethodMobile"
+  | "PaymentMethodEasyPay"
+  | "PaymentMethodGiftCertificate"
+  | "PaymentMethodConvenienceStore"
+  | "Unrecognized";
+
+// 필드명은 PortOne 원문 그대로 쓴다(한글 의미 기반 재명명 안 함) — API 응답과
+// 1:1 매핑을 유지해 번역 없이 그대로 소비하기 위함(TODO.md #10 확정 사항).
+export interface PaymentMethodDetail {
+  type?: PaymentMethodDetailType;
+  card?: {
+    publisher?: string;
+    issuer?: string;
+    brand?: string;
+    type?: string;
+    ownerType?: string;
+    bin?: string;
+    name?: string;
+    number?: string;
+    approvalNumber?: string;
+    installment?: {
+      month: number;
+      isInterestFree: boolean;
+    };
+    pointUsed?: boolean;
+  };
+  virtualAccount?: {
+    bank?: string;
+    accountNumber: string;
+    accountType?: string;
+    remitteeName?: string;
+    remitterName?: string;
+    expiredAt?: Date;
+    issuedAt?: Date;
+    refundStatus?: string;
+  };
+  transfer?: {
+    bank?: string;
+    accountNumber?: string;
+  };
+  mobile?: {
+    phoneNumber?: string;
+  };
+  easyPay?: {
+    provider?: string;
+    easyPayMethod?: unknown;
+  };
+  giftCertificate?: {
+    giftCertificateType?: string;
+    approvalNumber: string;
+  };
+  convenienceStore?: {
+    convenienceStoreBrand?: string;
+    confirmationNumber?: string;
+    receiptNumber?: string;
+    paymentDeadline?: Date;
+  };
+}
+
 export interface IPayment {
   // 식별자
   _id: Types.ObjectId;
@@ -34,24 +98,13 @@ export interface IPayment {
   paidAmount?: number; // 실제 결제된 금액 (PortOne에서 제공)
 
   // PG 결제 정보
-  payMethod?: PayMethod; // 결제 수단
+  payMethod?: PayMethod; // 결제 수단(이 프로젝트가 노출하는 카테고리 — CARD/TRANSFER/VIRTUAL_ACCOUNT/MOBILE)
   pgProvider?: PgProvider; // PG사
   pgTid?: string; // PG사 거래 고유 ID
+  methodDetail?: PaymentMethodDetail; // payMethod 카테고리 안의 PG 응답 상세 정보(PortOne PaymentMethod discriminated union)
 
   // 결제 상태
   status: PayStatus; // 결제 상태 (PENDING, PAID, FAILED, CANCELLED 등)
-
-  // 카드 정보 (결제 성공 시)
-  cardName?: string;
-  cardNumber?: string;
-  cardQuote?: number;
-
-  // 가상계좌 정보 (vbank 결제 시)
-  vbankName?: string;
-  vbankNum?: string;
-  vbankHolder?: string;
-  vbankIssuedAt?: Date; // 가상계좌 발급일시
-  vbankDueAt?: Date; // 가상계좌 입금 기한
 
   // 결제 이력 (Timestamp)
   paidAt?: Date; // 결제 완료 일시
@@ -68,6 +121,76 @@ export interface IPayment {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// PG사/은행/브랜드류(Bank, CardBrand, EasyPayProvider 등)는 SDK 타입 자체가
+// "고정 목록 | string"인 open union이다(PG가 계속 값을 추가) — 위 pgProvider와
+// 같은 이유로 enum을 걸지 않는다. type만 예외 — SDK가 정의한 7종 판별값 +
+// Unrecognized 폴백은 고정된 닫힌 집합이라 다르다.
+const methodDetailSchema = new Schema<PaymentMethodDetail>(
+  {
+    type: {
+      type: String,
+      enum: [
+        "PaymentMethodCard",
+        "PaymentMethodVirtualAccount",
+        "PaymentMethodTransfer",
+        "PaymentMethodMobile",
+        "PaymentMethodEasyPay",
+        "PaymentMethodGiftCertificate",
+        "PaymentMethodConvenienceStore",
+        "Unrecognized",
+      ],
+    },
+    card: {
+      publisher: { type: String },
+      issuer: { type: String },
+      brand: { type: String },
+      type: { type: String },
+      ownerType: { type: String },
+      bin: { type: String },
+      name: { type: String },
+      number: { type: String },
+      approvalNumber: { type: String },
+      installment: {
+        month: { type: Number },
+        isInterestFree: { type: Boolean },
+      },
+      pointUsed: { type: Boolean },
+    },
+    virtualAccount: {
+      bank: { type: String },
+      accountNumber: { type: String },
+      accountType: { type: String },
+      remitteeName: { type: String },
+      remitterName: { type: String },
+      expiredAt: { type: Date },
+      issuedAt: { type: Date },
+      refundStatus: { type: String },
+    },
+    transfer: {
+      bank: { type: String },
+      accountNumber: { type: String },
+    },
+    mobile: {
+      phoneNumber: { type: String },
+    },
+    easyPay: {
+      provider: { type: String },
+      easyPayMethod: { type: Schema.Types.Mixed },
+    },
+    giftCertificate: {
+      giftCertificateType: { type: String },
+      approvalNumber: { type: String },
+    },
+    convenienceStore: {
+      convenienceStoreBrand: { type: String },
+      confirmationNumber: { type: String },
+      receiptNumber: { type: String },
+      paymentDeadline: { type: Date },
+    },
+  },
+  { _id: false },
+);
 
 const paymentSchema = new Schema<IPayment>(
   {
@@ -98,6 +221,7 @@ const paymentSchema = new Schema<IPayment>(
       // 예: "INICIS_V2", "INICIS", "HTML5_INICIS", "NICE_V2", "TOSSPAYMENTS" 등
     },
     pgTid: { type: String },
+    methodDetail: { type: methodDetailSchema },
 
     // 결제 상태
     status: {
@@ -113,18 +237,6 @@ const paymentSchema = new Schema<IPayment>(
       required: true,
       default: "PENDING", // 초기 상태 PENDING
     },
-
-    // 카드 정보
-    cardName: { type: String },
-    cardNumber: { type: String },
-    cardQuote: { type: Number },
-
-    // 가상계좌 정보
-    vbankName: { type: String },
-    vbankNum: { type: String },
-    vbankHolder: { type: String },
-    vbankIssuedAt: { type: Date },
-    vbankDueAt: { type: Date },
 
     // 결제 이력
     paidAt: { type: Date },
