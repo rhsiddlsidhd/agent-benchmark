@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { validateAndFlatten } from "@/shared/utils";
 import { coupleInfoClientSchema } from "@/shared/schemas";
 import { processImages } from "@/shared/utils";
-import { uploadMainThumbnail, uploadGalleryImages } from "@/server/lib/cloudinary";
+import { uploadMainThumbnail, uploadGalleryImages } from "@/client/lib/cloudinary";
 import type { ImagePayload } from "@/shared/types";
 
 export function useImageUpload() {

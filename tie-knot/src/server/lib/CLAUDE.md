@@ -15,7 +15,7 @@ src/server/lib/
 │   ├── hash.ts             # hashPassword, comparePasswords — 실제 로직
 │   └── index.ts             # 배럴 — export * from "./hash"
 ├── cloudinary/
-│   ├── upload.ts            # 업로드 함수 — 실제 로직
+│   ├── upload.ts            # uploadProductImage — 절대 URL fetch라 서버/브라우저 어디서나 안전
 │   ├── sign.ts               # 서명 요청 생성(signUploadRequest) — route.ts는 이 함수만 호출, cloudinary SDK를 직접 import하지 않음
 │   ├── type.ts               # 응답 타입
 │   └── index.ts               # 배럴 — export * from "./upload"
@@ -33,7 +33,7 @@ src/server/lib/
 
 ## Gotchas
 
-- 없음.
+- `cloudinary`는 `src/client/lib/`에도 같은 이름의 폴더가 있다 — 폴더명 중복이 아니라 실제로 실행 런타임이 갈린다: `sign.ts`(`cloudinary` npm SDK 직접 사용, Node 전용, `fs` 의존)와 `upload.ts`의 `uploadProductImage`(절대 URL `fetch`, 서버/브라우저 어디서나 안전)는 여기, presigned URL 방식 업로드(`uploadMainThumbnail`/`uploadGalleryImages`, 자기 오리진 상대 경로 `fetch("/api/upload/signature")`라 브라우저 전용)는 `src/client/lib/cloudinary/`. 한 barrel(`index.ts`)에 이 둘을 같이 두면 Node 전용 SDK가 클라이언트 번들에 끌려들어가 빌드가 깨진다(실제로 한 번 겪음 — PR #65).
 
 ## 관련 문서
 
