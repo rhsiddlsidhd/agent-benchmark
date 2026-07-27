@@ -76,8 +76,9 @@ B-5 공통/운영
 - [x] **4. 에러 처리** (B-5.2) — 착수 중 발견: 기존 null/throw 이분법만으로 부족해서 `services/CLAUDE.md`를 mongoose 공식문서 기준 규칙 6개(에러 분류 INTERNAL 통일, ObjectId 사전검증→NOT_FOUND, lean 판단 기준, runValidators, dbConnect 근거)로 먼저 재확정한 뒤 코드 반영. 범위도 `coupleInfo`/`product` 2개에서 `guestbook.service.ts`까지 확장. `coupleInfo.service.ts`(create/update/getCoupleInfoById), `product.service.ts`(전체 함수), `guestbook.service.ts`(전체 함수) 수정 + `createProduct.ts` 액션 dead code 제거. `runValidators: true`는 이번 라운드 보류 — coupleInfo는 현재 스키마로 관찰 가능한 효과가 없고(required가 update에서 $unset 없인 안 걸림, 다른 validator 없음), product는 `subCategory` validator가 update 컨텍스트에서 깨져서 선행 수정 필요(#9). 부수 발견: DB 테스트 여러 개를 처음 같이 돌리며 크로스파일 오염 발견 → `vitest.config.ts`에 `fileParallelism: false` 추가, `docs/TESTING_GUIDELINE.md` DB 테스트 섹션 갱신.
   - branch: `refactor/service-error-null-throw`
 
-- [ ] **5. 인증 UI 가드** (B-2.1 연관) — 문서 신규: 페이지 레벨 접근 제어 패턴. redirect 사용 시점, 서버/클라이언트 컴포넌트 중 검증 위치 (proxy.ts는 이 용도 아님을 `src/CLAUDE.md`가 이미 명시)
-  - branch: `docs/auth-guard-pattern`
+- [x] **5. 인증 UI 가드** (B-2.1 연관) — 문서 신규: `docs/PAGE_ACCESS_CONTROL.md`(3단계 접근 제어: Proxy 낙관적 체크 → page.tsx 라우팅 게이트 → service 데이터 게이트, redirect 목적지 규칙). 코드는 `auth.service.ts`의 `verifySession()`(PR #61, 이후 #62에서 `getPageAuth`→`verifySession` rename)으로 반영, admin 8개 page.tsx + order/order-edit/profile/couple-info에 적용 완료(PR #60~#62). 완료 후 커버리지 재점검에서 `(checkout)/payment/page.tsx` 1곳 누락 발견 — checkout 흐름 형제 페이지들은 다 게이트가 있는데 여기만 빠져 비로그인 상태로 렌더되고 있었음, 추가 반영 + 문서의 "아직 미구현" stale 문구 갱신(PR #63).
+  - 부수 발견: PR #63 작업 중 `gh pr create`가 base 미지정 시 repo default branch(`main`)로 잡혀 `main`행 PR이 실수로 생성됨 — `verify-source` 워크플로우(dev발 아니면 fail)가 정상 감지했지만 `main`에 branch protection 자체가 없어 required check가 아니었음(무시하고 merge 가능한 상태). `main`에 branch protection 신설 + `verify-source`를 required status check로 등록해 실제 강제력 부여.
+  - branch: `fix/auth-drift-requireauth`(PR #60) → `feat/page-access-control-gate`(PR #61) → `refactor/rename-page-auth-gate`(PR #62) → `docs/auth-guard-pattern`(PR #63, 누락분+문서 갱신)
 
 - [ ] **6. 외부 연동 격리** (B-3.1) — 문서 불필요 (`lib/CLAUDE.md`에 "폴더 1개=연동 대상 1개" 이미 있음). `upload/signature/route.ts` 코드만 수정
   - branch: `refactor/upload-signature-isolation`
