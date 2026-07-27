@@ -4,7 +4,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, Typogra
 
 
 import { CloudImage } from "@/client/components/molecules";
-import { getPageAuth, getOrdersByUserId } from "@/server/services";
+import { verifySession, getOrdersByUserId } from "@/server/services";
 import {
   Edit,
   RefreshCw,
@@ -53,7 +53,7 @@ const groupOrdersByDate = (orders: IOrder[]) => {
 };
 
 const Page = async () => {
-  const session = await getPageAuth();
+  const session = await verifySession();
   const orders = await getOrdersByUserId(session.userId);
 
   const groupedOrders = groupOrdersByDate(orders);

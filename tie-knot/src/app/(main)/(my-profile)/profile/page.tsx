@@ -3,12 +3,12 @@ export const dynamic = "force-dynamic";
 import { BasicInfoForm, ChangePasswordForm } from "@/client/components/organisms";
 
 import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
-import { getPageAuth, getUser } from "@/server/services";
+import { verifySession, getUser } from "@/server/services";
 import { redirect } from "next/navigation";
 import React from "react";
 
 const page = async () => {
-  const session = await getPageAuth();
+  const session = await verifySession();
   const user = await getUser({ id: session.userId });
   if (!user) return redirect("/login");
   const { email, name, phone } = user;

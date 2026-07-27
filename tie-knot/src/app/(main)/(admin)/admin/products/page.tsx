@@ -3,7 +3,7 @@ export const revalidate = 600;
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button, TypographyH1, TypographyMuted } from "@/client/components/atoms";
-import { getAllProductsService, getPageAuth } from "@/server/services";
+import { getAllProductsService, verifySession } from "@/server/services";
 import { ProductTableRow } from "./_components";
 
 const tableColums = [
@@ -19,7 +19,7 @@ const tableColums = [
 ];
 
 export default async function ProductsPage() {
-  await getPageAuth("ADMIN");
+  await verifySession("ADMIN");
 
   const products = await getAllProductsService();
 
