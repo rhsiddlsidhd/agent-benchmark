@@ -5,7 +5,7 @@
 
 ## Overview
 
-`components`/`hooks`/`store`/`context`/`lib`/`fetcher.ts` — "누가 import하는가" 기준으로 브라우저에서만 도는 코드를 모은 최상위 폴더.
+`components`/`hooks`/`store`/`context`/`lib`/`utils`/`fetcher.ts` — "누가 import하는가" 기준으로 브라우저에서만 도는 코드를 모은 최상위 폴더.
 
 `fetcher`는 **`useSWR`에 전달할 용도로만 좁힌다** — 시그니처는 `(url: string) => Promise<T>`(SWR fetcher 계약) 하나로 고정, 캐싱이 의미 있는 GET 조회 전용(`useBanks`/`useAuth`/`useFetchCoupleInfo`/`useProducts`/`GuestbookSection`). 브라우저 mutation은 이 폴더의 fetch가 아니라 Server Action(`src/server/actions/`)으로 간다 — 클라이언트에 mutation용 fetch 래퍼를 두지 않는다(과거 있던 `apiRequest`는 제거 완료, Gotchas 참고).
 
@@ -17,7 +17,8 @@ src/client/
 ├── hooks/        # src/client/hooks/CLAUDE.md
 ├── store/        # src/client/store/CLAUDE.md
 ├── context/      # src/client/context/CLAUDE.md
-├── lib/          # 브라우저 전용 외부 연동(kakao) + cn — src/client/lib/CLAUDE.md
+├── lib/          # 브라우저 전용 외부 연동(kakao/cloudinary) + cn — src/client/lib/CLAUDE.md
+├── utils/        # 브라우저 전용 side-effect 유틸, 특정 외부 SDK는 안 감쌈(감싸면 lib/) — src/client/utils/CLAUDE.md
 └── fetcher.ts    # useSWR 전용 — (url: string) => Promise<T>. src/server/response.ts envelope 파싱, 실패 시 ErrorPayload로 정규화해서 throw(세부는 아래 "에러 처리" 참고). 인증 쿠키는 동일 origin이라 브라우저가 자동으로 실어준다(수동 토큰 주입/401 refresh 로직 없음, Gotchas 참고).
 ```
 

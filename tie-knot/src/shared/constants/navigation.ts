@@ -1,4 +1,4 @@
-import { openApp } from "@/shared/utils";
+import { openApp } from "@/client/utils";
 import { LayoutDashboard, User, ShoppingBag } from "lucide-react";
 
 export const navigationButtons = [
