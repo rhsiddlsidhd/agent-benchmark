@@ -1,6 +1,6 @@
 # docs/TESTING_GUIDELINE.md
 
-> Last updated: 2026-07-26
+> Last updated: 2026-07-27
 > vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup.ts` globalSetup, `src/server/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. `src/test/factories/`에 `coupleInfo`/`product`/`guestbook` 팩토리가 있다(services DB 테스트 착수하며 생성).
 
 ## Overview
@@ -96,13 +96,14 @@ src/
 - mutate 대상은 `stryker.config.mjs`의 `testedSourceFiles`(`.test.ts(x)`가 실제로 존재하는 소스만) — `vitest.config.ts`의 `coverage.include` 스캔 원칙과 동일하게 맞춘다. 이유: 테스트 없는 파일까지 mutate하면 전부 survived로 나와 신호가 죽는다.
 - threshold(`stryker.config.mjs` `thresholds`): high 80 / low 60 / break 60 — score가 60 미만이면 CI 실패.
 - diff-scoped 실행은 `--incremental`로 한다(`--since`는 stryker-js 현재 버전에 없는 옵션, Stryker 6.2+부터 incremental mode로 대체됐다). `dev` push마다(`save-test-score.yml`) baseline report(`reports/stryker-incremental.json`)를 캐시 저장하고, PR workflow(`comment-test-score.yml`)가 그 캐시를 복원해 재사용한다 — killed mutant는 관련 test가 안 바뀌면 skip, survived mutant는 새 test가 커버하지 않으면 skip. 전체 repo가 아니라 baseline 대비 변경분만 재실행된다.
-- push 전 로컬에서 `npm run test:mutation`으로 먼저 확인하는 습관을 들인다 — CI 실패 후에 알면 리포트 재확인 왕복 비용이 크다. 강제 수단은 아니다(hook 게이트는 `test:coverage`까지만 막는다).
+- **mutation testing은 CI 전담이다 — 로컬에서 예방 목적으로 돌리지 않는다.** 이유: incremental mode는 baseline 파일이 실행 간 지속돼야 이득이 있는데(Stryker 공식 문서), 이 프로젝트는 작업 1개당 새 worktree를 파고(`docs/GIT.md`) `reports*`가 `.gitignore` 대상이라 로컬에 baseline이 지속되지 않는다 — 즉 로컬 실행은 매번 baseline 없는 전체 스캔이라 항상 최대 소요시간(수십 분)을 낸다. 업계 통설도 같다: mutation testing은 비싸서 매 커밋 로컬 실행은 team 전체를 지치게 만들고, "로컬은 빠른 피드백(lint/test/coverage), CI가 diff-scoped/스케줄 mutation"으로 나누는 게 표준이다.
+- 로컬 훅(1차 `tdd-gate.js`/2차 `pre-commit-check.sh`)은 mutation을 막지 않는다 — 그게 설계다. mutation의 최종 관문은 `dev` branch protection의 required status check(`comment-test-score.yml`) 하나뿐이다.
 
 ### survived mutant 대응 흐름
 
 1. PR 코멘트의 mutation score 확인 → score 미달이거나 survived mutant가 있으면 `mutation-report` artifact(HTML)를 받아 어떤 mutant가 survived인지 확인한다.
 2. survived mutant가 가리키는 라인의 assertion을 보강한다 — 값 자체를 검증하지 않고 존재만 확인하는 패턴(`toBeDefined`/`toBeTruthy`)이 대표적이다, `toBe`/`toEqual`/`toMatchObject`로 구체화한다.
-3. `npm run test:mutation`으로 로컬 재실행해 해당 mutant가 killed로 바뀌는지 확인한 뒤 재push한다.
+3. 고친 게 실제로 killed로 바뀌는지는 `npm run test:mutation -- --mutate <고친 파일 경로>`로 그 파일만 좁혀 **로컬에서 디버깅 용도로만** 재실행한다 — 사전 게이트가 아니라 "이 assertion이 맞게 고쳐졌는지" 확인 목적이라 스코프를 좁혀도 충분하다. 스코프 없이 전체(`npm run test:mutation`)를 다시 돌리지 않는다.
 
 ## Gotchas
 
