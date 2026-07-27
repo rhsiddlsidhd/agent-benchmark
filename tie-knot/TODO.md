@@ -113,6 +113,13 @@ B-5 공통/운영
   - `order.model.ts`의 `cancelledAt`/`cancelReason` — 완전 미사용 확인됨(`payment.service.ts`가 주문 취소 시 `orderStatus`만 바꾸고 이 필드들은 안 건드림). TODO #1(결제/트랜잭션 정합성)과 범위 겹쳐서 이번엔 보류, 취소 사유를 어디서 받는지(PortOne webhook/관리자 수동/사용자 요청)부터 결제 플로우 전체 재검토 시 같이 정리. **미착수 — 4건 중 이 항목만 남음.**
   - branch: `chore/product-order-field-audit-cleanup`(PR #51, 1~3번만 반영)
 
+- [ ] **12. CI에 lint/build 게이트 추가 + pre-commit build를 tsc로 전환** (`#1` 결제/트랜잭션 정합성 논의 중 mutation testing의 로컬/CI 실행 기준을 따지다가 발견) — 현재 lint·build를 검증하는 CI가 하나도 없음(워크플로우 4개 전수 확인: `comment-test-score.yml`은 mutation만, `save-test-score.yml`은 baseline 캐시 저장, `verify-pr-source.yml`은 PR 소스 브랜치 확인, `lighthouse-audit.yml`은 성능 관측용). lint/build/coverage는 전부 `.claude/hooks/pre-commit-check.sh`(Claude Code PreToolUse 훅)에만 걸려있는데, 이건 git hook이 아니라서 Claude Code 밖에서(터미널 직접, IDE, GitHub 웹 UI) 커밋하면 통째로 우회된다 — 서버에서 강제되는 건 mutation(3차) 하나뿐.
+  - **확정 방향**: "가벼운 검증은 local, 무거운 검증은 CI"가 원칙인데 `pre-commit-check.sh`의 `next build`가 여기서 벗어나 있음 — SSG(`generateStaticParams`가 있는 `/products/[id]`, `/preview/[id]`)가 실제 Atlas DB에 붙어서, 로컬 커밋마다 컨트리뷰터 수만큼 실제 DB를 건드리게 됨.
+    - 로컬(`pre-commit-check.sh`): `next build` → `tsc --noEmit`으로 교체. DB 안 건드리고 타입 에러만 빠르게 잡음(`next build`의 "Running TypeScript" 단계와 같은 검증, DB 붙는 부분만 뺀 것 — 중복 아니라 선행 필터).
+    - CI: PR→dev 트리거로 lint + `next build`(SSG 포함, 실제 DB 검증)를 새 워크플로우로 추가 — Atlas 히트가 "커밋마다 N명의 로컬"에서 "PR push마다 CI 서버 1대"로 줄어듦.
+  - lint/`test:coverage`는 이미 DB 안 쓰는 가벼운 검증이라 로컬 유지, 안 건드림.
+  - branch: 미정
+
 ---
 
 ## Stage C — 신기능/UI (병렬, 오늘 진행 안 함)
