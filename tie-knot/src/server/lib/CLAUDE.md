@@ -16,6 +16,7 @@ src/server/lib/
 │   └── index.ts             # 배럴 — export * from "./hash"
 ├── cloudinary/
 │   ├── upload.ts            # 업로드 함수 — 실제 로직
+│   ├── sign.ts               # 서명 요청 생성(signUploadRequest) — route.ts는 이 함수만 호출, cloudinary SDK를 직접 import하지 않음
 │   ├── type.ts               # 응답 타입
 │   └── index.ts               # 배럴 — export * from "./upload"
 ├── cookies/

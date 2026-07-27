@@ -10,7 +10,7 @@
 
 ```
 src/app/api/
-├── auth/{logout,me}/route.ts
+├── auth/me/route.ts
 └── ...                        # 라우트 세그먼트당 route.ts 1개
 ```
 
