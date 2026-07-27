@@ -11,7 +11,7 @@
 ```
 src/client/hooks/
 ├── index.ts               # 배럴
-├── useAuth.ts             # Zustand 구독 + SWR fetch 조합 패턴
+├── useAuth.ts             # SWR fetch 전담(`/api/auth/me`) — 서버 세션은 Zustand로 옮기지 않는다, `src/CLAUDE.md` Critical Convention 참고
 ├── useCoupleInfoForm.ts     # 라우트 2곳(couple-info/, order/edit/)이 공유하는 오케스트레이션 — 각 라우트 컨테이너가 이 훅만 호출
 └── ...                       # 훅 1개당 파일 1개
 ```
@@ -29,4 +29,4 @@ src/client/hooks/
 
 - 식별자 케이스 공통 규칙: `src/CLAUDE.md`
 - 외부 SDK 초기화 훅의 실제 위치, 배럴 import 정책, 추상화 네이밍 규칙(`useCoupleInfoForm` 등): `src/CLAUDE.md`
-- lib과의 배치 경계 상대측: `src/lib/CLAUDE.md`
+- lib과의 배치 경계 상대측: `src/client/lib/CLAUDE.md`

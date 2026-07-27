@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Badge } from "@/client/components/atoms";
 import { cn } from "@/client/lib/cn";
 import { toggleProductLike } from "@/server/actions";
-import { useAuthStore } from "@/client/store";
+import { useAuth } from "@/client/hooks";
 interface ProductLikeBadgeProps {
   productId: string;
   productLikes: string[];
@@ -20,7 +20,8 @@ const ProductLikeBadge = ({
   showCount = false,
   className,
 }: ProductLikeBadgeProps) => {
-  const userId = useAuthStore((state) => state.userId);
+  const { session } = useAuth();
+  const userId = session?.userId ?? null;
   const [localLikes, setLocalLikes] = useState<string[]>(productLikes);
   const [, startTransition] = useTransition();
   const isLiked = userId ? localLikes.includes(userId) : false;

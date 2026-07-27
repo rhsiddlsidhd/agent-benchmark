@@ -5,15 +5,16 @@
 
 ## Overview
 
-`store/`는 앱 전체 범위 클라이언트 상태를 모아둔다 — 두 성격이 있다: 도메인 데이터 상태(`auth.store.ts`, `order.store.ts`)와 모달 UI 상태(`guestbook.modal.store.ts`, `admin.modal.store.ts`). 특정 UI 트리에만 한정된 상태는 여기가 아니라 `src/client/context/`(`src/client/context/CLAUDE.md` 참고).
+`store/`는 앱 전체 범위 클라이언트 상태를 모아둔다 — 두 성격이 있다: 도메인 데이터 상태(`order.store.ts`)와 모달 UI 상태(`guestbook.modal.store.ts`, `admin.modal.store.ts`). 특정 UI 트리에만 한정된 상태는 여기가 아니라 `src/client/context/`(`src/client/context/CLAUDE.md` 참고).
+
+> `auth.store.ts`(서버 세션 role/email/userId를 Zustand로 미러링)는 제거했다 — `src/CLAUDE.md` "서버 데이터를 Context/Zustand로 직접 옮기지 않는다" 위반이었고, 클라이언트 고유 상태가 애초에 없었다(전부 세션 파생값). 대체: `src/client/hooks/useAuth.ts`가 `useSWR`로 직접 노출.
 
 ## Structure
 
 ```
 src/client/store/
 ├── index.ts                   # 배럴 — export *
-├── auth.store.ts             # 도메인 데이터 상태
-├── order.store.ts
+├── order.store.ts             # 도메인 데이터 상태
 ├── guestbook.modal.store.ts    # 모달 UI 상태(open/type/payload)
 └── admin.modal.store.ts
 ```
@@ -26,7 +27,6 @@ src/client/store/
 ## Gotchas
 
 - `order.store.ts`만 zustand `persist` 미들웨어(sessionStorage)를 씀 — 새로고침에도 유지돼야 하는 상태(주문 진행 중 데이터)라 그런 것으로 보이나, 다른 store엔 이 근거가 명시된 곳이 없다. 새 store에 persist를 넣을지는 "새로고침 생존 필요성"으로 그때그때 판단.
-- `auth.store.ts`엔 `token` 필드가 없다 — access token이 httpOnly 쿠키라 클라이언트가 토큰 값을 들고 있을 필요가 없다(`src/CLAUDE.md` 참고). `setSession` 액션이 `role`/`email`/`userId`만 세팅한다.
 
 ## 관련 문서
 

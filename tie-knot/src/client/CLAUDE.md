@@ -41,7 +41,7 @@ src/client/
 - `apiRequest.ts`(mutation용 fetch 래퍼)는 제거됐다 — 남아있던 호출자 3곳(좋아요 토글/로그아웃 쿠키 정리/결제 검증)은 전부 Server Action(`src/server/actions/toggleProductLike.ts`/`clearUserEmailCookie.ts`/`completePayment.ts`)으로 이관 완료(entry 토큰 호출자는 이후 로그인 entry 게이트 자체 폐기로 삭제됨, `src/CLAUDE.md` "인증 토큰" 참고).
 - 폴더명이 이전엔 `api`(`src/api/`)의 일부였다 — 실제로는 Route Handler·Client fetch 둘 사이의 계약 중 클라이언트 절반(`fetcher`)만 여기 있다. 서버 절반(`response.ts`)은 `src/server/`.
 - 서비스 레이어가 던지는 에러 타입(`src/shared/types/error.ts`)은 이 경계 + 서비스 레이어 전용이다 — 서비스 함수가 이미 이 타입을 던지는 경우 Server Action이 받아서 리턴값으로 번역한다(`src/server/actions/CLAUDE.md` Gotchas 참고).
-- 세션 토큰은 Bearer 헤더가 아니라 httpOnly 쿠키로 전달된다(목표 설계·트레이드오프는 `src/CLAUDE.md` "인증 토큰" 참고) — `fetcher`는 토큰을 다루지 않는다(쿠키가 동일 origin이라 자동으로 실림), `useAuthStore`에도 토큰 값을 담는 필드가 없다(role/email/userId 같은 파생 정보만 보관).
+- 세션 토큰은 Bearer 헤더가 아니라 httpOnly 쿠키로 전달된다(목표 설계·트레이드오프는 `src/CLAUDE.md` "인증 토큰" 참고) — `fetcher`는 토큰을 다루지 않는다(쿠키가 동일 origin이라 자동으로 실림), 클라이언트도 토큰 값을 들고 있지 않는다(`useAuth.ts`가 `useSWR`로 노출하는 세션도 role/email/userId 같은 파생 정보만 담는다).
 
 ## 관련 문서
 
