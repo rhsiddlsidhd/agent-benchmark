@@ -21,7 +21,7 @@ vi.mock("next/navigation", () => ({
 
 import { getCookie, deleteCookie } from "@/server/lib/cookies";
 import { redirect } from "next/navigation";
-import { getUser, getAuth, requireAuth, logoutService, getPageAuth } from "./auth.service";
+import { getUser, getAuth, requireAuth, logoutService, verifySession } from "./auth.service";
 
 describe("auth.service", () => {
   beforeEach(async () => {
@@ -140,11 +140,11 @@ describe("auth.service", () => {
     });
   });
 
-  describe("getPageAuth", () => {
+  describe("verifySession", () => {
     it("세션이 없으면 /login으로 redirect한다", async () => {
       vi.mocked(getCookie).mockResolvedValue(undefined);
 
-      await expect(getPageAuth()).rejects.toThrow("REDIRECT:/login");
+      await expect(verifySession()).rejects.toThrow("REDIRECT:/login");
       expect(redirect).toHaveBeenCalledWith("/login");
     });
 
@@ -154,7 +154,7 @@ describe("auth.service", () => {
       const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
 
-      const result = await getPageAuth();
+      const result = await verifySession();
 
       expect(result.userId).toBe(saved._id.toString());
       expect(redirect).not.toHaveBeenCalled();
@@ -166,7 +166,7 @@ describe("auth.service", () => {
       const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
 
-      await expect(getPageAuth("ADMIN")).rejects.toThrow("REDIRECT:/");
+      await expect(verifySession("ADMIN")).rejects.toThrow("REDIRECT:/");
       expect(redirect).toHaveBeenCalledWith("/");
     });
 
@@ -176,7 +176,7 @@ describe("auth.service", () => {
       const token = await encrypt({ id: saved._id.toString(), role: "ADMIN", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
 
-      const result = await getPageAuth("ADMIN");
+      const result = await verifySession("ADMIN");
 
       expect(result.userId).toBe(saved._id.toString());
       expect(redirect).not.toHaveBeenCalled();
@@ -185,7 +185,7 @@ describe("auth.service", () => {
     it("세션이 없으면 role 요구 여부와 무관하게 /login으로 redirect한다(순서 고정)", async () => {
       vi.mocked(getCookie).mockResolvedValue(undefined);
 
-      await expect(getPageAuth("ADMIN")).rejects.toThrow("REDIRECT:/login");
+      await expect(verifySession("ADMIN")).rejects.toThrow("REDIRECT:/login");
       expect(redirect).toHaveBeenCalledWith("/login");
     });
   });

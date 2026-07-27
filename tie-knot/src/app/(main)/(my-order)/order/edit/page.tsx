@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AppError } from "@/shared/types";
 import { CoupleInfoForm } from "./_components";
-import { getPageAuth } from "@/server/services";
+import { verifySession } from "@/server/services";
 import React from "react";
 
 const Page = async ({
@@ -16,7 +16,7 @@ const Page = async ({
     throw new AppError("VALIDATION", "잘못된 접근입니다.");
   }
 
-  await getPageAuth();
+  await verifySession();
 
   return <CoupleInfoForm />;
 };

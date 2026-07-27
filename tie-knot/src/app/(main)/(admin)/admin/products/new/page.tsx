@@ -1,11 +1,11 @@
-import { getAllPremiumFeatureService, getPageAuth } from "@/server/services";
+import { getAllPremiumFeatureService, verifySession } from "@/server/services";
 import { Button, TypographyH1, TypographyMuted } from "@/client/components/atoms";
 import { ProductRegistrationForm } from "./_components";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default async function NewProductPage() {
-  await getPageAuth("ADMIN");
+  await verifySession("ADMIN");
 
   const premiumFeatures = await getAllPremiumFeatureService();
 
