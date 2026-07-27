@@ -2,8 +2,7 @@ import { NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
 import { AppError } from "@/shared/types";
-import { getCookie } from "@/server/lib/cookies";
-import { decrypt } from "@/server/lib/jose";
+import { requireAuth } from "@/server/services";
 
 type UploadSignature = {
   signature: string;
@@ -19,17 +18,7 @@ export const POST = async (
 ): Promise<APIRouteResponse<UploadSignature>> => {
   try {
     // 1. 인증 확인
-    const cookie = await getCookie("token");
-
-    if (!cookie?.value) {
-      throw new AppError("UNAUTHENTICATED", "로그인이 필요합니다.");
-    }
-
-    const { payload } = await decrypt({ token: cookie.value, type: "REFRESH" });
-
-    if (!payload.id) {
-      throw new AppError("UNAUTHENTICATED", "유효하지 않은 토큰입니다.");
-    }
+    await requireAuth();
 
     // 2. 요청 파싱
     const { folder } = await request.json();
