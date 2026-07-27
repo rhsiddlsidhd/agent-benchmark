@@ -1,5 +1,6 @@
+import mongoose from "mongoose";
 import * as PortOne from "@portone/server-sdk";
-import { PaymentModel, PayStatus, OrderModel, ProductModel } from "@/server/models";
+import { PaymentModel, PayStatus, IPayment, OrderModel, ProductModel } from "@/server/models";
 
 import { getProductService } from "./product.service";
 import { getOrderSeviceByMerchantUid } from "./order.service";
@@ -145,41 +146,49 @@ export const syncPayment = async (paymentId: string) => {
         );
       }
 
-      // 4. Payment 모델 생성/업데이트
-      let payment = await PaymentModel.findOne({ merchantUid: paymentId });
+      // 4~6. Payment 저장 + Order 상태 전이 + Product salesCount 증가는 하나의
+      // 논리적 단위라 트랜잭션으로 묶는다 — 중간에 하나라도 실패하면 전부
+      // 롤백된다(services/CLAUDE.md "트랜잭션" 섹션 참고).
+      let payment!: mongoose.HydratedDocument<IPayment>;
 
-      const paymentData = {
-        merchantUid: paymentId,
-        impUid: actualPayment.transactionId,
-        orderId: order._id,
-        buyerName: order.buyerName,
-        buyerEmail: order.buyerEmail,
-        buyerTel: order.buyerPhone,
-        requestAmount: order.finalPrice,
-        paidAmount: actualPayment.amount.paid,
-        status: mapPortOneStatus(actualPayment.status),
-        pgProvider: actualPayment.channel?.pgProvider,
-        pgTid: actualPayment.pgTxId,
-        paidAt: new Date(actualPayment.paidAt),
-        receiptUrl: actualPayment.receiptUrl,
-      };
+      await mongoose.connection.transaction(async (session) => {
+        const existing = await PaymentModel.findOne({ merchantUid: paymentId }).session(session);
 
-      if (!payment) {
-        payment = await PaymentModel.create(paymentData);
-      } else {
-        Object.assign(payment, paymentData);
-        await payment.save();
-      }
+        const paymentData = {
+          merchantUid: paymentId,
+          impUid: actualPayment.transactionId,
+          orderId: order._id,
+          buyerName: order.buyerName,
+          buyerEmail: order.buyerEmail,
+          buyerTel: order.buyerPhone,
+          requestAmount: order.finalPrice,
+          paidAmount: actualPayment.amount.paid,
+          status: mapPortOneStatus(actualPayment.status),
+          pgProvider: actualPayment.channel?.pgProvider,
+          pgTid: actualPayment.pgTxId,
+          paidAt: new Date(actualPayment.paidAt),
+          receiptUrl: actualPayment.receiptUrl,
+        };
 
-      // 5. Order 상태 업데이트
-      order.orderStatus = "CONFIRMED";
-      order.paymentId = payment._id;
-      await order.save();
+        if (!existing) {
+          [payment] = await PaymentModel.create([paymentData], { session });
+        } else {
+          Object.assign(existing, paymentData);
+          payment = await existing.save({ session });
+        }
 
-      // 6. 판매 수량 반영 — "판매 건수"가 아니라 quantity 합산 기준(수량 개념 있는
-      // 상품군 확장 대비, 지금은 quantity가 거의 항상 1).
-      await ProductModel.findByIdAndUpdate(order.product.productId, {
-        $inc: { salesCount: order.product.quantity },
+        // 5. Order 상태 업데이트
+        order.orderStatus = "CONFIRMED";
+        order.paymentId = payment._id;
+        await order.save({ session });
+
+        // 6. 판매 수량 반영 — "판매 건수"가 아니라 quantity 합산 기준(수량 개념 있는
+        // 상품군 확장 대비, 지금은 quantity가 거의 항상 1).
+        await ProductModel.findByIdAndUpdate(
+          order.product.productId,
+          { $inc: { salesCount: order.product.quantity } },
+          { session },
+        );
       });
 
       return {
@@ -189,35 +198,39 @@ export const syncPayment = async (paymentId: string) => {
       };
     }
 
-    // 6. 결제 실패 시 처리
+    // 6. 결제 실패 시 처리 — Payment 저장 + Order 상태 전이도 하나의 논리적
+    // 단위라 트랜잭션으로 묶는다(PAID 분기와 같은 이유).
     if (actualPayment.status === "FAILED") {
       const failedPayment = actualPayment as FailedPayment;
 
-      // Payment 모델 생성/업데이트
-      let payment = await PaymentModel.findOne({ merchantUid: paymentId });
+      let payment!: mongoose.HydratedDocument<IPayment>;
 
-      const paymentData = {
-        merchantUid: paymentId,
-        orderId: order._id,
-        buyerName: order.buyerName,
-        buyerEmail: order.buyerEmail,
-        buyerTel: order.buyerPhone,
-        requestAmount: order.finalPrice,
-        status: mapPortOneStatus(actualPayment.status),
-        failedAt: new Date(failedPayment.failedAt),
-        failReason: failedPayment.failure?.reason,
-      };
+      await mongoose.connection.transaction(async (session) => {
+        const existing = await PaymentModel.findOne({ merchantUid: paymentId }).session(session);
 
-      if (!payment) {
-        payment = await PaymentModel.create(paymentData);
-      } else {
-        Object.assign(payment, paymentData);
-        await payment.save();
-      }
+        const paymentData = {
+          merchantUid: paymentId,
+          orderId: order._id,
+          buyerName: order.buyerName,
+          buyerEmail: order.buyerEmail,
+          buyerTel: order.buyerPhone,
+          requestAmount: order.finalPrice,
+          status: mapPortOneStatus(actualPayment.status),
+          failedAt: new Date(failedPayment.failedAt),
+          failReason: failedPayment.failure?.reason,
+        };
 
-      // Order 상태 업데이트
-      order.orderStatus = "CANCELLED";
-      await order.save();
+        if (!existing) {
+          [payment] = await PaymentModel.create([paymentData], { session });
+        } else {
+          Object.assign(existing, paymentData);
+          payment = await existing.save({ session });
+        }
+
+        // Order 상태 업데이트
+        order.orderStatus = "CANCELLED";
+        await order.save({ session });
+      });
 
       return {
         success: false,
