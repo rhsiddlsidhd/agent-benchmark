@@ -227,8 +227,12 @@ export const syncPayment = async (paymentId: string) => {
           payment = await existing.save({ session });
         }
 
-        // Order 상태 업데이트
+        // Order 상태 업데이트 — 취소 사유는 지금 유일하게 존재하는 취소 경로(결제
+        // 실패에 의한 시스템 자동 취소)에서 이미 확보돼 있는 값을 그대로 옮긴다
+        // (관리자 수동 취소/사용자 요청 취소는 아직 그 자체가 없어 대상 아님).
         order.orderStatus = "CANCELLED";
+        order.cancelledAt = new Date(failedPayment.failedAt);
+        order.cancelReason = failedPayment.failure?.reason;
         await order.save({ session });
       });
 
