@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { GeoState } from "@/shared/utils";
+import { GeoState } from "@/client/utils";
 import { useKakaomapGeocode } from "./useKakaomapGeocode";
 
 export interface NavigationGeo {

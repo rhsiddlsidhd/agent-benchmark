@@ -18,7 +18,7 @@ src/shared/utils/
 ## Critical Convention
 
 - 파일명은 kebab-case, 목적명(기능/역할 기반 이름, 도메인명과 대비)으로 짓는다.
-- DB 연결, 외부 API 호출, 파일시스템 접근 등 side-effect가 있는 로직을 여기 두지 않는다 — `src/lib/`로 옮긴다. 반대로 side-effect 없는 로직을 "npm 패키지를 쓴다"는 이유만으로 `src/lib/`에 두지 않는다.
+- DB 연결, 외부 API 호출, 파일시스템 접근, 브라우저 전용 side-effect(`window.open` 등) 있는 로직을 여기 두지 않는다 — 특정 외부 라이브러리/서비스를 감싸면 `src/server/lib/`(서버 전용) 또는 `src/client/lib/`(브라우저 전용), 특정 라이브러리를 감싸지 않는 순수 브라우저 API 호출(예: `open-app.ts`)이면 `src/client/utils/`로 옮긴다. 반대로 side-effect 없는 로직을 "npm 패키지를 쓴다"는 이유만으로 `lib/`에 두지 않는다.
 
 ## 에러 판단 로직 — 제거됨
 
