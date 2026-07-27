@@ -57,8 +57,8 @@ B-5 공통/운영
 
 ### 우선순위 작업 목록
 
-- [ ] **1. 결제/트랜잭션 정합성** (B-2.2) — 문서 신규: `services/CLAUDE.md` 트랜잭션 섹션 추가. order+payment 원자적 처리 필수 조건, mongoose session 사용 원칙, 실패 시 롤백/보상 처리
-  - branch: `docs/services-transaction-guideline`
+- [x] **1. 결제/트랜잭션 정합성** (B-2.2) — 문서 신규: `services/CLAUDE.md` 트랜잭션 섹션 추가. order+payment 원자적 처리 필수 조건, mongoose session 사용 원칙, 실패 시 롤백/보상 처리. 4단계로 진행: (1) `mongodb-memory-server`가 standalone이라 트랜잭션 테스트 자체가 불가능했던 선행 블로커부터 replSet 전환(PR #53), (2) 컨벤션 문서 확정(PR #54) — `mongoose.connection.transaction()` 하나로 패턴 통일, 트랜잭션 필요조건은 "여러 컬렉션/문서 쓰기 중 하나라도 실패하면 불변조건이 깨지는 경우"로 한정, (3) `payment.service.ts`의 `syncPayment`(PAID/FAILED 분기 모두 Payment+Order 쓰기가 하나의 논리적 단위)에 실제 적용(PR #55), 중간 실패 시 실제 롤백되는지 회귀 테스트로 검증, (4) 이 트랜잭션 경계를 그대로 활용해 `#11` 4번째 항목(`cancelledAt`/`cancelReason`)도 같이 정리(PR #56).
+  - branch: `chore/mongodb-memory-server-replset`(PR #53) → `docs/services-transaction-guideline`(PR #54) → `refactor/payment-transaction`(PR #55) → `chore/order-cancel-fields-cleanup`(PR #56, `#11` 잔여분 겸용)
 
 - [ ] **2. 상태/컨텍스트 구조** (B-4.1) — 문서 불필요 (`src/CLAUDE.md`에 "서버 데이터 Zustand 직접 이관 금지" 이미 명시). `useAuth.ts` 코드만 수정
   - branch: `refactor/use-auth-zustand-split`
@@ -110,8 +110,8 @@ B-5 공통/운영
     - `salesCount`: `payment.service.ts`의 `syncPayment`가 `order.orderStatus = "CONFIRMED"`로 전이시키는 지점(결제 PAID 확정 시점)에서 `order.product.quantity`만큼 증가 — "판매 건수"가 아니라 "판매 수량" 기준(지금은 quantity가 거의 항상 1이지만, 수량 개념 있는 상품군 확장 대비).
   - `product.model.ts`의 `deletedAt?: Date` — 스키마 `default: null`이라 실제로는 모든 문서에 항상 존재하는데 타입은 optional로 선언돼있음, 타입/실체 불일치 수정.
   - `premiumFeature.service.ts:5-13`의 `FeatureLeanDoc`이 `product.feature.model.ts`의 `IFeature`와 완전히 같은 shape을 로컬 재정의함 — 모델 타입 import해서 쓰도록 정리.
-  - `order.model.ts`의 `cancelledAt`/`cancelReason` — 완전 미사용 확인됨(`payment.service.ts`가 주문 취소 시 `orderStatus`만 바꾸고 이 필드들은 안 건드림). TODO #1(결제/트랜잭션 정합성)과 범위 겹쳐서 이번엔 보류, 취소 사유를 어디서 받는지(PortOne webhook/관리자 수동/사용자 요청)부터 결제 플로우 전체 재검토 시 같이 정리. **미착수 — 4건 중 이 항목만 남음.**
-  - branch: `chore/product-order-field-audit-cleanup`(PR #51, 1~3번만 반영)
+  - `order.model.ts`의 `cancelledAt`/`cancelReason` — 완전 미사용 확인됨(`payment.service.ts`가 주문 취소 시 `orderStatus`만 바꾸고 이 필드들은 안 건드림). TODO #1(결제/트랜잭션 정합성)과 범위 겹쳐서 당시엔 보류했는데, #1 Phase 3(PR #55)에서 실제로 확인해보니 `orderStatus`가 CANCELLED로 바뀌는 경로가 `syncPayment` FAILED 분기(결제 실패 시 시스템 자동 취소) 하나뿐이고 그 자리에 이미 취소 사유가 있어서, 관리자/webhook 취소 흐름을 가정으로 미리 설계하지 않고 그 경로에서만 채우는 걸로 완료(PR #56).
+  - branch: `chore/product-order-field-audit-cleanup`(PR #51, 1~3번) → `chore/order-cancel-fields-cleanup`(PR #56, 4번)
 
 - [ ] **12. CI에 lint/build 게이트 추가 + pre-commit build를 tsc로 전환** (`#1` 결제/트랜잭션 정합성 논의 중 mutation testing의 로컬/CI 실행 기준을 따지다가 발견) — 현재 lint·build를 검증하는 CI가 하나도 없음(워크플로우 4개 전수 확인: `comment-test-score.yml`은 mutation만, `save-test-score.yml`은 baseline 캐시 저장, `verify-pr-source.yml`은 PR 소스 브랜치 확인, `lighthouse-audit.yml`은 성능 관측용). lint/build/coverage는 전부 `.claude/hooks/pre-commit-check.sh`(Claude Code PreToolUse 훅)에만 걸려있는데, 이건 git hook이 아니라서 Claude Code 밖에서(터미널 직접, IDE, GitHub 웹 UI) 커밋하면 통째로 우회된다 — 서버에서 강제되는 건 mutation(3차) 하나뿐.
   - **확정 방향**(web search로 업계 표준 확인 완료 — 근거 아래): "가벼운 검증은 local, 무거운 검증은 CI"가 원칙인데 `pre-commit-check.sh`의 `next build`가 여기서 벗어나 있음 — SSG(`generateStaticParams`가 있는 `/products/[id]`, `/preview/[id]`)가 실제 Atlas DB에 붙어서, 로컬 커밋마다 컨트리뷰터 수만큼 실제 DB를 건드리게 됨.
