@@ -2,7 +2,7 @@ import { AuthButtons } from "./AuthButtons";
 import { MobileNav } from "@/client/components/organisms";
 import Link from "next/link";
 import React from "react";
-import { MAIN_NAV_ITEMS } from "@/shared/constants";
+import { MAIN_NAV_ITEMS, routes } from "@/shared/constants";
 import { TypographyH4 } from "@/client/components/atoms";
 const Header = () => {
   return (
@@ -14,7 +14,7 @@ const Header = () => {
         </div>
 
         {/* Logo */}
-        <Link href="/">
+        <Link href={routes.home}>
           <TypographyH4 className="m-0">Tie Knot</TypographyH4>
         </Link>
 

@@ -6,6 +6,7 @@ import { Card, Button, TypographyH1, TypographyLarge, TypographyMuted, Typograph
 import { TextField } from "@/client/components/molecules";
 import { getFieldError } from "@/shared/utils";
 import { APIResponse } from "@/shared/types";
+import { routes } from "@/shared/constants";
 
 interface ForgotPasswordFormProps {
   action: (formData: FormData) => void;
@@ -52,7 +53,7 @@ export function ForgotPasswordForm({
 
         <div className="space-y-3">
           <Button asChild className="w-full" size="lg">
-            <Link href="/login">로그인으로 돌아가기</Link>
+            <Link href={routes.login}>로그인으로 돌아가기</Link>
           </Button>
           <form action={action}>
             <input
@@ -110,14 +111,14 @@ export function ForgotPasswordForm({
         <TypographyMuted>
           아이디가 기억나지 않으신가요?{" "}
           <Link
-            href="/find-id"
+            href={routes.findId}
             className="text-primary font-medium hover:underline"
           >
             아이디 찾기
           </Link>
         </TypographyMuted>
         <Link
-          href="/login"
+          href={routes.login}
           className="text-muted-foreground hover:text-foreground inline-block text-sm transition-colors"
         >
           로그인으로 돌아가기

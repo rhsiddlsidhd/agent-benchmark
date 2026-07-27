@@ -4,6 +4,7 @@ import { APIResponse } from "@/shared/types";
 import { Status } from "@/server/models";
 import { requireAuth, updateProductService } from "@/server/services";
 import { handleActionError } from "@/server/actions/handleActionError";
+import { routes } from "@/shared/constants";
 
 import { revalidatePath } from "next/cache";
 
@@ -22,9 +23,9 @@ export const updateProductStatus = async (
 
     await updateProductService(productId, { status });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/products");
-    revalidatePath(`/products/${productId}`);
+    revalidatePath(routes.admin.products.root);
+    revalidatePath(routes.products.root);
+    revalidatePath(routes.products.detail(productId));
 
     return {
       success: true,

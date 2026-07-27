@@ -6,6 +6,7 @@ import { validateAndFlatten } from "@/shared/utils";
 import { GuestbookSchema } from "@/shared/schemas";
 import { getPrivateGuestbookService, deleteGuestbookService } from "@/server/services";
 import { handleActionError } from "@/server/actions/handleActionError";
+import { routes } from "@/shared/constants";
 import * as z from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -66,7 +67,7 @@ export const deleteGuestbook = async (
       };
     }
 
-    revalidatePath(`/preview/${parsed.data.coupleInfoId}`);
+    revalidatePath(routes.preview.detail(parsed.data.coupleInfoId));
 
     return {
       success: true,

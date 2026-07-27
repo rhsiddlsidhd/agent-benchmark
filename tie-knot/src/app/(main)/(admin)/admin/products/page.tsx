@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { Button, TypographyH1, TypographyMuted } from "@/client/components/atoms";
 import { getAllProductsService, verifySession } from "@/server/services";
 import { ProductTableRow } from "./_components";
+import { routes } from "@/shared/constants";
 
 const tableColums = [
   "썸네일",
@@ -32,7 +33,7 @@ export default async function ProductsPage() {
             등록된 템플릿 상품을 관리합니다. (총 {products.length}개)
           </TypographyMuted>
         </div>
-        <Link href="/admin/products/new">
+        <Link href={routes.admin.products.new}>
           <Button size="lg">
             <Plus className="mr-2 h-5 w-5" />
             상품 등록

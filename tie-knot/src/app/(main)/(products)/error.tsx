@@ -6,6 +6,7 @@ import { Button, Card, TypographyH1, TypographyMuted } from "@/client/components
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { routes } from "@/shared/constants";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -60,7 +61,7 @@ export default function ProductError({ error, unstable_retry }: ErrorProps) {
             <Button onClick={unstable_retry} variant="default" size="lg">
               다시 시도
             </Button>
-            <Button onClick={() => router.push("/")} variant="outline" size="lg">
+            <Button onClick={() => router.push(routes.home)} variant="outline" size="lg">
               <ArrowLeft className="mr-2 h-4 w-4" />
               홈으로 돌아가기
             </Button>

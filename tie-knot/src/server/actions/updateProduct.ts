@@ -7,6 +7,7 @@ import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
 
 import { productSchema } from "@/shared/schemas";
+import { routes } from "@/shared/constants";
 
 import { revalidatePath } from "next/cache";
 
@@ -30,6 +31,7 @@ export const updateProduct = async (
     isPremium: formData.get("isPremium") === "true",
     featureIds: formData.getAll("featureIds") as string[],
     priority: Number(formData.get("priority")),
+    thumbnail: thumbnailFile,
   };
 
   const parsed = validateAndFlatten(productSchema, data);
@@ -68,9 +70,9 @@ export const updateProduct = async (
       previewUrl,
     });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/products");
-    revalidatePath(`/products/${productId}`);
+    revalidatePath(routes.admin.products.root);
+    revalidatePath(routes.products.root);
+    revalidatePath(routes.products.detail(productId));
 
     return {
       success: true,

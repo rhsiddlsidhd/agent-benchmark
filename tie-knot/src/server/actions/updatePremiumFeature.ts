@@ -5,6 +5,7 @@ import { validateAndFlatten } from "@/shared/utils";
 import { premiumFeatureSchema } from "@/shared/schemas";
 import { updatePremiumFeatureService, requireAuth } from "@/server/services";
 import { handleActionError } from "@/server/actions/handleActionError";
+import { routes } from "@/shared/constants";
 import { revalidatePath } from "next/cache";
 
 export const updatePremiumFeature = async (
@@ -47,7 +48,7 @@ export const updatePremiumFeature = async (
 
     await updatePremiumFeatureService(featureId, parsed.data);
 
-    revalidatePath("/admin/premium-features");
+    revalidatePath(routes.admin.premiumFeatures.root);
 
     return {
       success: true,

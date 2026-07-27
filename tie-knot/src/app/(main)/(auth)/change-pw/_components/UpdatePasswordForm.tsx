@@ -8,6 +8,7 @@ import { updateUserPassword, clearUserEmailCookie } from "@/server/actions";
 import { hasFieldErrors } from "@/shared/utils";
 import { APIResponse } from "@/shared/types";
 import { UpdatePasswordForm as PureUpdatePasswordForm } from "@/client/components/organisms";
+import { routes } from "@/shared/constants";
 
 export function UpdatePasswordForm() {
   const router = useRouter();
@@ -21,11 +22,11 @@ export function UpdatePasswordForm() {
     if (!state) return;
     if (state.success === true) {
       toast.message(state.data.message);
-      return router.push("/login");
+      return router.push(routes.login);
     } else {
       if (!hasFieldErrors(state.error)) {
         toast.error(state.error.message);
-        router.push("/login");
+        router.push(routes.login);
       }
     }
   }, [state, router]);

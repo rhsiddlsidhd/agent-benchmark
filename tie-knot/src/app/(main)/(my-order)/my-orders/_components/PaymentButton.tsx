@@ -7,6 +7,7 @@ import { CreditCard } from "lucide-react";
 import { useOrderStore } from "@/client/store";
 import { IOrder } from "@/server/models";
 import { CheckoutItem } from "@/shared/types";
+import { routes } from "@/shared/constants";
 
 const PaymentButton = ({ order }: { order: IOrder }) => {
   const router = useRouter();
@@ -39,7 +40,7 @@ const PaymentButton = ({ order }: { order: IOrder }) => {
     };
 
     setOrder(checkoutItem);
-    router.push(`/payment?q=${order.coupleInfoId.toString()}`);
+    router.push(`${routes.payment.root}?q=${order.coupleInfoId.toString()}`);
   };
 
   return (

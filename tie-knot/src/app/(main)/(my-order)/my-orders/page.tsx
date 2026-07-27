@@ -17,6 +17,7 @@ import React from "react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { IOrder, PayMethod } from "@/server/models";
+import { routes } from "@/shared/constants";
 
 import { PaymentButton } from "./_components";
 
@@ -143,7 +144,7 @@ const Page = async () => {
                         {order.orderStatus !== "CANCELLED" && (
                           <Button size="lg" variant="outline" asChild>
                             <Link
-                              href={`/order/edit?q=${order.coupleInfoId.toString()}`}
+                              href={`${routes.myOrders.edit}?q=${order.coupleInfoId.toString()}`}
                             >
                               <Edit className="mr-1 h-4 w-4" />
                               수정하기
@@ -181,7 +182,7 @@ const Page = async () => {
               아직 주문한 상품이 없어요. 상품을 구경하고 첫 주문을 해보세요.
             </TypographyMuted>
             <Button asChild className="mt-6">
-              <Link href="/products?category=invitation">청첩장 보러가기</Link>
+              <Link href={routes.products.byCategory("invitation")}>청첩장 보러가기</Link>
             </Button>
           </div>
         )}

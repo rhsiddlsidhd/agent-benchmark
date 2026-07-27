@@ -3,6 +3,7 @@ import { Button, TypographyH1, TypographyMuted } from "@/client/components/atoms
 import { ProductRegistrationForm } from "./_components";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { routes } from "@/shared/constants";
 
 export default async function NewProductPage() {
   await verifySession("ADMIN");
@@ -12,7 +13,7 @@ export default async function NewProductPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/admin/products">
+        <Link href={routes.admin.products.root}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>

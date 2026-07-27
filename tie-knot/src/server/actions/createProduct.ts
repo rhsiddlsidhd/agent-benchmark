@@ -5,6 +5,7 @@ import { uploadProductImage } from "@/server/lib/cloudinary";
 import { requireAuth, createProductService } from "@/server/services";
 import { handleActionError } from "@/server/actions/handleActionError";
 import { productSchema } from "@/shared/schemas";
+import { routes } from "@/shared/constants";
 
 import { revalidatePath } from "next/cache";
 import { validateAndFlatten } from "@/shared/utils";
@@ -66,8 +67,8 @@ export const createProduct = async (
       previewUrl,
     });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/products");
+    revalidatePath(routes.admin.products.root);
+    revalidatePath(routes.products.root);
 
     return {
       success: true,

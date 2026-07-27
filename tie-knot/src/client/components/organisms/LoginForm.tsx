@@ -6,6 +6,7 @@ import { Button, TypographyH1, TypographyMuted, Checkbox, Label } from "@/client
 
 
 import { TextField } from "@/client/components/molecules";
+import { routes } from "@/shared/constants";
 interface LoginFormProps {
   action: (formData: FormData) => void;
   pending: boolean;
@@ -63,7 +64,7 @@ export function LoginForm({
           </div>
 
           <Link
-            href="/find-pw"
+            href={routes.findPw}
             className="text-primary text-sm hover:underline"
           >
             비밀번호 찾기
@@ -98,14 +99,14 @@ export function LoginForm({
         <TypographyMuted>
           아직 계정이 없으신가요?{" "}
           <Link
-            href="/signup"
+            href={routes.signup}
             className="text-primary font-medium hover:underline"
           >
             회원가입
           </Link>
         </TypographyMuted>
         <Link
-          href="/find-id"
+          href={routes.findId}
           className="text-muted-foreground hover:text-foreground inline-block text-sm transition-colors"
         >
           아이디 찾기

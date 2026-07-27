@@ -1,0 +1,44 @@
+export const routes = {
+  home: "/",
+  login: "/login",
+  signup: "/signup",
+  findId: "/find-id",
+  findPw: "/find-pw",
+  changePw: "/change-pw",
+  profile: "/profile",
+  coupleInfo: "/couple-info",
+  support: "/support",
+  reviews: "/reviews",
+  deliveryInfo: "/delivery-info",
+  payment: {
+    root: "/payment",
+    success: "/payment/success",
+  },
+  myOrders: {
+    root: "/my-orders",
+    edit: "/my-orders/edit",
+    refund: "/my-orders/refund",
+  },
+  products: {
+    root: "/products",
+    byCategory: (category: string) => `/products?category=${category}`,
+    detail: (id: string) => `/products/${id}`,
+  },
+  preview: {
+    detail: (id: string) => `/preview/${id}`,
+  },
+  admin: {
+    dashboard: "/admin/dashboard",
+    orders: "/admin/orders",
+    users: "/admin/users",
+    settings: "/admin/settings",
+    products: {
+      root: "/admin/products",
+      new: "/admin/products/new",
+    },
+    premiumFeatures: {
+      root: "/admin/premium-features",
+      new: "/admin/premium-features/new",
+    },
+  },
+} as const;

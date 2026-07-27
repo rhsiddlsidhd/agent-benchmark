@@ -7,6 +7,7 @@ import { Card, Button, TypographyH1, TypographyLarge, TypographyMuted } from "@/
 import { TextField } from "@/client/components/molecules";
 import { getFieldError } from "@/shared/utils";
 import { APIResponse } from "@/shared/types";
+import { routes } from "@/shared/constants";
 
 interface FindIdFormProps {
   action: (formData: FormData) => void;
@@ -46,7 +47,7 @@ export function FindIdForm({ action, pending, state }: FindIdFormProps) {
 
         <div className="space-y-3">
           <Button asChild className="w-full" size="lg">
-            <Link href="/login">로그인하기</Link>
+            <Link href={routes.login}>로그인하기</Link>
           </Button>
           <Button
             asChild
@@ -54,7 +55,7 @@ export function FindIdForm({ action, pending, state }: FindIdFormProps) {
             className="w-full bg-transparent"
             size="lg"
           >
-            <Link href="/find-pw">비밀번호 찾기</Link>
+            <Link href={routes.findPw}>비밀번호 찾기</Link>
           </Button>
         </div>
       </div>
@@ -88,14 +89,14 @@ export function FindIdForm({ action, pending, state }: FindIdFormProps) {
         <TypographyMuted>
           비밀번호가 기억나지 않으신가요?
           <Link
-            href="/find-pw"
+            href={routes.findPw}
             className="text-primary font-medium hover:underline"
           >
             비밀번호 찾기
           </Link>
         </TypographyMuted>
         <Link
-          href="/login"
+          href={routes.login}
           className="text-muted-foreground hover:text-foreground inline-block text-sm transition-colors"
         >
           로그인으로 돌아가기

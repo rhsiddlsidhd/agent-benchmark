@@ -7,7 +7,7 @@ import { useAuth } from "@/client/hooks";
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/client/components/atoms";
 
 import { UserIcon, LogOut } from "lucide-react";
-import { USER_NAV_ITEMS } from "@/shared/constants";
+import { USER_NAV_ITEMS, routes } from "@/shared/constants";
 import { logoutUser } from "@/server/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ const UserAccountNav = () => {
       mutate("/api/auth/me", null, false);
       toast.success("로그아웃되었습니다.");
 
-      router.push("/");
+      router.push(routes.home);
       router.refresh();
     } catch (error) {
       console.error("Logout Error:", error);

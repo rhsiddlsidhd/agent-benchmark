@@ -6,13 +6,14 @@ import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, Typogra
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { routes } from "@/shared/constants";
 export default async function PaymentSuccessPage({
   searchParams,
 }: {
   searchParams: Promise<{ orderId?: string }>;
 }) {
   const { orderId } = await searchParams;
-  if (!orderId) return redirect("/");
+  if (!orderId) return redirect(routes.home);
 
   return (
     <div className="container mx-auto min-h-screen px-4 py-12">
@@ -58,13 +59,13 @@ export default async function PaymentSuccessPage({
         {/* Action Buttons */}
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button variant="outline" className="flex-1" asChild>
-            <Link href="/">
+            <Link href={routes.home}>
               <Home className="mr-2 h-4 w-4" />
               홈으로 이동
             </Link>
           </Button>
           <Button className="flex-1" asChild>
-            <Link href="/my-orders">
+            <Link href={routes.myOrders.root}>
               <FileText className="mr-2 h-4 w-4" />
               주문 내역 확인
             </Link>
@@ -75,7 +76,7 @@ export default async function PaymentSuccessPage({
         <div className="mt-8 text-center">
           <TypographyMuted>
             결제 관련 문의사항이 있으시면{" "}
-            <a href="/support" className="text-primary hover:underline">
+            <a href={routes.support} className="text-primary hover:underline">
               고객센터
             </a>
             로 문의해 주세요.

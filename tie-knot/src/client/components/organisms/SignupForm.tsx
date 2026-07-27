@@ -12,6 +12,7 @@ import { Checkbox, Button, Label, TypographyH1, TypographyMuted } from "@/client
 import { TextField } from "@/client/components/molecules";
 import { getFieldError } from "@/shared/utils";
 import { APIResponse } from "@/shared/types";
+import { routes } from "@/shared/constants";
 
 interface SignupFormProps {
   action: (formData: FormData) => void;
@@ -130,7 +131,7 @@ export function SignupForm({ action, pending, state }: SignupFormProps) {
         <TypographyMuted>
           이미 계정이 있으신가요?{" "}
           <Link
-            href="/login"
+            href={routes.login}
             className="text-primary font-medium hover:underline"
           >
             로그인

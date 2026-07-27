@@ -8,6 +8,7 @@ import { signupUser } from "@/server/actions";
 import { hasFieldErrors } from "@/shared/utils";
 import { APIResponse } from "@/shared/types";
 import { SignupForm as PureSignupForm } from "@/client/components/organisms";
+import { routes } from "@/shared/constants";
 export function SignupForm() {
   const router = useRouter();
   const [state, action, pending] = useActionState<
@@ -19,7 +20,7 @@ export function SignupForm() {
     if (!state) return;
     if (state.success === true) {
       alert(state.data.message);
-      router.push("/login");
+      router.push(routes.login);
     } else {
       if (!hasFieldErrors(state.error)) {
         toast.error(state.error.message);

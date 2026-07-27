@@ -3,6 +3,7 @@
 import { APIResponse } from "@/shared/types";
 import { requireAuth, deleteProductService } from "@/server/services";
 import { handleActionError } from "@/server/actions/handleActionError";
+import { routes } from "@/shared/constants";
 
 import { revalidatePath } from "next/cache";
 
@@ -20,8 +21,8 @@ export const deleteProduct = async (
 
     await deleteProductService(productId);
 
-    revalidatePath("/admin/products");
-    revalidatePath("/products");
+    revalidatePath(routes.admin.products.root);
+    revalidatePath(routes.products.root);
 
     return {
       success: true,

@@ -8,6 +8,7 @@ import { Product, PremiumFeature } from "@/server/services";
 
 import { CheckoutItem } from "@/shared/types";
 import { ProductSummary as PureProductSummary } from "@/client/components/organisms";
+import { routes } from "@/shared/constants";
 export function ProductSummary({
   product,
   options,
@@ -21,7 +22,7 @@ export function ProductSummary({
   const handlePurchase = useCallback(
     (checkoutData: CheckoutItem) => {
       setOrder(checkoutData);
-      router.push("/couple-info");
+      router.push(routes.coupleInfo);
     },
     [setOrder, router],
   );

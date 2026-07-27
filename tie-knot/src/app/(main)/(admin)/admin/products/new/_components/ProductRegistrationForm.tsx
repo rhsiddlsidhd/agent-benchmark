@@ -8,6 +8,7 @@ import { createProduct } from "@/server/actions";
 import { APIResponse } from "@/shared/types";
 import { PremiumFeature } from "@/server/services";
 import { ProductRegistrationForm as PureProductRegistrationForm } from "@/client/components/organisms";
+import { routes } from "@/shared/constants";
 export function ProductRegistrationForm({
   premiumFeatures,
 }: {
@@ -23,7 +24,7 @@ export function ProductRegistrationForm({
     if (!state) return;
     if (state.success) {
       toast.success(state.data.message);
-      router.push("/admin/products");
+      router.push(routes.admin.products.root);
     }
   }, [state, router]);
 
@@ -33,7 +34,7 @@ export function ProductRegistrationForm({
       action={action}
       pending={pending}
       state={state}
-      onCancel={() => router.push("/admin/products")}
+      onCancel={() => router.push(routes.admin.products.root)}
     />
   );
 }

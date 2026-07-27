@@ -7,6 +7,7 @@ import { validateAndFlatten } from "@/shared/utils";
 import { BuyerInfo, BuyerInfoSchema } from "@/shared/schemas";
 import { CheckoutItem } from "@/shared/types";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { routes } from "@/shared/constants";
 
 interface UseCheckoutFormOptions {
   query: string;
@@ -29,7 +30,7 @@ export function useCheckoutForm({
 
     if (!order) {
       toast.error("주문 정보를 찾을 수 없습니다. 다시 시도해주세요.");
-      router.replace("/products");
+      router.replace(routes.products.root);
       return;
     }
 
