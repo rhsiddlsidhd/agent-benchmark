@@ -53,6 +53,22 @@ if (typeof window !== "undefined") {
     globalThis.DataTransfer = DataTransferMock as unknown as typeof DataTransfer;
   }
 
+  // jsdom이 IntersectionObserver를 구현하지 않아, BottomActionBar(useEffect 안에서
+  // 폼 끝 지점 가시성을 관찰)를 렌더하는 컨테이너 테스트(CheckoutForm 등)가 마운트
+  // 즉시 던진다.
+  if (typeof globalThis.IntersectionObserver === "undefined") {
+    class IntersectionObserverMock {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords(): IntersectionObserverEntry[] {
+        return [];
+      }
+    }
+    globalThis.IntersectionObserver =
+      IntersectionObserverMock as unknown as typeof IntersectionObserver;
+  }
+
   // jsdom의 HTMLInputElement.files setter는 진짜 FileList 브랜드 체크를 하기 때문에
   // 위 DataTransferMock이 만든 배열을 대입하면 "not of type 'FileList'"로 던진다 —
   // 테스트 환경에서만 이 setter를 느슨하게 바꿔 배열도 그대로 받아들이게 한다.

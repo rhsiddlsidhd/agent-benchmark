@@ -6,11 +6,12 @@ import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
 import { verifySession, getUser } from "@/server/services";
 import { redirect } from "next/navigation";
 import React from "react";
+import { routes } from "@/shared/constants";
 
 const page = async () => {
   const session = await verifySession();
   const user = await getUser({ id: session.userId });
-  if (!user) return redirect("/login");
+  if (!user) return redirect(routes.login);
   const { email, name, phone } = user;
 
   return (

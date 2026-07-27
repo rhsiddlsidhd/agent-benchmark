@@ -12,6 +12,7 @@ import { useImageList } from "./useImageList";
 import { useFetchCoupleInfo } from "./useFetchCoupleInfo";
 import { useBanks } from "./useBanks";
 import { useSubwayStations } from "./useSubwayStations";
+import { routes } from "@/shared/constants";
 
 export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
   const router = useRouter();
@@ -56,11 +57,11 @@ export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
     if (state && state.success === true && state.data._id)
       switch (type) {
         case "create":
-          router.push(`/payment?q=${state.data._id}`);
+          router.push(`${routes.payment.root}?q=${state.data._id}`);
           break;
         case "edit":
           toast.success(state.data.message);
-          router.push(`/order`);
+          router.push(routes.myOrders.root);
           break;
         default:
           break;

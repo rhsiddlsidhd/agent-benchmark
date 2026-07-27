@@ -6,6 +6,7 @@ import { SubCategory, subCategoryLabels } from "@/shared/utils";
 import { Badge } from "../atoms/badge";
 import { TypographyMuted } from "../atoms/typography";
 import { CloudImage } from "../molecules/CloudImage";
+import { routes } from "@/shared/constants";
 
 export function ProductCard({ product }: { product: Product }) {
   const finalPrice =
@@ -21,7 +22,7 @@ export function ProductCard({ product }: { product: Product }) {
     : null;
 
   return (
-    <Link href={`/products/${product._id}`}>
+    <Link href={routes.products.detail(product._id)}>
       <article className="group relative cursor-pointer">
       {/* Image — the card itself */}
       <div className="relative aspect-3/4 overflow-hidden rounded-2xl bg-neutral-100">

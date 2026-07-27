@@ -4,6 +4,7 @@ import { TextField } from "@/client/components/molecules";
 import Link from "next/link";
 import { getFieldError } from "@/shared/utils";
 import { APIResponse } from "@/shared/types";
+import { routes } from "@/shared/constants";
 
 interface UpdatePasswordFormProps {
   action: (formData: FormData) => void;
@@ -46,7 +47,7 @@ export function UpdatePasswordForm({
 
       <div className="space-y-2 text-center">
         <Link
-          href="/login"
+          href={routes.login}
           className="text-muted-foreground hover:text-foreground inline-block text-sm transition-colors"
         >
           로그인으로 돌아가기

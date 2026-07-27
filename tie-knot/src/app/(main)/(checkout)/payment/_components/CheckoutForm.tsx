@@ -11,6 +11,7 @@ import { usePortOnePayment } from "@/client/hooks";
 import { useCheckoutData } from "@/client/hooks";
 import { useCheckoutForm } from "@/client/hooks";
 import { CheckoutForm as PureCheckoutForm } from "@/client/components/organisms";
+import { routes } from "@/shared/constants";
 export function CheckoutForm({ query }: { query: string }) {
   const router = useRouter();
   const clearOrder = useOrderStore((state) => state.clearOrder);
@@ -27,7 +28,7 @@ export function CheckoutForm({ query }: { query: string }) {
     (merchantUid: string) => {
       clearOrder();
       toast.success("결제가 완료되었습니다!");
-      router.push(`/payment/success?orderId=${merchantUid}`);
+      router.push(`${routes.payment.success}?orderId=${merchantUid}`);
     },
     [clearOrder, router],
   );

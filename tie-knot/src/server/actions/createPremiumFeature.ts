@@ -4,6 +4,7 @@ import { premiumFeatureSchema } from "@/shared/schemas";
 import { createPremiumFeatureService, requireAuth } from "@/server/services";
 import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
+import { routes } from "@/shared/constants";
 import { revalidatePath } from "next/cache";
 
 export const createPremiumFeature = async (
@@ -35,7 +36,7 @@ export const createPremiumFeature = async (
     }
 
     await createPremiumFeatureService(parsed.data);
-    revalidatePath("/admin/premium-features");
+    revalidatePath(routes.admin.premiumFeatures.root);
     return { success: true, data: { message: "프리미엄 기능을 등록하였습니다." } };
   } catch (e) {
     return handleActionError(e);

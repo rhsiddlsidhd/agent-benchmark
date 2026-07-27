@@ -19,7 +19,7 @@ const redirectsTo = (res: Response, path: string) => {
 describe("proxy", () => {
   describe("protected path", () => {
     it("token 쿠키가 없으면 /login으로 리다이렉트한다", async () => {
-      const res = await proxy(buildRequest("/order"));
+      const res = await proxy(buildRequest("/my-orders"));
 
       expect(redirectsTo(res, "/login")).toBe(true);
     });
@@ -27,7 +27,7 @@ describe("proxy", () => {
     it("token이 유효하면 통과시킨다", async () => {
       const token = await encrypt({ id: "user-1", role: "USER", type: "REFRESH" });
 
-      const res = await proxy(buildRequest("/order", token));
+      const res = await proxy(buildRequest("/my-orders", token));
 
       expect(isNext(res)).toBe(true);
     });

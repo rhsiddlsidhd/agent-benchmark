@@ -2,6 +2,7 @@
 
 > Last updated: 2026-07-18
 > 이 문서의 private 폴더(`_components`/`_types`/`_utils`/`_constants`/`_hooks`) 규칙은 **향후 지향점**이다 — 기존 라우트 대부분은 아직 이 구조를 안 쓴다(Gotchas 참고). 새 라우트/새 파일부터 적용한다.
+> 아래 라우트 그룹 목록은 **현재** 상태다 — 그룹 구성/네이밍이 바뀌는 중이면 실제 코드보다 `docs/ROUTING.md`(목표 상태)가 최신일 수 있다, 그룹 새로 만들거나 기존 그룹 하위 라우트를 옮길 땐 이 문서 고치기 전에 `docs/ROUTING.md`부터 확인한다.
 
 Next.js App Router 진입점 — 라우트 그룹(`(main)`, `(auth)`, `(checkout)`, `(products)`, `(my-order)`, `(my-profile)`, `(admin)`, `(preview)`)으로 섹션을 나눈다. 괄호 폴더는 URL에 영향 없는 조직화 단위다. Route Handler(API) 세부 규칙은 `src/app/api/CLAUDE.md`에서 관리한다.
 
@@ -55,6 +56,7 @@ root layout을 통째로 대체하기 때문에 생기는 제약:
 
 ## 관련 문서
 
+- 라우트 그룹 목표 구조·네이밍·전환 트리거: `docs/ROUTING.md`
 - 식별자 케이스 공통 규칙: `src/CLAUDE.md`
 - 승격된 순수함수: `src/shared/utils/CLAUDE.md`
 - 승격된 훅: `src/client/hooks/CLAUDE.md`

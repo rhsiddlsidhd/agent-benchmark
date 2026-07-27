@@ -10,6 +10,7 @@ import { APIResponse } from "@/shared/types";
 import { UserRole } from "@/server/models";
 import { getFieldError, hasFieldErrors } from "@/shared/utils";
 import { LoginForm as PureLoginForm } from "@/client/components/organisms";
+import { routes } from "@/shared/constants";
 export function LoginForm() {
   const router = useRouter();
   const [state, action, pending] = useActionState<
@@ -29,7 +30,7 @@ export function LoginForm() {
         },
         false,
       );
-      return router.push("/");
+      return router.push(routes.home);
     } else {
       if (!hasFieldErrors(state.error)) {
         toast.error(state.error.message);

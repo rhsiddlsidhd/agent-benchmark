@@ -10,6 +10,7 @@ import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
 import { createOrderSchema } from "@/shared/schemas";
 import { PayMethod } from "@/server/models";
+import { routes } from "@/shared/constants";
 export type CreateOrderResult = {
   merchantUid: string;
   finalPrice: number;
@@ -30,7 +31,7 @@ export async function createOrder(
   // 로그인 안 된 상태면 로그인 페이지로(리다이렉트는 try/catch 밖에서)
   const cookie = await getCookie("token");
   if (!cookie?.value) {
-    redirect("/login");
+    redirect(routes.login);
   }
 
   // FormData에서 주문 정보 추출

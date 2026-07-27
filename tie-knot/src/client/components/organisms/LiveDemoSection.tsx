@@ -5,6 +5,7 @@ import Link from "next/link";
 import React from "react";
 import Image from "next/image";
 import { ProductJSON } from "@/server/models";
+import { routes } from "@/shared/constants";
 interface LiveDemoSectionProps {
   product: ProductJSON;
   infoId: string;
@@ -32,7 +33,7 @@ export const LiveDemoSection = ({ product, infoId }: LiveDemoSectionProps) => {
             </p>
             <div className="flex flex-wrap justify-center gap-4 lg:justify-start">
               <Link
-                href={`/preview/${infoId}?product=${product._id}`}
+                href={`${routes.preview.detail(infoId)}?product=${product._id}`}
                 target="_blank"
               >
                 <Button size="lg" className="h-12 px-8 text-base">
@@ -58,7 +59,7 @@ export const LiveDemoSection = ({ product, infoId }: LiveDemoSectionProps) => {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     <Link
-                      href={`/preview/${infoId}?product=${product._id}`}
+                      href={`${routes.preview.detail(infoId)}?product=${product._id}`}
                       target="_blank"
                       className="scale-95 transform transition-transform duration-300 group-hover:scale-100"
                     >

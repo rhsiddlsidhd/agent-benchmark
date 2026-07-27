@@ -7,6 +7,7 @@ import { GuestbookSchema } from "@/shared/schemas";
 import { createGuestbookService } from "@/server/services";
 import { handleActionError } from "@/server/actions/handleActionError";
 import { validateAndFlatten } from "@/shared/utils";
+import { routes } from "@/shared/constants";
 import { revalidatePath } from "next/cache";
 
 export const createGuestbook = async (
@@ -35,7 +36,7 @@ export const createGuestbook = async (
       data: { ...parsed.data, password: hashedPassword },
     });
 
-    revalidatePath(`/preview/${parsed.data.coupleInfoId}`);
+    revalidatePath(routes.preview.detail(parsed.data.coupleInfoId));
 
     return {
       success: true,

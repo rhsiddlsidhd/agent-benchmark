@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TypographyMuted } from "@/client/components/atoms";
 import { Hammer } from "lucide-react";
+import { routes } from "@/shared/constants";
 
 export default function ReviewsPage() {
   return (
@@ -153,13 +154,13 @@ export default function ReviewsPage() {
           {/* CTA buttons */}
           <div className="not-found-fade-5 mt-10 flex flex-col gap-3">
             <Link
-              href="/"
+              href={routes.home}
               className="not-found-btn border-foreground text-foreground inline-block border px-10 py-3 text-sm font-[var(--font-NotoSerif)] font-medium tracking-widest"
             >
               <span>홈으로 돌아가기</span>
             </Link>
             <Link
-              href="/products"
+              href={routes.products.root}
               className="text-muted-foreground hover:text-foreground text-center text-xs font-medium tracking-wide transition-colors"
             >
               다른 템플릿 먼저 구경하기

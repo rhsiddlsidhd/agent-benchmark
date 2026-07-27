@@ -4,6 +4,7 @@ import { useOrderStore } from "@/client/store";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { routes } from "@/shared/constants";
 
 export function useCheckoutData({ skip = false }: { skip?: boolean } = {}) {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function useCheckoutData({ skip = false }: { skip?: boolean } = {}) {
   useEffect(() => {
     if (error) {
       toast.error(error);
-      router.replace("/products");
+      router.replace(routes.products.root);
     }
   }, [error, router]);
 

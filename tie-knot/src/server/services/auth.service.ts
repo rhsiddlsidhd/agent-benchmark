@@ -7,6 +7,7 @@ import { AppError } from "@/shared/types";
 import { AuthSession } from "@/shared/schemas";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { routes } from "@/shared/constants";
 
 export type LeanUser = {
   email: string;
@@ -88,10 +89,10 @@ export async function logoutService() {
 export const verifySession = cache(async (requiredRole?: UserRole): Promise<AuthSession> => {
   const session = await getAuth();
   if (!session) {
-    redirect("/login");
+    redirect(routes.login);
   }
   if (requiredRole && session.role !== requiredRole) {
-    redirect("/");
+    redirect(routes.home);
   }
   return session;
 });
