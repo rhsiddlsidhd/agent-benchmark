@@ -168,11 +168,12 @@ describe("payment.service", () => {
   describe("FAILED 상태 처리", () => {
     it("salesCount를 증가시키지 않고 Order를 CANCELLED로 전이시킨다", async () => {
       const { savedProduct, order } = await setupProductAndOrder(3);
+      const failedAt = new Date().toISOString();
 
       getPaymentMock.mockResolvedValue({
         status: "FAILED",
         id: order.merchantUid,
-        failedAt: new Date().toISOString(),
+        failedAt,
         failure: { reason: "카드 한도 초과" },
       });
 
@@ -181,6 +182,10 @@ describe("payment.service", () => {
       expect(result.success).toBe(false);
       const updatedProduct = await ProductModel.findById(savedProduct._id).lean();
       expect(updatedProduct?.salesCount).toBe(0);
+
+      const updatedOrder = await OrderModel.findById(order._id).lean();
+      expect(updatedOrder?.cancelReason).toBe("카드 한도 초과");
+      expect(updatedOrder?.cancelledAt?.toISOString()).toBe(failedAt);
     });
 
     it("이미 Payment 문서가 있으면 새로 만들지 않고 갱신한다", async () => {
