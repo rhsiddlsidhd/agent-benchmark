@@ -8,55 +8,42 @@ import { decrypt } from "@/server/lib/jose";
  */
 
 export default async function proxy(request: NextRequest) {
-  try {
-    const { pathname } = request.nextUrl;
-    const tokenCookie = request.cookies.get("token");
+  const { pathname } = request.nextUrl;
+  const tokenCookie = request.cookies.get("token");
 
-    // 인증 필요 라우트 보호 (로그인 유저만)
-    const protectedPaths = ["/order", "/profile", "/couple-info", "/payment", "/delivery-info"];
-    if (protectedPaths.some((p) => pathname.startsWith(p))) {
-      if (!tokenCookie?.value) {
-        return NextResponse.redirect(new URL("/", request.url));
-      }
-      return NextResponse.next();
+  const protectedPaths = ["/order", "/profile", "/couple-info", "/payment", "/delivery-info"];
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+  const isAdmin = pathname.startsWith("/admin");
+
+  if (isProtected || isAdmin) {
+    if (!tokenCookie?.value) {
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // 어드민 라우트 보호
-    if (pathname.startsWith("/admin")) {
-      if (!tokenCookie?.value) {
-        return NextResponse.redirect(new URL("/", request.url));
-      }
+    try {
+      const { payload } = await decrypt({ token: tokenCookie.value, type: "REFRESH" });
 
-      const { payload } = await decrypt({
-        token: tokenCookie.value,
-        type: "REFRESH",
-      });
-
-      if (payload.role !== "ADMIN") {
+      if (isAdmin && payload.role !== "ADMIN") {
         return NextResponse.redirect(new URL("/", request.url));
       }
 
       return NextResponse.next();
+    } catch (e) {
+      console.error("Proxy error:", e);
+      return NextResponse.redirect(new URL("/login", request.url));
     }
+  }
 
-    // 이미 로그인한 유저는 auth 페이지 접근 불가
-    if (tokenCookie?.value) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    if (pathname === "/login" && !request.cookies.has("entry")) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    if (pathname === "/change-pw" && !request.nextUrl.searchParams.get("t")) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    return NextResponse.next();
-  } catch (e) {
-    console.error("Proxy error:", e);
+  // 이미 로그인한 유저는 auth 페이지 접근 불가
+  if (tokenCookie?.value) {
     return NextResponse.redirect(new URL("/", request.url));
   }
+
+  if (pathname === "/change-pw" && !request.nextUrl.searchParams.get("t")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

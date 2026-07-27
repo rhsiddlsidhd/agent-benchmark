@@ -71,14 +71,6 @@ export const loginUser = async (
 
     await setCookie({ name: "token", value: refreshJWT, remember });
 
-    const accessJWT = await encrypt({
-      id: user._id.toString(),
-      role: user.role,
-      type: "ACCESS",
-    });
-
-    await setCookie({ name: "access", value: accessJWT });
-
     return {
       success: true,
       data: { role: user.role, email: user.email, userId: user._id.toString() },
