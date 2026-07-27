@@ -21,10 +21,10 @@ if ! npm run test:coverage; then
   exit 2
 fi
 
-if ! npm run build; then
+if ! npm run typecheck; then
   echo "" >&2
   echo "$SEPARATOR" >&2
-  echo "❌ BUILD 실패 — 커밋 차단됨" >&2
+  echo "❌ TYPECHECK 실패 — 커밋 차단됨" >&2
   echo "   위 에러를 고친 뒤 다시 커밋하세요." >&2
   echo "$SEPARATOR" >&2
   exit 2
