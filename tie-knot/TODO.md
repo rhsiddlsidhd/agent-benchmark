@@ -60,8 +60,8 @@ B-5 공통/운영
 - [x] **1. 결제/트랜잭션 정합성** (B-2.2) — 문서 신규: `services/CLAUDE.md` 트랜잭션 섹션 추가. order+payment 원자적 처리 필수 조건, mongoose session 사용 원칙, 실패 시 롤백/보상 처리. 4단계로 진행: (1) `mongodb-memory-server`가 standalone이라 트랜잭션 테스트 자체가 불가능했던 선행 블로커부터 replSet 전환(PR #53), (2) 컨벤션 문서 확정(PR #54) — `mongoose.connection.transaction()` 하나로 패턴 통일, 트랜잭션 필요조건은 "여러 컬렉션/문서 쓰기 중 하나라도 실패하면 불변조건이 깨지는 경우"로 한정, (3) `payment.service.ts`의 `syncPayment`(PAID/FAILED 분기 모두 Payment+Order 쓰기가 하나의 논리적 단위)에 실제 적용(PR #55), 중간 실패 시 실제 롤백되는지 회귀 테스트로 검증, (4) 이 트랜잭션 경계를 그대로 활용해 `#11` 4번째 항목(`cancelledAt`/`cancelReason`)도 같이 정리(PR #56).
   - branch: `chore/mongodb-memory-server-replset`(PR #53) → `docs/services-transaction-guideline`(PR #54) → `refactor/payment-transaction`(PR #55) → `chore/order-cancel-fields-cleanup`(PR #56, `#11` 잔여분 겸용)
 
-- [ ] **2. 상태/컨텍스트 구조** (B-4.1) — 문서 불필요 (`src/CLAUDE.md`에 "서버 데이터 Zustand 직접 이관 금지" 이미 명시). `useAuth.ts` 코드만 수정
-  - branch: `refactor/use-auth-zustand-split`
+- [x] **2. 상태/컨텍스트 구조** (B-4.1) — `useAuth.ts`가 실제로 그 "서버 데이터 Zustand 직접 이관 금지" 규칙을 위반 중이었음(`useSWR` 결과를 `useEffect`로 `useAuthStore`에 미러링). `auth.store.ts`가 들고 있던 필드(`isAuth`/`role`/`email`/`userId`)가 전부 서버 세션 파생값이라 클라이언트 고유 상태가 없어서 스토어 자체를 삭제, `useAuth()`는 `{ session, isLoading }`만 리턴. 소비처 6곳(admin/my-order/my-profile layout, ProductLikeBadge, AuthButtons, UserAccountNav)을 `session` 파생값으로 교체, 로그인/로그아웃 쓰기 경로는 SWR 전역 `mutate("/api/auth/me", ...)`로 대체. 같은 파일(`UserAccountNav.tsx`)에서 발견한 별개 위반(로그아웃이 raw `fetch`로 mutation, Server Action 미사용)도 같이 정리 — `logoutUser.ts` 신설 + 안 쓰는 `api/auth/logout/route.ts` 삭제.
+  - branch: `refactor/use-auth-zustand-split`(PR #64)
 
 - [x] **3. 도메인 응집도 — product 스키마를 mongoose discriminator로 재구성** (B-1.2, `#11` 필드 감사 중 논의 확장) — 프로젝트가 "모바일 청첩장 하나만"에서 이커머스 다품목(답례품/웨딩 소품/방명록 굿즈/예식 용품)으로 확장 예정인데, 지금 `product.model.ts`는 단일 평면 스키마라 invitation 전용 개념(미리보기 링크 등)과 공통 개념이 안 나뉘어 있음. mongoose 공식 discriminator(스키마 상속, 한 컬렉션에 여러 타입 저장)로 재구성하기로 확정. 2단계로 완료: 1차(PR #49)는 `previewUrl` discriminator 분리만 반영했는데, 아래 "확정된 설계"의 나머지 두 항목(business-card 제거, theme 필드)을 놓친 채 병합돼 후속 PR(#52)로 마무리함.
   - **확정된 설계**:
