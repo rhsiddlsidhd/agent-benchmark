@@ -1,7 +1,7 @@
 # CLAUDE.md — src/server/services/
 
-> Last updated: 2026-07-26
-> 폴더 분리(서비스 레이어) 자체는 프로젝트 고유 선택이지만, 내부 에러 처리 패턴은 공식 문서 근거가 있다 — Critical Convention 참고.
+> Last updated: 2026-07-27
+> 폴더 분리(서비스 레이어) 자체는 프로젝트 고유 선택이지만, 내부 에러 처리 패턴/트랜잭션 패턴은 공식 문서 근거가 있다 — Critical Convention·트랜잭션 섹션 참고.
 
 ## Overview
 
@@ -33,9 +33,31 @@ src/server/services/
 
 > 실제 에러 타입/분류 체계는 마이그레이션 진행 중이다 — 공용 taxonomy/전체 그림은 `src/CLAUDE.md`의 "에러 핸들링 — 공통 규칙" 참고, 이 문서에 세부를 복붙하지 않는다.
 
+## 트랜잭션
+
+- **언제 트랜잭션이 필요한가**: 서로 다른 컬렉션(또는 같은 컬렉션의 여러 문서)에 걸친 쓰기가 하나라도 실패하면 나머지 커밋 결과가 도메인 불변조건을 깨는 경우에만 쓴다 — 단일 문서 쓰기(`.create()`/`.save()`/update 하나)는 MongoDB 자체가 문서 단위 원자성을 보장하므로 트랜잭션이 필요 없다. 지금 이 조건에 해당하는 지점: `payment.service.ts`의 `syncPayment` — PAID 확정 시 Payment 저장 + Order 상태 전이(`orderStatus`/`paymentId`) + Product `salesCount` 증가가 하나의 논리적 단위인데 지금은 순차 쓰기라 중간 실패 시 불일치가 남는다(FAILED 분기도 Payment 저장 + Order 상태 전이 2단계라 동일하게 해당).
+- **트랜잭션은 replica set에서만 동작한다**(MongoDB 자체 제약, standalone에선 "Transaction numbers are only allowed on a replica set member or mongos") — Atlas(운영)는 기본 replica set이라 문제없지만, 로컬 테스트는 `mongodb-memory-server`가 기본 standalone이라 막힌다. `src/test/setup.ts`가 단일 노드 replSet으로 이미 전환돼 있다(`docs/TESTING_GUIDELINE.md` 참고) — 이 전환 없이는 트랜잭션 관련 테스트 자체가 불가능했다.
+- **`mongoose.connection.transaction(fn)`을 쓴다** — `session.withTransaction()`의 mongoose 전용 wrapper로, 커밋/롤백을 자동 처리하고(성공 시 커밋, 함수가 throw하면 abort) 트랜잭션이 abort되면 그 안에서 `.save()`한 문서의 in-memory 변경사항도 원래 상태로 되돌린다(mongoose 공식 문서: "`Connection#transaction()` ... integrates Mongoose change tracking with transactions"). 두 갈래 패턴을 만들지 않는다 — 트랜잭션이 필요한 곳은 raw `session.startTransaction()`/`commitTransaction()`을 직접 안 쓰고 전부 이 함수 하나로 통일한다.
+  ```ts
+  await dbConnect();
+  await mongoose.connection.transaction(async (session) => {
+    await payment.save({ session });
+    await order.save({ session });
+    await ProductModel.findByIdAndUpdate(
+      productId,
+      { $inc: { salesCount: quantity } },
+      { session },
+    );
+  });
+  ```
+- **트랜잭션 안의 모든 연산에 `{ session }`을 빠짐없이 넘긴다** — mongoose 공식 문서: "remember to set the session option on every operation. If you don't, your operation will execute outside of the transaction." 하나라도 빠뜨리면 그 쓰기만 조용히 트랜잭션 밖에서 즉시 커밋돼, 나머지가 롤백돼도 그것만 남는다.
+- **트랜잭션 안에서 `Promise.all`류로 연산을 병렬 실행하지 않는다** — mongoose 공식 문서: "Running operations in parallel is not supported during a transaction... is undefined behaviour and should be avoided." 순차로(`await`를 하나씩) 실행한다.
+- **롤백은 DB 쓰기 되돌리기만 다룬다 — 외부 API 호출 같은 비-DB 부수효과는 트랜잭션 경계 안에 넣지 않는다.** `syncPayment`는 PortOne을 조회만 하고(쓰기 없음) 그 결과를 트랜잭션 시작 전에 이미 받아온 뒤 DB 쓰기만 트랜잭션으로 묶으므로 이 조건을 만족한다 — 트랜잭션 도중 외부 API에 실제로 쓰기 요청을 보내야 하는 경우가 생기면(아직 없음) DB 롤백만으로 부족해 별도 보상 로직이 필요해진다는 것을 그 시점에 재검토한다(가정만으로 지금 보상 로직 자리를 미리 만들지 않는다).
+
 ## Gotchas
 
 - `requireAuth()`는 `getAuth()`를 감싸서 세션 없으면 `AppError(UNAUTHENTICATED)`를 throw하는 얇은 헬퍼다 — HTTP status(401)는 여기서 모른다, 각 채널 공용 핸들러가 UNAUTHENTICATED를 자기 형태(route.ts는 401 Response, Server Action은 `ErrorPayload`)로 번역한다. 인증이 필수인 Route Handler·Server Action 둘 다 세션 검증에 이 함수를 공유한다(`src/app/api/CLAUDE.md` Gotchas 참고).
+- mongoose에 `mongoose.set('transactionAsyncLocalStorage', true)` 글로벌 옵션이 있다(설치된 버전 8.20.3에 실재 확인) — 켜면 트랜잭션 콜백 안의 모든 연산에 `session`을 자동 주입해 위 "session 빠뜨림" 실수 자체를 없앤다. 지금은 안 켠다 — 트랜잭션을 쓰는 지점이 아직 없어서 켰을 때의 영향 범위(다른 서비스 함수들의 기존 동작)를 실제로 검증할 대상이 없다. `syncPayment`에 트랜잭션을 처음 적용할 때(TODO #1 Phase 3) 켤지 여부를 그 자리에서 재검토한다.
 
 ## 관련 문서
 
