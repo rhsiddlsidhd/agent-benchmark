@@ -4,9 +4,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, Typogra
 
 
 import { CloudImage } from "@/client/components/molecules";
-import { getCookie } from "@/server/lib/cookies";
-import { decrypt } from "@/server/lib/jose";
-import { getOrdersByUserId } from "@/server/services";
+import { getPageAuth, getOrdersByUserId } from "@/server/services";
 import {
   Edit,
   RefreshCw,
@@ -15,7 +13,6 @@ import {
   Inbox,
   CreditCard,
 } from "lucide-react";
-import { redirect } from "next/navigation";
 import React from "react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -56,12 +53,8 @@ const groupOrdersByDate = (orders: IOrder[]) => {
 };
 
 const Page = async () => {
-  const cookie = await getCookie("token");
-  if (!cookie) return redirect("/login");
-  const { payload } = await decrypt({ token: cookie.value, type: "REFRESH" });
-
-  if (!payload.id) return redirect("/login");
-  const orders = await getOrdersByUserId(payload.id);
+  const session = await getPageAuth();
+  const orders = await getOrdersByUserId(session.userId);
 
   const groupedOrders = groupOrdersByDate(orders);
 

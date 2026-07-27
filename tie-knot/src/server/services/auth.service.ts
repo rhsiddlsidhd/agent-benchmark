@@ -5,6 +5,8 @@ import { decrypt } from "@/server/lib/jose";
 import mongoose from "mongoose";
 import { AppError } from "@/shared/types";
 import { AuthSession } from "@/shared/schemas";
+import { cache } from "react";
+import { redirect } from "next/navigation";
 
 export type LeanUser = {
   email: string;
@@ -77,3 +79,19 @@ export async function requireAuth(): Promise<AuthSession> {
 export async function logoutService() {
   await deleteCookie("token");
 }
+
+// page.tsx(Server Component render) 전용 라우팅 게이트 — requireAuth()(throw)와 달리
+// 실패를 곧바로 redirect로 처리한다. 인증 확인이 role 확인보다 먼저 와야 한다 — 순서를
+// 바꾸면 미인증 유저가 role-mismatch(/)로 오분류돼 재로그인 유도(/login)를 못 받는다.
+// cache()로 감싸 같은 렌더 패스 안 반복 호출(page 게이트 + service 재확인)이 세션을
+// 중복 조회하지 않게 한다(docs/PAGE_ACCESS_CONTROL.md 참고).
+export const getPageAuth = cache(async (requiredRole?: UserRole): Promise<AuthSession> => {
+  const session = await getAuth();
+  if (!session) {
+    redirect("/login");
+  }
+  if (requiredRole && session.role !== requiredRole) {
+    redirect("/");
+  }
+  return session;
+});
