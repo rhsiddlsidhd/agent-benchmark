@@ -80,8 +80,8 @@ B-5 공통/운영
   - 부수 발견: PR #63 작업 중 `gh pr create`가 base 미지정 시 repo default branch(`main`)로 잡혀 `main`행 PR이 실수로 생성됨 — `verify-source` 워크플로우(dev발 아니면 fail)가 정상 감지했지만 `main`에 branch protection 자체가 없어 required check가 아니었음(무시하고 merge 가능한 상태). `main`에 branch protection 신설 + `verify-source`를 required status check로 등록해 실제 강제력 부여.
   - branch: `fix/auth-drift-requireauth`(PR #60) → `feat/page-access-control-gate`(PR #61) → `refactor/rename-page-auth-gate`(PR #62) → `docs/auth-guard-pattern`(PR #63, 누락분+문서 갱신)
 
-- [ ] **6. 외부 연동 격리** (B-3.1) — 문서 불필요 (`lib/CLAUDE.md`에 "폴더 1개=연동 대상 1개" 이미 있음). `upload/signature/route.ts` 코드만 수정
-  - branch: `refactor/upload-signature-isolation`
+- [x] **6. 외부 연동 격리** (B-3.1) — `upload/signature/route.ts`가 `cloudinary` SDK를 직접 import해 서명 생성 중이던 걸 `src/server/lib/cloudinary/sign.ts`(`signUploadRequest`)로 이관, route.ts는 그 함수만 호출. 반영 중 CI(lint-build)에서 실제 빌드 에러로 발견: `sign.ts`(Node 전용 SDK, `fs` 의존)를 기존 barrel에 얹자 그 barrel을 참조하던 client 훅(`useImageUpload.ts`)까지 SDK를 번들링해 "Module not found: fs"로 빌드가 깨짐. 원인은 `upload.ts` 안에 있던 presigned URL 함수(`uploadMainThumbnail`/`uploadGalleryImages`, 상대경로 fetch라 브라우저 전용)가 애초에 `server/lib`에 잘못 놓여 있었던 것 — `src/client/lib/cloudinary/`로 분리해서 해결(cloudinary가 server/lib·client/lib 양쪽에 존재하는 첫 사례, 런타임 기준으로 갈림).
+  - branch: `refactor/upload-signature-isolation`(PR #65)
 
 - [ ] **7. 공통 유틸/타입 배치** (B-5.1) — 문서 불필요 (`utils/CLAUDE.md`에 side-effect 분리 원칙 이미 있음). `open-app.ts` 이동만
   - branch: `refactor/move-open-app-util`
