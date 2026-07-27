@@ -2,19 +2,15 @@ export const dynamic = "force-dynamic";
 
 import { BasicInfoForm, ChangePasswordForm } from "@/client/components/organisms";
 
-import { getCookie } from "@/server/lib/cookies";
 import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
-import { decrypt } from "@/server/lib/jose";
-import { getUser } from "@/server/services";
+import { getPageAuth, getUser } from "@/server/services";
 import { redirect } from "next/navigation";
 import React from "react";
 
 const page = async () => {
-  const cookie = await getCookie("token");
-  if (!cookie) return redirect("/login");
-  const { payload } = await decrypt({ token: cookie.value, type: "REFRESH" });
-  const user = await getUser({ id: payload.id });
-  if (!user) redirect("/login");
+  const session = await getPageAuth();
+  const user = await getUser({ id: session.userId });
+  if (!user) return redirect("/login");
   const { email, name, phone } = user;
 
   return (

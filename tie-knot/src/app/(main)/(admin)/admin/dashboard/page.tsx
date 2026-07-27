@@ -2,8 +2,11 @@ export const revalidate = 300;
 
 import { Card, CardContent, CardHeader, CardTitle, TypographyMuted, TypographySmall } from "@/client/components/atoms";
 import { Package, DollarSign, ShoppingCart, Users } from "lucide-react";
+import { getPageAuth } from "@/server/services";
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  await getPageAuth("ADMIN");
+
   const stats = [
     {
       title: "총 상품",

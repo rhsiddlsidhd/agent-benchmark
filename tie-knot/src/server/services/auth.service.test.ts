@@ -13,8 +13,15 @@ vi.mock("@/server/lib/cookies", () => ({
   deleteCookie: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn((path: string) => {
+    throw new Error(`REDIRECT:${path}`);
+  }),
+}));
+
 import { getCookie, deleteCookie } from "@/server/lib/cookies";
-import { getUser, getAuth, requireAuth, logoutService } from "./auth.service";
+import { redirect } from "next/navigation";
+import { getUser, getAuth, requireAuth, logoutService, getPageAuth } from "./auth.service";
 
 describe("auth.service", () => {
   beforeEach(async () => {
@@ -130,6 +137,56 @@ describe("auth.service", () => {
 
       await expect(requireAuth()).rejects.toBeInstanceOf(AppError);
       await expect(requireAuth()).rejects.toMatchObject({ category: "UNAUTHENTICATED" });
+    });
+  });
+
+  describe("getPageAuth", () => {
+    it("세션이 없으면 /login으로 redirect한다", async () => {
+      vi.mocked(getCookie).mockResolvedValue(undefined);
+
+      await expect(getPageAuth()).rejects.toThrow("REDIRECT:/login");
+      expect(redirect).toHaveBeenCalledWith("/login");
+    });
+
+    it("세션이 있고 role 요구가 없으면 세션을 리턴한다", async () => {
+      const input = buildUser();
+      const saved = await UserModel.create(input);
+      const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
+      vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
+
+      const result = await getPageAuth();
+
+      expect(result.userId).toBe(saved._id.toString());
+      expect(redirect).not.toHaveBeenCalled();
+    });
+
+    it("role을 요구했는데 불일치하면 /로 redirect한다", async () => {
+      const input = buildUser({ role: "USER" });
+      const saved = await UserModel.create(input);
+      const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
+      vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
+
+      await expect(getPageAuth("ADMIN")).rejects.toThrow("REDIRECT:/");
+      expect(redirect).toHaveBeenCalledWith("/");
+    });
+
+    it("role이 일치하면 세션을 리턴한다", async () => {
+      const input = buildUser({ role: "ADMIN" });
+      const saved = await UserModel.create(input);
+      const token = await encrypt({ id: saved._id.toString(), role: "ADMIN", type: "REFRESH" });
+      vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
+
+      const result = await getPageAuth("ADMIN");
+
+      expect(result.userId).toBe(saved._id.toString());
+      expect(redirect).not.toHaveBeenCalled();
+    });
+
+    it("세션이 없으면 role 요구 여부와 무관하게 /login으로 redirect한다(순서 고정)", async () => {
+      vi.mocked(getCookie).mockResolvedValue(undefined);
+
+      await expect(getPageAuth("ADMIN")).rejects.toThrow("REDIRECT:/login");
+      expect(redirect).toHaveBeenCalledWith("/login");
     });
   });
 

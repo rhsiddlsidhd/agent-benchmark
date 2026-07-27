@@ -2,9 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AppError } from "@/shared/types";
 import { CoupleInfoForm } from "./_components";
-import { getCookie } from "@/server/lib/cookies";
-import { decrypt } from "@/server/lib/jose";
-import { redirect } from "next/navigation";
+import { getPageAuth } from "@/server/services";
 import React from "react";
 
 const Page = async ({
@@ -18,11 +16,7 @@ const Page = async ({
     throw new AppError("VALIDATION", "잘못된 접근입니다.");
   }
 
-  const cookie = await getCookie("token");
-  if (!cookie) return redirect("/login");
-
-  const { payload } = await decrypt({ token: cookie.value, type: "REFRESH" });
-  if (!payload.id) return redirect("/login");
+  await getPageAuth();
 
   return <CoupleInfoForm />;
 };
