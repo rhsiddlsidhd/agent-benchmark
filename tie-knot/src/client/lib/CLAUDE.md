@@ -1,7 +1,7 @@
 # CLAUDE.md — src/client/lib/
 
 > Last updated: 2026-07-23
-> 서버 전용 외부 연동(bcrypt/cloudinary/cookies/jose/mongodb/nodemailer)은 `src/server/lib/CLAUDE.md` 참고 — 폴더명 컨벤션은 동일, 여기는 브라우저 전용/isomorphic 연동만 다룬다.
+> 서버 전용 외부 연동(bcrypt/cookies/jose/mongodb/nodemailer)은 `src/server/lib/CLAUDE.md` 참고 — 폴더명 컨벤션은 동일, 여기는 브라우저 전용/isomorphic 연동만 다룬다. `cloudinary`는 예외적으로 양쪽에 다 있다(런타임별로 갈림, 아래 Gotchas).
 
 ## Overview
 
@@ -13,6 +13,9 @@
 src/client/lib/
 ├── kakao/
 │   └── useKakaoLoader.ts     # 카카오맵 SDK 로더 훅 — 브라우저 전용
+├── cloudinary/
+│   ├── upload.ts             # presigned URL 방식 업로드(uploadMainThumbnail/uploadGalleryImages) — relative URL(`/api/upload/signature`) fetch라 브라우저 전용
+│   └── index.ts               # 배럴 — export * from "./upload"
 └── cn/
     ├── merge.ts               # cn() — clsx+tailwind-merge 조합, 실제 로직
     └── index.ts               # 배럴 — export * from "./merge"
@@ -27,7 +30,7 @@ src/client/lib/
 
 ## Gotchas
 
-- 없음.
+- `cloudinary`는 `src/server/lib/`에도 같은 이름의 폴더가 있다 — "폴더 1개=연동 대상 1개" 예외가 아니라, 같은 서비스라도 실행 런타임(Node 전용 SDK 사용 vs 브라우저 상대경로 fetch)이 갈리면 두 트리에 각각 존재할 수 있다는 사례다. 세부는 `src/server/lib/CLAUDE.md` Gotchas 참고.
 
 ## 관련 문서
 

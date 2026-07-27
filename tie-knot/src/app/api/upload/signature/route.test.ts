@@ -7,15 +7,19 @@ vi.mock("@/server/services", () => ({
   requireAuth: vi.fn(),
 }));
 
-vi.mock("cloudinary", () => ({
-  v2: {
-    utils: {
-      api_sign_request: vi.fn().mockReturnValue("mock-signature"),
-    },
-  },
+vi.mock("@/server/lib/cloudinary", () => ({
+  signUploadRequest: vi.fn().mockReturnValue({
+    signature: "mock-signature",
+    timestamp: 1234567890,
+    folder: "products",
+    allowed_formats: "jpg,png,webp,jpeg",
+    cloudName: "cloud",
+    apiKey: "key",
+  }),
 }));
 
 import { requireAuth } from "@/server/services";
+import { signUploadRequest } from "@/server/lib/cloudinary";
 import { POST } from "./route";
 
 const buildRequest = (body: unknown) =>
@@ -74,5 +78,6 @@ describe("POST /api/upload/signature", () => {
       }),
     });
     expect(requireAuth).toHaveBeenCalled();
+    expect(signUploadRequest).toHaveBeenCalledWith("products");
   });
 });
