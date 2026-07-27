@@ -2,9 +2,9 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { mutate } from "swr";
 import { toast } from "sonner";
 
-import { useAuthStore } from "@/client/store";
 import { loginUser } from "@/server/actions";
 import { APIResponse } from "@/shared/types";
 import { UserRole } from "@/server/models";
@@ -16,23 +16,26 @@ export function LoginForm() {
     APIResponse<{ role: UserRole; email: string; userId: string }>,
     FormData
   >(loginUser, null);
-  const setSession = useAuthStore((state) => state.setSession);
 
   useEffect(() => {
     if (!state) return;
     if (state.success === true) {
-      setSession({
-        role: state.data.role,
-        email: state.data.email,
-        userId: state.data.userId,
-      });
+      mutate(
+        "/api/auth/me",
+        {
+          role: state.data.role,
+          email: state.data.email,
+          userId: state.data.userId,
+        },
+        false,
+      );
       return router.push("/");
     } else {
       if (!hasFieldErrors(state.error)) {
         toast.error(state.error.message);
       }
     }
-  }, [state, setSession, router]);
+  }, [state, router]);
 
   const emailError = getFieldError(state, "email");
   const passwordError = getFieldError(state, "password");

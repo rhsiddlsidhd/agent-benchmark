@@ -11,6 +11,7 @@ export * from "./findUserEmail";
 export * from "./handleActionError";
 export * from "./incrementProductViews";
 export * from "./loginUser";
+export * from "./logoutUser";
 export * from "./requestPasswordReset";
 export * from "./signupUser";
 export * from "./updateCoupleInfo";

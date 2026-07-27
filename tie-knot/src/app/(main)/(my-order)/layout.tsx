@@ -3,10 +3,9 @@
 import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider } from "@/client/components/atoms";
 import { SidebarNavItem } from "@/client/components/molecules";
 import { SidebarToggle } from "@/client/components/organisms";
-import { useAuthStore } from "@/client/store";
+import { useAuth } from "@/client/hooks";
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const email = useAuthStore((state) => state.email);
-  const role = useAuthStore((state) => state.role);
+  const { session } = useAuth();
 
   return (
     <SidebarProvider>
@@ -20,10 +19,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <div className="mb-2 flex items-center gap-3 px-2 py-2">
               <div className="min-w-0 flex-1">
                 <p className="text-foreground truncate text-sm font-medium">
-                  {email}
+                  {session?.email}
                 </p>
                 <p className="text-muted-foreground text-xs">
-                  {role === "ADMIN" ? "관리자" : "일반"} 계정
+                  {session?.role === "ADMIN" ? "관리자" : "일반"} 계정
                 </p>
               </div>
             </div>
