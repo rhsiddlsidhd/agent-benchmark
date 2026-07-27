@@ -4,7 +4,7 @@ import { dbConnect } from "@/server/lib/mongodb";
 import { clearCollections } from "@/test/db";
 import { buildProductInput } from "@/test/factories/product.factory";
 import { buildOrderInput } from "@/test/factories/order.factory";
-import { ProductModel } from "@/server/models";
+import { ProductModel, OrderModel, PaymentModel } from "@/server/models";
 import { createProductService } from "./product.service";
 import { createOrderService } from "./order.service";
 
@@ -140,6 +140,29 @@ describe("payment.service", () => {
         category: "VALIDATION",
       });
     });
+
+    it("트랜잭션 도중(salesCount 반영 단계) 실패하면 Payment 생성과 Order 상태 전이도 함께 롤백된다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(2);
+      getPaymentMock.mockResolvedValue(
+        paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+      );
+      const findByIdAndUpdateSpy = vi
+        .spyOn(ProductModel, "findByIdAndUpdate")
+        .mockRejectedValueOnce(new Error("의도적 트랜잭션 중단"));
+
+      await expect(syncPayment(order.merchantUid)).rejects.toThrow("의도적 트랜잭션 중단");
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment).toBeNull();
+
+      const updatedOrder = await OrderModel.findById(order._id).lean();
+      expect(updatedOrder?.orderStatus).toBe("PENDING");
+
+      const updatedProduct = await ProductModel.findById(savedProduct._id).lean();
+      expect(updatedProduct?.salesCount).toBe(0);
+
+      findByIdAndUpdateSpy.mockRestore();
+    });
   });
 
   describe("FAILED 상태 처리", () => {
@@ -173,6 +196,29 @@ describe("payment.service", () => {
       const result = await syncPayment(order.merchantUid);
 
       expect(result).toMatchObject({ success: false, message: "카드 한도 초과" });
+    });
+
+    it("트랜잭션 도중(Order 상태 전이 단계) 실패하면 이미 생성된 Payment도 함께 롤백된다", async () => {
+      const { order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        status: "FAILED",
+        id: order.merchantUid,
+        failedAt: new Date().toISOString(),
+        failure: { reason: "카드 한도 초과" },
+      });
+      const saveSpy = vi
+        .spyOn(OrderModel.prototype, "save")
+        .mockRejectedValueOnce(new Error("의도적 트랜잭션 중단"));
+
+      await expect(syncPayment(order.merchantUid)).rejects.toThrow("의도적 트랜잭션 중단");
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment).toBeNull();
+
+      const updatedOrder = await OrderModel.findById(order._id).lean();
+      expect(updatedOrder?.orderStatus).toBe("PENDING");
+
+      saveSpy.mockRestore();
     });
   });
 
