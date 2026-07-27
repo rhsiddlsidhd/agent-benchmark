@@ -1,6 +1,6 @@
 # src/
 
-> Last updated: 2026-07-24
+> Last updated: 2026-07-27
 
 ## Overview
 
@@ -95,8 +95,26 @@ ErrorPayload = { 분류, message, fieldErrors? }
 - 같은 아티팩트 타입끼리 파일명 케이스가 겹치지 않게 짓는다 — 파일명만 보고 컴포넌트인지 훅인지 유틸인지 구분할 수 있어야 한다.
 - `{목적}` 기반 파일(도메인 무관 범용 카테고리 — `utils/`, `constants/{목적}.ts`, `hooks/use{목적}.ts`, `services/{목적}.service.ts`, `schemas/{목적}.schema.ts` 등)에는 도메인/라우트가 드러나는 이름을 쓰지 않는다 — 이름이 도메인에 종속되면 재사용 가능 범위를 파일명만으로 오판하게 된다(예: `postsFormatter.ts` 금지).
 
+## 인증 토큰
+
+> 목표 설계 — access/refresh 이중 토큰 폐기 결정, 아직 코드 반영 전(`docs/PAGE_ACCESS_CONTROL.md` 점검 세션에서 확정). 실제 마이그레이션은 별도 작업.
+
+- 세션은 `token` 쿠키(httpOnly, JWT) 단일 트랙으로 관리한다 — access/refresh 이중 토큰을 쓰지 않는다. `getAuth()`는 매 요청 이 쿠키를 decrypt하고 `getUser()`로 DB 재조회해 검증한다 — stateless 짧은 토큰이 주는 "DB 안 타는 빠른 경로" 이점은 이 프로젝트에서 애초에 실현된 적 없었다(과거 access 토큰도 검증 시 `getUser()`를 그대로 태웠다). 헤더 기반(Bearer) 전송도 안 쓴다 — 전부 httpOnly 쿠키(동일 origin 자동 전송)로 통일한다.
+- 트레이드오프: 짧은 TTL로 탈취 노출 윈도우를 줄이는 이점을 포기하는 대신(탈취 시 노출 윈도우가 `token` 쿠키 TTL만큼, `remember` 옵션 시 최대 7일), 세션 쿠키가 하나뿐이라 발급/삭제/검증 지점이 흩어질 여지가 없다. 트래픽 증가로 매 요청 DB 조회가 실제 병목이 되면 그때 stateless 짧은 토큰 재도입을 재검토한다(가정만으로 미리 안 만든다).
+- 세션을 무효화하는 모든 지점(`logoutService` 등)은 쿠키 삭제를 각자 나열하지 않고 공용 헬퍼 하나를 공유한다 — 세션 관련 쿠키가 나중에 늘어나도 그 헬퍼 안에서만 늘어나게 해, 개별 삭제 지점이 하나씩 빠뜨리는 걸 구조적으로 막는다.
+- `getAuth()`는 쿠키 갱신/재발급 같은 side effect를 갖지 않는다(순수 read + DB 조회) — 그래서 page.tsx(Server Component render) 안에서 직접 호출해도 안전하다. 공식 문서: "Setting cookies is not supported during Server Component rendering"(쿠키 write는 Server Function/Route Handler 전용) — access 토큰 재발급 side effect가 있던 구조였다면 이 제약과 충돌했다. 이 무-side-effect 성질이 `docs/PAGE_ACCESS_CONTROL.md`의 page 게이트 함수 설계(`getAuth()` 재사용)가 성립하는 전제조건이다.
+- `ENTRY` JWT 타입은 비밀번호 재설정 이메일 링크 인증(`requestPasswordReset`) 전용으로 존치한다 — 과거 로그인 페이지 진입 게이트로도 같이 썼던 건 폐기했다(`docs/PAGE_ACCESS_CONTROL.md` Proxy 섹션 참고).
+
 ## Gotchas
 
-- 지금 `src/proxy.ts`의 matcher는 `/api/*`를 포함하지 않는다 — Route Handler(`src/app/api/`)는 Proxy 보호 대상이 아니며, 각 route.ts가 Bearer 토큰 검사를 개별적으로 반복 중이다(현재로선 이게 유일한 방어선).
+- 지금 `src/proxy.ts`의 matcher는 `/api/*`를 포함하지 않는다 — Route Handler(`src/app/api/`)는 Proxy 보호 대상이 아니다. 인증 필요한 route.ts는 각자 `getAuth()`/`requireAuth()`(쿠키 기반)를 호출해 재검증하는 게 유일한 방어선이다 — Bearer 헤더 검사는 프로젝트 어디에도 없다(과거엔 있었으나 쿠키 기반으로 전환 완료, 이 줄이 그 흔적으로 낡아있었다).
 - Server Function(Server Action)은 별도 라우트가 아니라 호출된 페이지로 가는 POST 요청이다 — matcher가 그 경로를 제외하면 Proxy가 조용히 건너뛰어, Proxy가 막아준다고 착각하기 쉽다.
 - Next.js 16에서 Proxy 기본 런타임은 Node.js다(과거 Edge 런타임 기본에서 변경) — Proxy 파일에 `runtime` config 옵션을 쓰면 에러가 난다.
+
+## References
+
+즉시 로드(`@import`) 아님 — When 열 조건에 해당하는 작업일 때만 해당 문서를 읽는다.
+
+| 문서                          | When                                                          | What                                                                 |
+| ----------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `docs/PAGE_ACCESS_CONTROL.md` | Proxy·page.tsx·service 레이어에 걸친 인증/인가(접근 제어) 로직 작성/수정 시 | 3단계 접근 제어(Proxy 낙관적 체크 → page 라우팅 게이트 → service 데이터 게이트) 설계, redirect 목적지 규칙, 위 "인증 토큰" 결정이 이 설계의 전제조건이라는 의존 관계 |

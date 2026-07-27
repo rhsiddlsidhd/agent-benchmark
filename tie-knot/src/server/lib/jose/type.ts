@@ -1,14 +1,8 @@
 import { UserRole } from "@/server/models";
-type JWTType = "ACCESS" | "REFRESH" | "ENTRY";
+type JWTType = "REFRESH" | "ENTRY";
 
 interface JWTBaseProps {
   type: JWTType;
-}
-
-interface AccessEncrypt {
-  type: "ACCESS";
-  id: string;
-  role: UserRole;
 }
 
 interface RefreshEncrypt {
@@ -22,7 +16,7 @@ interface EntryEncrypt {
   id?: string;
 }
 
-export type EncryptProps = AccessEncrypt | RefreshEncrypt | EntryEncrypt;
+export type EncryptProps = RefreshEncrypt | EntryEncrypt;
 
 export interface DecryptProps extends JWTBaseProps {
   token: string;
