@@ -113,12 +113,13 @@ B-5 공통/운영
   - `order.model.ts`의 `cancelledAt`/`cancelReason` — 완전 미사용 확인됨(`payment.service.ts`가 주문 취소 시 `orderStatus`만 바꾸고 이 필드들은 안 건드림). TODO #1(결제/트랜잭션 정합성)과 범위 겹쳐서 당시엔 보류했는데, #1 Phase 3(PR #55)에서 실제로 확인해보니 `orderStatus`가 CANCELLED로 바뀌는 경로가 `syncPayment` FAILED 분기(결제 실패 시 시스템 자동 취소) 하나뿐이고 그 자리에 이미 취소 사유가 있어서, 관리자/webhook 취소 흐름을 가정으로 미리 설계하지 않고 그 경로에서만 채우는 걸로 완료(PR #56).
   - branch: `chore/product-order-field-audit-cleanup`(PR #51, 1~3번) → `chore/order-cancel-fields-cleanup`(PR #56, 4번)
 
-- [ ] **12. CI에 lint/build 게이트 추가 + pre-commit build를 tsc로 전환** (`#1` 결제/트랜잭션 정합성 논의 중 mutation testing의 로컬/CI 실행 기준을 따지다가 발견) — 현재 lint·build를 검증하는 CI가 하나도 없음(워크플로우 4개 전수 확인: `comment-test-score.yml`은 mutation만, `save-test-score.yml`은 baseline 캐시 저장, `verify-pr-source.yml`은 PR 소스 브랜치 확인, `lighthouse-audit.yml`은 성능 관측용). lint/build/coverage는 전부 `.claude/hooks/pre-commit-check.sh`(Claude Code PreToolUse 훅)에만 걸려있는데, 이건 git hook이 아니라서 Claude Code 밖에서(터미널 직접, IDE, GitHub 웹 UI) 커밋하면 통째로 우회된다 — 서버에서 강제되는 건 mutation(3차) 하나뿐.
+- [x] **12. CI에 lint/build 게이트 추가 + pre-commit build를 tsc로 전환** (`#1` 결제/트랜잭션 정합성 논의 중 mutation testing의 로컬/CI 실행 기준을 따지다가 발견) — 현재 lint·build를 검증하는 CI가 하나도 없음(워크플로우 4개 전수 확인: `comment-test-score.yml`은 mutation만, `save-test-score.yml`은 baseline 캐시 저장, `verify-pr-source.yml`은 PR 소스 브랜치 확인, `lighthouse-audit.yml`은 성능 관측용). lint/build/coverage는 전부 `.claude/hooks/pre-commit-check.sh`(Claude Code PreToolUse 훅)에만 걸려있는데, 이건 git hook이 아니라서 Claude Code 밖에서(터미널 직접, IDE, GitHub 웹 UI) 커밋하면 통째로 우회된다 — 서버에서 강제되는 건 mutation(3차) 하나뿐.
   - **확정 방향**(web search로 업계 표준 확인 완료 — 근거 아래): "가벼운 검증은 local, 무거운 검증은 CI"가 원칙인데 `pre-commit-check.sh`의 `next build`가 여기서 벗어나 있음 — SSG(`generateStaticParams`가 있는 `/products/[id]`, `/preview/[id]`)가 실제 Atlas DB에 붙어서, 로컬 커밋마다 컨트리뷰터 수만큼 실제 DB를 건드리게 됨.
     - 로컬(`pre-commit-check.sh`): `next build` → **`next typegen && tsc --noEmit`**으로 교체. `tsc --noEmit` 단독은 안 됨 — Next.js 공식 GitHub Discussion(vercel/next.js #45181)에서 실제로 보고된 문제로, `next build`가 체크하는 `.next/types/**/*.ts`(라우트별 자동생성 타입, 이 프로젝트 `tsconfig.json` `include`에도 이미 있음)를 standalone `tsc`는 못 봐서 결과가 어긋날 수 있다 — `next build` 통과하는데 `tsc --noEmit`은 다른 결과를 내는 사례가 그 discussion에 그대로 나옴. Next.js 16의 `next typegen`("Generate TypeScript definitions for routes, pages, and layouts without running a full build" — 직접 실행해 DB 연결 없이 수 초 안에 끝나는 것 확인함)으로 그 타입을 먼저 만들고 `tsc --noEmit`을 돌리면 DB 안 건드리면서 `next build`와 같은 타입 커버리지를 얻는다.
     - CI: PR→dev 트리거로 lint + `next build`(SSG 포함, 실제 DB 검증)를 새 워크플로우로 추가 — Atlas 히트가 "커밋마다 N명의 로컬"에서 "PR push마다 CI 서버 1대"로 줄어듦.
   - lint/`test:coverage`는 이미 DB 안 쓰는 가벼운 검증이라 로컬 유지, 안 건드림.
-  - branch: 미정
+  - 2 Phase로 완료: (1) 로컬 pre-commit build를 typecheck로 교체(PR #57), (2) CI에 `lint-build-check.yml` 신설(PR #58) — 신설 후 `dev` branch protection required status check에 `mutation`과 함께 `lint-build`도 등록 완료(GitHub API로 직접 확인), 이제 두 체크 다 통과해야 `dev` merge 가능.
+  - branch: `refactor/precommit-typecheck-only`(PR #57) → `ci/lint-build-gate`(PR #58)
 
 ---
 
