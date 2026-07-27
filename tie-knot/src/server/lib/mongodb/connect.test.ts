@@ -76,6 +76,47 @@ describe("dbConnect", () => {
   });
 });
 
+describe("트랜잭션 지원 여부 (replSet)", () => {
+  afterEach(async () => {
+    await mongoose.disconnect();
+    global.mongooseCache.conn = null;
+    global.mongooseCache.promise = null;
+  });
+
+  const TxnTestModel =
+    (mongoose.models.TxnTest as mongoose.Model<{ value: string }>) ||
+    mongoose.model<{ value: string }>("TxnTest", new mongoose.Schema({ value: String }));
+
+  it("session.withTransaction으로 커밋하면 변경사항이 실제로 저장된다", async () => {
+    await dbConnect();
+    const session = await mongoose.startSession();
+
+    await session.withTransaction(async () => {
+      await TxnTestModel.create([{ value: "committed" }], { session });
+    });
+    await session.endSession();
+
+    const found = await TxnTestModel.findOne({ value: "committed" }).lean();
+    expect(found).not.toBeNull();
+  });
+
+  it("트랜잭션 도중 에러가 나면 커밋 전 변경사항이 롤백된다", async () => {
+    await dbConnect();
+    const session = await mongoose.startSession();
+
+    await expect(
+      session.withTransaction(async () => {
+        await TxnTestModel.create([{ value: "rolled-back" }], { session });
+        throw new Error("의도적 실패");
+      }),
+    ).rejects.toThrow("의도적 실패");
+    await session.endSession();
+
+    const found = await TxnTestModel.findOne({ value: "rolled-back" }).lean();
+    expect(found).toBeNull();
+  });
+});
+
 describe("모듈 로드 시 URI 검증", () => {
   beforeEach(() => {
     vi.resetModules();
