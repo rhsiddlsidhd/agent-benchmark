@@ -1,7 +1,7 @@
 # docs/PAGE_ACCESS_CONTROL.md
 
 > Last updated: 2026-07-27
-> 초안 — TODO #5(인증 UI 가드) 그릴링 결론. 아직 미구현, 코드 반영 전.
+> TODO #5(인증 UI 가드) 그릴링 결론 — 구현 완료(`verifySession`, PR #61/#62). 인증/인가 필요한 모든 page.tsx가 아래 Page-level DAL 게이트를 호출한다.
 > `src/CLAUDE.md` "인증 토큰" 섹션(access/refresh 이중 토큰 폐기, `token` 단일 쿠키) 결정을 전제로 한다 — 이 문서의 page 게이트 설계는 그 결정 위에서만 성립한다(아래 Page-level DAL 게이트 참고).
 
 ## Overview
@@ -17,13 +17,14 @@
 
 ## Page-level DAL 게이트
 
-- 로그인 필요 페이지는 `auth.service.ts`의 page 전용 DAL 함수를 최상단에서 호출한다 — page.tsx 안에 쿠키 decrypt/조회 로직을 인라인으로 다시 쓰지 않는다. 이유: 지금 3곳(order/page.tsx, order/edit/page.tsx, profile/page.tsx)이 이미 이 로직을 손으로 복붙해 갖고 있고, 복붙본은 서로 동기화가 깨지기 쉽다.
+- 로그인 필요 페이지는 `auth.service.ts`의 page 전용 DAL 함수 `verifySession()`을 최상단에서 호출한다 — page.tsx 안에 쿠키 decrypt/조회 로직을 인라인으로 다시 쓰지 않는다. 이유: 과거 3곳(order/page.tsx, order/edit/page.tsx, profile/page.tsx)이 이 로직을 손으로 복붙해 갖고 있었고, 복붙본은 서로 동기화가 깨지기 쉬웠다.
 - 이 함수는 `requireAuth()`(throw 시맨틱, Server Action/Route Handler 전용)를 재사용하지 않고 별도로 둔다 — 실패 시 throw가 아니라 redirect한다. 이유: page.tsx는 에러를 캐치해 `ErrorPayload`로 번역하는 채널이 아니라, 실패를 곧바로 라우팅 결과로 처리해야 하는 채널이다.
 - 이 함수는 인증 필요 여부와 관리자 role 필요 여부를 하나의 함수로 처리하고, role 유무에 따라 별도 함수를 만들지 않는다 — 이유: 두 검사 모두 같은 세션 조회(`getAuth()`) 결과 위에서 갈리는 조건일 뿐이라, 별도 함수로 쪼개면 세션 조회 로직이 두 곳에 중복된다.
 - 이 함수는 React `cache()`로 감싼다 — 세션 조회를 페이지 렌더링 요청당 1회로 제한한다. 이유: page 게이트와 아래 service 데이터 게이트가 같은 렌더 패스 안에서 각자 세션을 다시 조회하면 `cache()` 없이는 DB 왕복이 중복된다.
 - 이 함수는 내부에서 `getAuth()`를 그대로 재사용한다 — `getAuth()`가 page.tsx(Server Component render) 안에서 호출해도 안전한 이유(무-side-effect 성질, 공식 문서 근거)는 `src/CLAUDE.md` "인증 토큰" 참고, 여기 반복 안 함. `token` 단일 쿠키 결정이 이 설계가 성립하는 전제조건이다.
 - 이 함수는 인증 존재 여부를 먼저 확인하고, 그 다음에 role을 확인한다 — 순서를 바꾸지 않는다. 이유: 순서를 바꾸면 미인증 유저가 role-mismatch로 오분류돼 "Redirect 목적지" 규칙(재로그인 가능/불가능 구분)이 깨진다 — 미인증 상태에서는 role 자체가 없으므로 role 체크가 먼저 오면 그 분기를 통과 못 하고 엉뚱한 목적지로 갈 수 있다.
-- 관리자 페이지(`admin/*`)를 포함해 인증·인가가 필요한 모든 page.tsx가 이 함수를 예외 없이 호출한다 — 기존 3곳의 인라인 코드도 이 함수 호출로 교체한다, 예외로 남겨두지 않는다. 이유: 규칙과 어긋난 레퍼런스 코드가 남으면 문서의 강제력이 없어진다.
+- 관리자 페이지(`admin/*`)를 포함해 인증·인가가 필요한 모든 page.tsx가 `verifySession()`을 예외 없이 호출한다 — 규칙과 어긋난 레퍼런스 코드를 남겨두지 않는다. 이유: 규칙과 어긋난 레퍼런스 코드가 남으면 문서의 강제력이 없어진다.
+  - 적용 완료: admin 8개 page.tsx(dashboard/orders/products/products/new/premium-features/premium-features/new/settings/users), order/page.tsx, order/edit/page.tsx, profile/page.tsx, couple-info/page.tsx, payment/page.tsx.
 
 ## Redirect 목적지
 
