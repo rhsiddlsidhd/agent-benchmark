@@ -22,7 +22,7 @@ src/shared/utils/
 
 ## 에러 판단 로직 — 제거됨
 
-- 클라이언트 쪽 "실패를 보고 field/message/silent 중 뭘 보여줄지 판단"하는 로직(`handleClientError`)은 제거했다 — 서버 공용 핸들러(채널 A/B)가 이미 표시-안전한 `ErrorPayload { 분류, message, fieldErrors? }`를 만들어 보내므로(민감 분류 message는 서버에서 일반화, 필드 에러는 fieldErrors에), 컴포넌트는 폼이면 `useActionState` state를, GET이면 `useSWR` `error`를 그대로 렌더할 뿐이다. 원문/일반화 판단·outcome 분류를 `utils`에서 하지 않는다(공통 규칙은 `src/CLAUDE.md` "에러 핸들링" 참고).
+- 클라이언트 쪽 "실패를 보고 field/message/silent 중 뭘 보여줄지 판단"하는 로직(`handleClientError`)은 제거했다 — 서버 공용 핸들러(채널 A/B)가 이미 표시-안전한 `ErrorPayload { 분류, message, fieldErrors? }`를 만들어 보내므로(민감 분류 message는 서버에서 일반화, 필드 에러는 fieldErrors에), 컴포넌트는 폼이면 `useActionState` state를, GET이면 `useSWR` `error`를 그대로 렌더할 뿐이다. 원문/일반화 판단·outcome 분류를 `utils`에서 하지 않는다(공통 규칙은 `docs/ERROR_HANDLING.md` 참고).
 - `error.ts`의 `getFieldError`/`hasFieldErrors`는 이 제거 대상이 아니다 — 서버가 이미 채워준 `fieldErrors`를 그대로 읽기만 할 뿐 "무엇을 보여줄지" 판단하지 않는다, 폼 다수가 계속 쓰는 유틸이라 남겨둔다.
 
 ## Gotchas

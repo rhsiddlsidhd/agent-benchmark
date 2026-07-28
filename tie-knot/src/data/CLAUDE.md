@@ -1,6 +1,6 @@
 # CLAUDE.md — src/data/
 
-> Last updated: 2026-07-18
+> Last updated: 2026-07-28
 > 이 폴더는 프로젝트 고유 선택 — 정적 콘텐츠 데이터(static content data) 레이어.
 
 ## Overview
@@ -15,9 +15,10 @@ mock/placeholder 데이터(실제로 안 쓰이거나 임시로 채워둔 것)�
 src/data/
 ├── cta.json                  # 실사용 — StartActionCTA.tsx
 ├── announcement.json         # 실사용 — app/(main)/layout.tsx
-├── promotions.json           # 실사용 — components/organisms/EcommerceHero.tsx
-└── subway.json                # 실사용 — BasicInfoSection.tsx, app/api/subway/route.ts
+└── promotions.json           # 실사용 — components/organisms/EcommerceHero.tsx
 ```
+
+지하철역 목록은 이 폴더의 정적 JSON이 아니다 — DB 조회(`getAllSubwayStationNames()`, `src/server/services`)로 `app/api/subway/route.ts`가 서빙한다, 역 이름은 사용자마다 늘어날 수 있는 가변 데이터라 정적 콘텐츠가 아니기 때문이다. 응답 타입은 `src/shared/schemas/response/subway.schema.ts`, 노선 색상 lookup은 `src/shared/constants/subway.ts`.
 
 ## Critical Convention
 

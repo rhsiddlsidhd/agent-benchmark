@@ -57,3 +57,6 @@ reports*
 # api-report script output (로컬 확인용, 커밋 대상 아님)
 /scripts/api-report/output/
 /scripts/api-verify/output/
+
+# playwright-cli 세션 산출물(스냅샷/스크린샷/콘솔로그, 로컬 확인용)
+/.playwright-cli/

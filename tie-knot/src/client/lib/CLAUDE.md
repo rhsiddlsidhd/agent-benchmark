@@ -1,6 +1,6 @@
 # CLAUDE.md — src/client/lib/
 
-> Last updated: 2026-07-23
+> Last updated: 2026-07-28
 > 서버 전용 외부 연동(bcrypt/cookies/jose/mongodb/nodemailer)은 `src/server/lib/CLAUDE.md` 참고 — 폴더명 컨벤션은 동일, 여기는 브라우저 전용/isomorphic 연동만 다룬다. `cloudinary`는 예외적으로 양쪽에 다 있다(런타임별로 갈림, 아래 Gotchas).
 
 ## Overview
@@ -27,6 +27,7 @@ src/client/lib/
 - `cn/`은 예외다 — 라이브러리가 하나가 아니라 둘(`clsx`+`tailwind-merge`)이라 어느 한쪽 이름만 쓰면 왜곡돼서, 이 조합 패턴 자체의 업계 통용 이름(`cn`)을 개념명으로 쓴다.
 - 새 외부 연동을 기존 폴더에 얹지 않는다 — 폴더 1개당 연동 대상 1개.
 - 이 서브트리에 서버 전용 연동을 추가하지 않는다 — `next/headers`/DB 드라이버 등은 `src/server/lib/`.
+- 외부 SDK를 초기화하는 훅(`useKakaoLoader`)도 이 폴더 소관이다 — `use` 접두사가 붙어도 `src/client/hooks/`로 옮기지 않는다, 연동 대상 하나에 강결합돼 있으면 "연동 대상 1개 = 폴더 1개" 원칙이 훅 여부보다 우선한다.
 
 ## Gotchas
 

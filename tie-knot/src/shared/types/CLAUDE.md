@@ -1,6 +1,6 @@
 # CLAUDE.md — src/shared/types/
 
-> Last updated: 2026-07-18
+> Last updated: 2026-07-28
 
 ## Overview
 
@@ -11,11 +11,13 @@
 ```
 src/shared/types/
 ├── index.ts             # 배럴
-├── auth.ts             # AuthSession 등 인증 도메인 타입
+├── checkout.ts           # 결제/주문 흐름 도메인 타입
 ├── error.ts             # AppError · 분류 taxonomy · ErrorPayload · 응답 envelope — 여러 레이어 공유 공용 계약
 ├── field.ts              # 폼 필드 공용 props 타입(목적명 예외)
 └── ...                    # 도메인당 파일 1개
 ```
+
+인증 세션 타입(`AuthSession` 등)은 이 폴더에 없다 — API 응답 경계 타입이라 `src/shared/schemas/response/auth.schema.ts`에 zod `z.infer`로 정의돼 있다(아래 Critical Convention 2번째 항목, `src/shared/schemas/CLAUDE.md` 참고).
 
 ## Critical Convention
 

@@ -1,6 +1,6 @@
 # CLAUDE.md — src/server/services/
 
-> Last updated: 2026-07-27
+> Last updated: 2026-07-28
 > 폴더 분리(서비스 레이어) 자체는 프로젝트 고유 선택이지만, 내부 에러 처리 패턴/트랜잭션 패턴은 공식 문서 근거가 있다 — Critical Convention·트랜잭션 섹션 참고.
 
 ## Overview
@@ -25,17 +25,17 @@ src/server/services/
 - **쿼리 결과를 수정 없이 그대로 반환할 거면 `.lean()`을 쓴다** — mongoose 공식 문서: "you should use lean if you're executing a query and sending the results without modifying them"(lean 가이드). 반환값에 Document 인스턴스 메서드(`.save()`, virtual, custom getter)를 추가로 써야 하는 경우에만 `.lean()`을 안 쓴다.
 - `.lean()` 결과의 ObjectId 필드는 services에서 명시적으로 `.toString()` 변환한다 — 모델 `toJSON` transform에 기대지 않는다(`src/server/models/CLAUDE.md` 참고).
 - **update 쿼리(`updateOne`/`findOneAndUpdate`/`findByIdAndUpdate`)는 `runValidators: true`를 명시한다** — mongoose 공식 문서: "Update validators are off by default — you need to specify the `runValidators` option." `save()`와 달리 update류는 기본적으로 스키마 검증을 건너뛴다.
-- **id를 받아 `mongoose.Types.ObjectId`로 변환하기 전에 `mongoose.isObjectIdOrHexString()`으로 형식을 먼저 검증한다** — 형식이 안 맞으면(24자리 hex 아님) 애초에 존재할 수 없는 리소스이므로 `AppError("NOT_FOUND", ...)`를 던진다. 검증 없이 바로 `new mongoose.Types.ObjectId(id)`를 호출하면 형식이 틀렸을 때 `AppError`가 아닌 raw 에러가 던져져 "services는 `AppError` 하나로 통일한다" 규칙이 깨진다(`src/CLAUDE.md` 에러 표현 규칙).
+- **id를 받아 `mongoose.Types.ObjectId`로 변환하기 전에 `mongoose.isObjectIdOrHexString()`으로 형식을 먼저 검증한다** — 형식이 안 맞으면(24자리 hex 아님) 애초에 존재할 수 없는 리소스이므로 `AppError("NOT_FOUND", ...)`를 던진다. 검증 없이 바로 `new mongoose.Types.ObjectId(id)`를 호출하면 형식이 틀렸을 때 `AppError`가 아닌 raw 에러가 던져져 "services는 `AppError` 하나로 통일한다" 규칙이 깨진다(`docs/ERROR_HANDLING.md` 에러 표현 규칙).
 - **mongoose 자체 에러(`ValidationError`/`CastError` 등)는 `AppError("INTERNAL", 원본 message)`로 감싸서 다시 throw한다** — services 호출 시점엔 이미 zod 검증을 통과한 데이터이므로, 이 시점에 나는 mongoose 에러는 "사용자가 고칠 수 있는 입력 오류"가 아니라 "서버가 처리 못한 예외"다. raw mongoose 에러를 그대로 던지지 않는다.
 - **조회/판별형 함수(없는 게 정상 흐름인 경우, 예: `getUser`/`getAuth`)는 미존재 시 `null`을 리턴한다** — 공식 문서(`node_modules/next/dist/docs/01-app/02-guides/authentication.md` Line 1176-1198, `dal.ts` 예제)가 이 패턴 근거다. 단 `null`은 "레코드 없음"만 뜻한다 — DB 커넥션/타임아웃 같은 인프라 예외까지 try/catch로 삼켜 `null`로 만들지 않고 `AppError(INTERNAL)`로 throw한다(삼키면 DB 장애가 "미로그인/미존재"로 오분류돼 유효 세션 유저가 튕기고 장애도 로그에 안 잡힌다).
 - **필수 존재/인가 확인형 함수(없으면 요청 자체가 잘못된 경우, 예: `getUserById`/`getUserEmail`/`requireAuth`)는 구조화된 에러 타입을 throw한다, plain `Error`를 던지지 않는다** — 공식 문서(`node_modules/next/dist/docs/01-app/02-guides/data-security.md` Line 401-421)가 DAL 함수 안에서 `throw new Error(...)`하는 예제 근거다. 두 패턴을 섞어서 "조회형인데 throw" 또는 "확인형인데 null 리턴"으로 짓지 않는다.
 - **생성/변경형 함수(DB 쓰기, 예: `createCoupleInfoService`/`createProductService`)에서 Mongoose 저장 에러를 catch해 `false`/`null` 같은 sentinel 값으로 바꿔 리턴하지 않는다** — 호출자가 검증 실패인지 커넥션 실패인지 구분하지 못한다. 원인에 맞는 분류로 구조화된 에러를 만들어 다시 throw한다.
 
-> 실제 에러 타입/분류 체계는 마이그레이션 진행 중이다 — 공용 taxonomy/전체 그림은 `src/CLAUDE.md`의 "에러 핸들링 — 공통 규칙" 참고, 이 문서에 세부를 복붙하지 않는다.
+> 실제 에러 타입/분류 체계는 마이그레이션 진행 중이다 — 공용 taxonomy/전체 그림은 `docs/ERROR_HANDLING.md` 참고, 이 문서에 세부를 복붙하지 않는다.
 
 ## 트랜잭션
 
-- **언제 트랜잭션이 필요한가**: 서로 다른 컬렉션(또는 같은 컬렉션의 여러 문서)에 걸친 쓰기가 하나라도 실패하면 나머지 커밋 결과가 도메인 불변조건을 깨는 경우에만 쓴다 — 단일 문서 쓰기(`.create()`/`.save()`/update 하나)는 MongoDB 자체가 문서 단위 원자성을 보장하므로 트랜잭션이 필요 없다. 지금 이 조건에 해당하는 지점: `payment.service.ts`의 `syncPayment` — PAID 확정 시 Payment 저장 + Order 상태 전이(`orderStatus`/`paymentId`) + Product `salesCount` 증가가 하나의 논리적 단위인데 지금은 순차 쓰기라 중간 실패 시 불일치가 남는다(FAILED 분기도 Payment 저장 + Order 상태 전이 2단계라 동일하게 해당).
+- **언제 트랜잭션이 필요한가**: 서로 다른 컬렉션(또는 같은 컬렉션의 여러 문서)에 걸친 쓰기가 하나라도 실패하면 나머지 커밋 결과가 도메인 불변조건을 깨는 경우에만 쓴다 — 단일 문서 쓰기(`.create()`/`.save()`/update 하나)는 MongoDB 자체가 문서 단위 원자성을 보장하므로 트랜잭션이 필요 없다. 이 조건에 해당하는 지점: `payment.service.ts`의 `syncPayment` — PAID 확정 시 Payment 저장 + Order 상태 전이(`orderStatus`/`paymentId`) + Product `salesCount` 증가가 하나의 논리적 단위(FAILED 분기도 Payment 저장 + Order 상태 전이 2단계라 동일하게 해당) — 적용 완료, PAID/FAILED 두 분기 다 아래 패턴으로 트랜잭션 처리돼 있다.
 - **트랜잭션은 replica set에서만 동작한다**(MongoDB 자체 제약, standalone에선 "Transaction numbers are only allowed on a replica set member or mongos") — Atlas(운영)는 기본 replica set이라 문제없지만, 로컬 테스트는 `mongodb-memory-server`가 기본 standalone이라 막힌다. `src/test/setup.ts`가 단일 노드 replSet으로 이미 전환돼 있다(`docs/TESTING_GUIDELINE.md` 참고) — 이 전환 없이는 트랜잭션 관련 테스트 자체가 불가능했다.
 - **`mongoose.connection.transaction(fn)`을 쓴다** — `session.withTransaction()`의 mongoose 전용 wrapper로, 커밋/롤백을 자동 처리하고(성공 시 커밋, 함수가 throw하면 abort) 트랜잭션이 abort되면 그 안에서 `.save()`한 문서의 in-memory 변경사항도 원래 상태로 되돌린다(mongoose 공식 문서: "`Connection#transaction()` ... integrates Mongoose change tracking with transactions"). 두 갈래 패턴을 만들지 않는다 — 트랜잭션이 필요한 곳은 raw `session.startTransaction()`/`commitTransaction()`을 직접 안 쓰고 전부 이 함수 하나로 통일한다.
   ```ts
@@ -57,7 +57,7 @@ src/server/services/
 ## Gotchas
 
 - `requireAuth()`는 `getAuth()`를 감싸서 세션 없으면 `AppError(UNAUTHENTICATED)`를 throw하는 얇은 헬퍼다 — HTTP status(401)는 여기서 모른다, 각 채널 공용 핸들러가 UNAUTHENTICATED를 자기 형태(route.ts는 401 Response, Server Action은 `ErrorPayload`)로 번역한다. 인증이 필수인 Route Handler·Server Action 둘 다 세션 검증에 이 함수를 공유한다(`src/app/api/CLAUDE.md` Gotchas 참고).
-- mongoose에 `mongoose.set('transactionAsyncLocalStorage', true)` 글로벌 옵션이 있다(설치된 버전 8.20.3에 실재 확인) — 켜면 트랜잭션 콜백 안의 모든 연산에 `session`을 자동 주입해 위 "session 빠뜨림" 실수 자체를 없앤다. 지금은 안 켠다 — 트랜잭션을 쓰는 지점이 아직 없어서 켰을 때의 영향 범위(다른 서비스 함수들의 기존 동작)를 실제로 검증할 대상이 없다. `syncPayment`에 트랜잭션을 처음 적용할 때(TODO #1 Phase 3) 켤지 여부를 그 자리에서 재검토한다.
+- mongoose에 `mongoose.set('transactionAsyncLocalStorage', true)` 글로벌 옵션이 있다(설치된 버전 8.20.3에 실재 확인) — 켜면 트랜잭션 콜백 안의 모든 연산에 `session`을 자동 주입해 위 "session 빠뜨림" 실수 자체를 없앤다. 지금은 안 켠다 — 트랜잭션을 쓰는 지점이 `syncPayment` 하나뿐이라 켰을 때의 영향 범위(다른 서비스 함수들의 기존 동작)를 실제로 검증할 근거가 부족하다. 트랜잭션 쓰는 지점이 늘어나 session 누락 실수가 반복되면 그때 켤지 재검토한다(가정만으로 미리 켜지 않는다).
 
 ## 관련 문서
 
@@ -65,4 +65,4 @@ src/server/services/
 - 외부 연동 wrapper: `src/lib/CLAUDE.md`
 - 이 서비스를 호출하는 쪽: `src/app/api/CLAUDE.md`, `src/server/actions/CLAUDE.md`
 - 테스트 작성 컨벤션(DB/목킹 전략, assertion 패턴): `docs/TESTING_GUIDELINE.md`
-- 레이어 간 에러 흐름 전체 그림, 분류 taxonomy, 레이어별 규칙 위치: `src/CLAUDE.md`(에러 핸들링 — 공통 규칙)
+- 레이어 간 에러 흐름 전체 그림, 분류 taxonomy, 레이어별 규칙 위치: `docs/ERROR_HANDLING.md`

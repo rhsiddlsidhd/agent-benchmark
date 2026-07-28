@@ -22,7 +22,7 @@ src/server/
 
 ## 에러 처리(목표 설계, 마이그레이션 진행 중)
 
-> 전체 그림/공용 taxonomy는 `src/CLAUDE.md`의 "에러 핸들링 — 공통 규칙" 참고. 여기는 이 폴더(채널 B, route.ts) 전용 규칙만 다룬다.
+> 전체 그림/공용 taxonomy는 `docs/ERROR_HANDLING.md` 참고. 여기는 이 폴더(채널 B, route.ts) 전용 규칙만 다룬다.
 
 - **기본 규칙**: 네이티브 `Response`를 쓴다 — 공식 문서(`route-handlers.md`): `return Response.json({ data })`.
 - **예외 규칙**: `NextResponse`는 `.cookies`(`get`/`set`/`has`/`delete`), `.redirect()`, `.rewrite()` 중 하나가 실제로 필요할 때만 쓴다 — 공식 문서(`next-response.md`): "NextResponse extends the Web Response API with additional convenience methods." 이 세 가지가 그 "추가 편의 메서드"의 전부다.
@@ -43,7 +43,7 @@ src/server/
 
 - 폴더명이 이전엔 `api`였다(`src/api/`) — 실제로는 Route Handler·Client fetch 둘 사이의 계약 중 서버 절반(`response.ts`)만 남았다. 클라이언트 절반(`fetcher`)은 `src/client/`로 이동했다.
 - 서비스 레이어가 던지는 에러 타입(`src/shared/types/error.ts`)은 이 경계 + 서비스 레이어 전용이다 — Server Action은 자기 자신의 검증 실패를 이 타입으로 throw하지 않지만, 서비스 함수가 이미 이 타입을 던지는 경우는 액션이 캐치해서 리턴값으로 번역한다(`src/server/actions/CLAUDE.md` Gotchas 참고).
-- access token은 Bearer 헤더가 아니라 httpOnly 쿠키로 전달된다(트레이드오프는 `src/CLAUDE.md` 참고) — `response.ts`는 토큰을 다루지 않는다.
+- access token은 Bearer 헤더가 아니라 httpOnly 쿠키로 전달된다(트레이드오프는 `docs/PAGE_ACCESS_CONTROL.md` "인증 토큰" 참고) — `response.ts`는 토큰을 다루지 않는다.
 
 ## 관련 문서
 

@@ -5,7 +5,7 @@
 
 ## Overview
 
-Server Component가 `src/server/services/*`를 직접 import해서 호출하는 것과 같은 축이다 — route.ts를 안 거치고 함수를 직접 호출한다는 점은 동일하다(`src/CLAUDE.md`의 "데이터 접근 경로" 참고). 다른 점은 호출 트리거뿐이다: Client Component가 이 폴더의 함수를 `useActionState`나 form `action`에 직접 넘기면, Next.js가 그 함수 참조를 RPC로 변환해 서버에서 실행한다 
+Server Component가 `src/server/services/*`를 직접 import해서 호출하는 것과 같은 축이다 — route.ts를 안 거치고 함수를 직접 호출한다는 점은 동일하다(`docs/DATA_ACCESS.md` 참고). 다른 점은 호출 트리거뿐이다: Client Component가 이 폴더의 함수를 `useActionState`나 form `action`에 직접 넘기면, Next.js가 그 함수 참조를 RPC로 변환해 서버에서 실행한다 
 
 ## Structure
 
@@ -29,7 +29,7 @@ src/server/actions/
 
 ## 에러 처리(목표 설계, 마이그레이션 진행 중)
 
-> 전체 그림/공용 taxonomy는 `src/CLAUDE.md`의 "에러 핸들링 — 공통 규칙" 참고. 여기는 이 폴더(채널 A) 전용 규칙만 다룬다.
+> 전체 그림/공용 taxonomy는 `docs/ERROR_HANDLING.md` 참고. 여기는 이 폴더(채널 A) 전용 규칙만 다룬다.
 
 - 리턴 형태를 공식 문서가 지정하지 않는다 — 공식 문서(`server-actions.md`): "Constrain return values. Action returns are serialized to the client. Shape them to what the UI renders, not raw database records." `{success, error}` envelope은 프로젝트 컨벤션이지 Next.js 요구사항이 아니다.
 - 핵심 로직(액션 본문) 안에서 try/catch나 로깅을 직접 하지 않는다 — services가 던진 `AppError`를 캐치하고, 로깅하고, 리턴값(`{ success:false, error: ErrorPayload }`, `ErrorPayload = { 분류, message, fieldErrors? }`)으로 번역하는 건 이 폴더 전체가 공유하는 공용 핸들러가 전담한다. 핵심 로직은 그냥 throw만 한다.

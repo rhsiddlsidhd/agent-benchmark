@@ -1,8 +1,8 @@
 # docs/PAGE_ACCESS_CONTROL.md
 
-> Last updated: 2026-07-27
+> Last updated: 2026-07-28
 > TODO #5(인증 UI 가드) 그릴링 결론 — 구현 완료(`verifySession`, PR #61/#62). 인증/인가 필요한 모든 page.tsx가 아래 Page-level DAL 게이트를 호출한다.
-> `src/CLAUDE.md` "인증 토큰" 섹션(access/refresh 이중 토큰 폐기, `token` 단일 쿠키) 결정을 전제로 한다 — 이 문서의 page 게이트 설계는 그 결정 위에서만 성립한다(아래 Page-level DAL 게이트 참고).
+> 아래 "인증 토큰" 섹션(`token` 단일 쿠키, access/refresh 이중 토큰 없음)이 구현된 상태를 전제로 한다 — 이 문서의 page 게이트 설계는 그 위에서만 성립한다(아래 Page-level DAL 게이트 참고). `src/CLAUDE.md`에서 분리 병합됨.
 
 ## Overview
 
@@ -13,7 +13,7 @@
 - Proxy는 protected path 전체(admin 포함)에 동일하게 `token` 쿠키를 decrypt해서 검사한다 — path별로 decrypt 여부를 다르게 두지 않는다, presence-only 체크(존재 여부만 봄)로 두지 않는다. 이유: 공식 문서 예제가 낙관적 리다이렉트에도 decrypt를 쓴다, presence-only는 만료/변조 세션을 걸러내지 못한다.
 - Proxy 통과를 인가 완료로 취급하지 않는다 — 반드시 아래 page-level 게이트를 다시 태운다. 이유: Proxy는 공식 문서상 낙관적 체크 전용이지 인가의 전체 솔루션이 아니다(`src/CLAUDE.md` Critical Convention에 이미 명시).
 - Proxy 자체의 미인증 실패도 아래 "Redirect 목적지" 규칙을 그대로 따른다(`/login`) — page-level 게이트가 뒤에서 잡는 것과 동일한 실패를 Proxy가 먼저 잡았다고 해서 다른 목적지로 보내지 않는다. 이유: 사용자 입장에서 "미인증"은 어느 레이어가 잡았든 같은 실패이고, 다음 행동(재로그인)도 같다 — 레이어에 따라 목적지가 갈리면 그 자체가 비일관 경험이다.
-- `/login` 진입에 별도 관문(과거 `entry` 쿠키 요구, `issueEntryToken` 경유 강제)을 두지 않는다 — 로그인 안 한 유저는 `/login`에 직접 진입해도 된다. 이유: 이미 로그인한 유저를 auth 페이지에서 쫓아내는 Proxy의 기존 규칙(`src/CLAUDE.md` Key Files, "로그인 유저의 auth 페이지 차단")이 별도로 있어 그걸로 충분하고, 로그인 안 한 유저 쪽엔 막을 이유가 없다 — 실제로 지금 코드에서도 이 관문(`issueEntryToken`의 `token` 쿠키 삭제)은 그 "이미 로그인한 유저" 분기가 먼저 걸려 도달조차 안 되는 죽은 경로였다. `ENTRY` JWT 타입 자체는 비밀번호 재설정 용도로 남는다(`src/CLAUDE.md` "인증 토큰" 참고) — 이건 그 타입의 로그인-게이트 용도만 폐기하는 것이다.
+- `/login` 진입에 별도 관문(과거 `entry` 쿠키 요구, `issueEntryToken` 경유 강제)을 두지 않는다 — 로그인 안 한 유저는 `/login`에 직접 진입해도 된다. 이유: 이미 로그인한 유저를 auth 페이지에서 쫓아내는 Proxy의 기존 규칙(`src/CLAUDE.md` Key Files, "로그인 유저의 auth 페이지 차단")이 별도로 있어 그걸로 충분하고, 로그인 안 한 유저 쪽엔 막을 이유가 없다 — 실제로 지금 코드에서도 이 관문(`issueEntryToken`의 `token` 쿠키 삭제)은 그 "이미 로그인한 유저" 분기가 먼저 걸려 도달조차 안 되는 죽은 경로였다. `ENTRY` JWT 타입 자체는 비밀번호 재설정 용도로 남는다(아래 "인증 토큰" 참고) — 이건 그 타입의 로그인-게이트 용도만 폐기하는 것이다.
 
 ## Page-level DAL 게이트
 
@@ -21,7 +21,7 @@
 - 이 함수는 `requireAuth()`(throw 시맨틱, Server Action/Route Handler 전용)를 재사용하지 않고 별도로 둔다 — 실패 시 throw가 아니라 redirect한다. 이유: page.tsx는 에러를 캐치해 `ErrorPayload`로 번역하는 채널이 아니라, 실패를 곧바로 라우팅 결과로 처리해야 하는 채널이다.
 - 이 함수는 인증 필요 여부와 관리자 role 필요 여부를 하나의 함수로 처리하고, role 유무에 따라 별도 함수를 만들지 않는다 — 이유: 두 검사 모두 같은 세션 조회(`getAuth()`) 결과 위에서 갈리는 조건일 뿐이라, 별도 함수로 쪼개면 세션 조회 로직이 두 곳에 중복된다.
 - 이 함수는 React `cache()`로 감싼다 — 세션 조회를 페이지 렌더링 요청당 1회로 제한한다. 이유: page 게이트와 아래 service 데이터 게이트가 같은 렌더 패스 안에서 각자 세션을 다시 조회하면 `cache()` 없이는 DB 왕복이 중복된다.
-- 이 함수는 내부에서 `getAuth()`를 그대로 재사용한다 — `getAuth()`가 page.tsx(Server Component render) 안에서 호출해도 안전한 이유(무-side-effect 성질, 공식 문서 근거)는 `src/CLAUDE.md` "인증 토큰" 참고, 여기 반복 안 함. `token` 단일 쿠키 결정이 이 설계가 성립하는 전제조건이다.
+- 이 함수는 내부에서 `getAuth()`를 그대로 재사용한다 — `getAuth()`가 page.tsx(Server Component render) 안에서 호출해도 안전한 이유(무-side-effect 성질, 공식 문서 근거)는 아래 "인증 토큰" 참고. `token` 단일 쿠키 결정이 이 설계가 성립하는 전제조건이다.
 - 이 함수는 인증 존재 여부를 먼저 확인하고, 그 다음에 role을 확인한다 — 순서를 바꾸지 않는다. 이유: 순서를 바꾸면 미인증 유저가 role-mismatch로 오분류돼 "Redirect 목적지" 규칙(재로그인 가능/불가능 구분)이 깨진다 — 미인증 상태에서는 role 자체가 없으므로 role 체크가 먼저 오면 그 분기를 통과 못 하고 엉뚱한 목적지로 갈 수 있다.
 - 관리자 페이지(`admin/*`)를 포함해 인증·인가가 필요한 모든 page.tsx가 `verifySession()`을 예외 없이 호출한다 — 규칙과 어긋난 레퍼런스 코드를 남겨두지 않는다. 이유: 규칙과 어긋난 레퍼런스 코드가 남으면 문서의 강제력이 없어진다.
   - 적용 완료: admin 8개 page.tsx(dashboard/orders/products/products/new/premium-features/premium-features/new/settings/users), order/page.tsx, order/edit/page.tsx, profile/page.tsx, couple-info/page.tsx, payment/page.tsx.
@@ -42,8 +42,17 @@
 
 - React `cache()`의 dedupe 범위는 Server Component render tree 기준이다 — page 게이트와 그 아래 service 재확인이 "같은 렌더 패스"일 때만 DB 재조회가 안 생긴다는 전제가 성립한다. 같은 service 함수를 나중에 route.ts나 Server Action에서도 호출하게 되면, 그 경로에서는 `cache()`가 이 dedupe를 보장한다고 가정하지 않는다 — 그 경로용 세션 조회 비용은 별도로 계산한다.
 
+## 인증 토큰
+
+> 구현 완료(PR #59, 커밋 `7a553a3`) — access/refresh 이중 토큰은 `token` 단일 쿠키로 이미 마이그레이션됐다, 코드에 access 토큰은 존재하지 않는다.
+
+- 세션은 `token` 쿠키(httpOnly, JWT) 단일 트랙으로 관리한다 — access/refresh 이중 토큰을 쓰지 않는다. `getAuth()`는 매 요청 이 쿠키를 decrypt하고 `getUser()`로 DB 재조회해 검증한다 — stateless 짧은 토큰이 주는 "DB 안 타는 빠른 경로" 이점은 이 프로젝트에서 애초에 실현된 적 없었다(과거 access 토큰도 검증 시 `getUser()`를 그대로 태웠다). 헤더 기반(Bearer) 전송도 안 쓴다 — 전부 httpOnly 쿠키(동일 origin 자동 전송)로 통일한다.
+- 트레이드오프: 짧은 TTL로 탈취 노출 윈도우를 줄이는 이점을 포기하는 대신(탈취 시 노출 윈도우가 `token` 쿠키 TTL만큼, `remember` 옵션 시 최대 7일), 세션 쿠키가 하나뿐이라 발급/삭제/검증 지점이 흩어질 여지가 없다. 트래픽 증가로 매 요청 DB 조회가 실제 병목이 되면 그때 stateless 짧은 토큰 재도입을 재검토한다(가정만으로 미리 안 만든다).
+- 세션을 무효화하는 모든 지점(`logoutService` 등)은 쿠키 삭제를 각자 나열하지 않고 공용 헬퍼 하나를 공유한다 — 세션 관련 쿠키가 나중에 늘어나도 그 헬퍼 안에서만 늘어나게 해, 개별 삭제 지점이 하나씩 빠뜨리는 걸 구조적으로 막는다.
+- `getAuth()`는 쿠키 갱신/재발급 같은 side effect를 갖지 않는다(순수 read + DB 조회) — 그래서 page.tsx(Server Component render) 안에서 직접 호출해도 안전하다. 공식 문서: "Setting cookies is not supported during Server Component rendering"(쿠키 write는 Server Function/Route Handler 전용) — access 토큰 재발급 side effect가 있던 구조였다면 이 제약과 충돌했다. 이 무-side-effect 성질이 위 Page-level DAL 게이트 설계(`getAuth()` 재사용)가 성립하는 전제조건이다.
+- `ENTRY` JWT 타입은 비밀번호 재설정 이메일 링크 인증(`requestPasswordReset`) 전용으로 존치한다 — 과거 로그인 페이지 진입 게이트로도 같이 썼던 건 폐기했다(위 Proxy 섹션 참고).
+
 ## 관련 문서
 
 - Proxy/Server Action 원칙: `src/CLAUDE.md` (Critical Convention, "Proxy에 위임하지 않는다")
-- 인증 토큰 아키텍처(access/refresh 폐기, `token` 단일 쿠키, `getAuth()` no-side-effect 근거): `src/CLAUDE.md`("인증 토큰")
 - 기존 세션 조회 함수(`getUser`/`getAuth`/`requireAuth`) 계약: `src/server/services/CLAUDE.md`
