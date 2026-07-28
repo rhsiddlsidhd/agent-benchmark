@@ -35,6 +35,8 @@ const PAY_METHOD_LABEL: Record<PayMethod, string> = {
   TRANSFER: "실시간 계좌이체",
   VIRTUAL_ACCOUNT: "가상계좌",
   MOBILE: "휴대폰 소액결제",
+  GIFT_CERTIFICATE: "상품권",
+  EASY_PAY: "간편결제",
 };
 
 const groupOrdersByDate = (orders: IOrder[]) => {

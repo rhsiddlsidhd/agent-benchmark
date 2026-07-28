@@ -52,6 +52,13 @@ export function usePortOnePayment({ onSuccess, onError }: UsePortOnePaymentOptio
           totalAmount: finalPrice,
           currency: "CURRENCY_KRW",
           payMethod,
+          productType: "DIGITAL",
+          virtualAccount:
+            payMethod === "VIRTUAL_ACCOUNT"
+              ? { accountExpiry: { validHours: 24 } }
+              : undefined,
+          easyPay:
+            payMethod === "EASY_PAY" ? { easyPayProvider: "KAKAOPAY" } : undefined,
           customer: {
             customerId: userId,
             fullName: buyerName,

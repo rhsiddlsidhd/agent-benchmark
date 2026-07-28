@@ -213,7 +213,7 @@ const paymentSchema = new Schema<IPayment>(
     // PG 결제 정보
     payMethod: {
       type: String,
-      enum: ["CARD", "TRANSFER", "VIRTUAL_ACCOUNT", "MOBILE"],
+      enum: ["CARD", "TRANSFER", "VIRTUAL_ACCOUNT", "MOBILE", "GIFT_CERTIFICATE", "EASY_PAY"],
     },
     pgProvider: {
       type: String,

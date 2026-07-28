@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/client/components/atoms";
 import { PayMethod } from "@/server/models";
-import { ArrowRightLeft, CreditCard, Landmark, Phone } from "lucide-react";
+import { ArrowRightLeft, CreditCard, Landmark, Phone, Gift, Wallet } from "lucide-react";
 import React from "react";
 import { RadioField, RadioFieldOption, Alert } from "@/client/components/molecules";
 
@@ -32,6 +32,20 @@ const PAYMENT_METHODS: RadioFieldOption<PayMethod>[] = [
     title: "휴대폰",
     icon: Phone,
     description: "휴대폰 소액결제",
+  },
+  {
+    id: "easyPay",
+    value: "EASY_PAY",
+    title: "간편결제",
+    icon: Wallet,
+    description: "카카오페이·네이버페이 등",
+  },
+  {
+    id: "giftCertificate",
+    value: "GIFT_CERTIFICATE",
+    title: "상품권",
+    icon: Gift,
+    description: "문화상품권 등 모바일 상품권",
   },
 ];
 
