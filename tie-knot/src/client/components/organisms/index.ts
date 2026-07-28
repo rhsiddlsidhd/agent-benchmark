@@ -3,6 +3,7 @@ export * from "./BasicInfoSection";
 export * from "./BottomActionBar";
 export * from "./ChangePasswordForm";
 export * from "./CheckoutForm";
+export * from "./ComingSoonPage";
 export * from "./CoupleInfoFormView";
 export * from "./CoupleInfoSection";
 export * from "./CreateGuestbookForm";

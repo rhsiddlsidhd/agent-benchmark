@@ -21,11 +21,13 @@ export const updateProductStatus = async (
       };
     }
 
-    await updateProductService(productId, { status });
+    const updated = await updateProductService(productId, { status });
 
     revalidatePath(routes.admin.products.root);
     revalidatePath(routes.products.root);
-    revalidatePath(routes.products.detail(productId));
+    if (updated) {
+      revalidatePath(routes.products.detail(updated.category, productId));
+    }
 
     return {
       success: true,

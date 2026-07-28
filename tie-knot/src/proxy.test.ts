@@ -33,7 +33,7 @@ describe("proxy", () => {
     });
 
     it("token이 만료/변조됐으면 /login으로 리다이렉트한다", async () => {
-      const res = await proxy(buildRequest("/profile", "invalid-token"));
+      const res = await proxy(buildRequest("/my-profile", "invalid-token"));
 
       expect(redirectsTo(res, "/login")).toBe(true);
     });

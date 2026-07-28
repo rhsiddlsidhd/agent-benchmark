@@ -1,18 +1,18 @@
 import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
-import { ProductCatalog } from "./_components";
+import { ProductCatalog } from "../_components";
 import { getAllProductsService } from "@/server/services";
 import { productCategoryLabels, isProductCategory } from "@/shared/utils";
 import { notFound } from "next/navigation";
 
 export default async function ProductsPage({
-  searchParams,
+  params,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  params: Promise<{ category: string }>;
 }) {
-  const { category } = await searchParams;
+  const { category } = await params;
 
-  // 엄격한 카테고리 검증: 없거나, "all"이거나, 유효한 ProductCategory가 아니면 404
-  if (!category || category === "all" || !isProductCategory(category)) {
+  // 세그먼트 값이 유효한 ProductCategory가 아니면 404
+  if (!isProductCategory(category)) {
     notFound();
   }
 

@@ -1,10 +1,22 @@
 # CLAUDE.md — src/app/
 
-> Last updated: 2026-07-18
-> 이 문서의 private 폴더(`_components`/`_types`/`_utils`/`_constants`/`_hooks`) 규칙은 **향후 지향점**이다 — 기존 라우트 대부분은 아직 이 구조를 안 쓴다(Gotchas 참고). 새 라우트/새 파일부터 적용한다.
-> 아래 라우트 그룹 목록은 **현재** 상태다 — 그룹 구성/네이밍이 바뀌는 중이면 실제 코드보다 `docs/ROUTING.md`(목표 상태)가 최신일 수 있다, 그룹 새로 만들거나 기존 그룹 하위 라우트를 옮길 땐 이 문서 고치기 전에 `docs/ROUTING.md`부터 확인한다.
+> Last updated: 2026-07-28
 
-Next.js App Router 진입점 — 라우트 그룹(`(main)`, `(auth)`, `(checkout)`, `(products)`, `(my-order)`, `(my-profile)`, `(admin)`, `(preview)`)으로 섹션을 나눈다. 괄호 폴더는 URL에 영향 없는 조직화 단위다. Route Handler(API) 세부 규칙은 `src/app/api/CLAUDE.md`에서 관리한다.
+Next.js App Router 진입점 — 공유 `layout.tsx`/독립 `error.tsx` 근거가 있는 라우트를 그룹(`(folder)`)으로 묶어 섹션을 나눈다(그룹 목록·존재 근거는 아래 "라우트 그룹 구성" 참고). 괄호 폴더는 URL에 영향 없는 조직화 단위다. Route Handler(API) 세부 규칙은 `src/app/api/CLAUDE.md`에서 관리한다.
+
+## 라우트 그룹 구성
+
+라우트 그룹은 공유 `layout.tsx` 또는 독립 `error.tsx` 근거가 있을 때만 만든다 — 조직 편의만으로 만들지 않는다. "내 것" 계열 그룹(`(my-order)`, `(my-profile)` 등)은 그룹명과 폴더명을 동일하게 맞춘다 — URL엔 영향 없지만, 이름이 다르면 그 라우트를 찾을 때마다 "그룹은 my-X인데 폴더는 왜 X야"라는 탐색 비용이 생긴다.
+
+## 예정 라우트 (mock UI만 구현)
+
+- `delivery-info`(`(checkout)/delivery-info`, `/delivery-info`) — 실물 상품 카테고리(답례품/웨딩소품 등, 루트 `CLAUDE.md` 프로젝트 개요 참고) 확장 시 배송지 입력 스텝으로 쓸 자리. 지금은 `ComingSoonPage`(`src/client/components/organisms/`) mock UI만 있다 — 실제 폼은 배송지 데이터 요구사항(주소 형식, 배송비 계산 여부 등)을 실물 카테고리가 실제로 추가되는 시점에 알고 나서 구현한다, 모른 채 먼저 만들면 요구사항 확정 후 다시 갈아엎는다.
+- `support`((main) 바로 아래 단독 라우트, `/support`) — `sidebar.ts`의 `AUTH_USER_ORDER_NAVIGATE_ITEMS`가 참조하던 href를 실제 페이지로 채웠다. 마찬가지로 `ComingSoonPage` mock UI만 있다 — 실제 문의 폼/FAQ는 별도 작업.
+
+## 카테고리 라우팅
+
+- 카테고리는 경로 세그먼트로 구분한다(`/products/[category]`, `routes.products.byCategory`) — 상품 상세는 `/products/[category]/[id]`로 그 아래 중첩한다. Next.js는 같은 레벨의 형제 dynamic segment가 서로 다른 이름을 갖는 걸 허용하지 않는다("You cannot use different slug names for the same dynamic path", 공식 문서 근거) — `[category]`와 `[id]`를 형제로 두면 이 제약에 걸려서, `[id]`를 `[category]` 하위로 중첩했다.
+- 새 카테고리가 추가되면 `src/server/models/product.model.ts`가 re-export하는 `ProductCategory`(원본은 `src/shared/utils/category.ts`)부터 넓힌다 — `generateStaticParams()`/카테고리 검증(`isProductCategory`)이 전부 이 타입을 기준으로 삼는다.
 
 ## Structure
 
@@ -41,11 +53,11 @@ root `src/app/` 밑에 `global-error.tsx` 없이 배포하지 않는다 — `err
 
 root layout을 통째로 대체하기 때문에 생기는 제약:
 
-| 제약 | 내용 |
-|---|---|
-| Provider 소멸 | root layout 자체엔 provider가 없지만 `(main)/layout.tsx`의 Provider/Toaster까지 같이 사라진다 — 렌더하는 컴포넌트는 provider 없이도 동작하는 self-contained 컴포넌트여야 한다(예: `organisms/ErrorFallback.tsx` — atoms만 조합, context 의존 없음) |
-| CSS 재import 필요 | root layout이 담당하던 `globals.css` import도 같이 대체된다 — `global-error.tsx` 안에서 별도로 다시 import하지 않으면 스타일이 안 먹는다 |
-| metadata 미지원 | `metadata`/`generateMetadata` export가 안 먹힌다 — Client Component 강제라서다, 필요하면 React `<title>` 컴포넌트로 대체한다(공식문서) |
+| 제약              | 내용                                                                                                                                                                                                                                               |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider 소멸     | root layout 자체엔 provider가 없지만 `(main)/layout.tsx`의 Provider/Toaster까지 같이 사라진다 — 렌더하는 컴포넌트는 provider 없이도 동작하는 self-contained 컴포넌트여야 한다(예: `organisms/ErrorFallback.tsx` — atoms만 조합, context 의존 없음) |
+| CSS 재import 필요 | root layout이 담당하던 `globals.css` import도 같이 대체된다 — `global-error.tsx` 안에서 별도로 다시 import하지 않으면 스타일이 안 먹는다                                                                                                           |
+| metadata 미지원   | `metadata`/`generateMetadata` export가 안 먹힌다 — Client Component 강제라서다, 필요하면 React `<title>` 컴포넌트로 대체한다(공식문서)                                                                                                             |
 
 ## Gotchas
 
@@ -56,8 +68,8 @@ root layout을 통째로 대체하기 때문에 생기는 제약:
 
 ## 관련 문서
 
-- 라우트 그룹 목표 구조·네이밍·전환 트리거: `docs/ROUTING.md`
 - 식별자 케이스 공통 규칙: `src/CLAUDE.md`
+- 라우트 경로 문자열 상수화(`routes.ts`) 컨벤션: `src/shared/constants/CLAUDE.md`
 - 승격된 순수함수: `src/shared/utils/CLAUDE.md`
 - 승격된 훅: `src/client/hooks/CLAUDE.md`
 - 승격된 타입: `src/shared/types/CLAUDE.md`

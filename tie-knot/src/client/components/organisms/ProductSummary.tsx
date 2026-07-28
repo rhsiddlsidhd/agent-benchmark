@@ -13,7 +13,7 @@ import {
 import { calculatePrice } from "@/shared/utils";
 
 import { CheckoutItem } from "@/shared/types";
-import { ProductLikeBadge } from "@/app/(main)/(products)/products/[id]/_components/ProductLikeBadge";
+import { ProductLikeBadge } from "@/app/(main)/(products)/products/[category]/[id]/_components/ProductLikeBadge";
 import { ProductOptions } from "@/client/components/organisms/ProductOptions";
 import { CloudImage } from "@/client/components/molecules";
 export function ProductSummary({

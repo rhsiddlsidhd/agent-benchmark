@@ -1,6 +1,6 @@
 # CLAUDE.md — src/shared/constants/
 
-> Last updated: 2026-07-18
+> Last updated: 2026-07-28
 
 ## Overview
 
@@ -13,6 +13,7 @@ src/shared/constants/
 ├── index.ts           # 배럴
 ├── product.ts       # PRODUCT_SORT_KEYS, PRODUCT_SORT_OPTIONS 등 상품 도메인 상수
 ├── theme.ts           # InvitationTheme, INVITATION_THEME_LABELS + getInvitationThemeOptions 헬퍼(관리자 폼 select용)
+├── routes.ts           # 전체 라우트 경로 단일 소스 — 아래 Critical Convention 참고
 └── ...                  # 목적당 파일 1개
 ```
 
@@ -20,6 +21,8 @@ src/shared/constants/
 
 - 파일명은 kebab-case, 목적명(기능/역할 기반 이름, 도메인명과 대비)으로 짓는다.
 - `export const` 값을 재귀적으로 뜯어봤을 때 문자열/숫자/불리언 리터럴(또는 그 배열/lookup map)로만 이루어져 있으면 SCREAMING_SNAKE_CASE, 값 안에 함수·컴포넌트 참조·이종 필드 객체가 섞이면 camelCase(Global 문서의 식별자 케이스 규칙 — "map이냐 아니냐"가 아니라 "값이 끝까지 리터럴이냐"가 기준).
+- 라우트 경로 문자열을 각 소비처(컴포넌트/서버 액션/`proxy.ts`)에 리터럴로 흩어 쓰지 않는다 — `routes.ts` 하나에 전체 라우트 경로를 정의하고 소비처는 이 상수만 참조한다, 같은 경로가 여러 곳에 독립적으로 타이핑돼 있으면 라우트 하나 바뀔 때 일부만 고치고 놓치는 드리프트가 구조적으로 생긴다. 동적 세그먼트(`products/[id]` 등)는 문자열 템플릿이 아니라 경로 빌더 함수로 제공한다(예: `routes.products.detail(id)`) — 문자열 템플릿 오타를 타입으로 막는다.
+  - 예외: `src/proxy.ts`의 matcher 배열은 Next.js가 build-time에 정적 분석해 리터럴만 인식한다(변수/상수 참조는 무시됨, 공식 문서 근거) — matcher 안에서만 `routes.ts` 참조 없이 문자열 그대로 둔다.
 
 ## Gotchas
 

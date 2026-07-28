@@ -9,13 +9,13 @@ import React from "react";
 
 export async function generateStaticParams() {
   const products = await getAllProductsService();
-  return products.map((p) => ({ id: p._id.toString() }));
+  return products.map((p) => ({ category: p.category, id: p._id.toString() }));
 }
 
 export default async function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ category: string; id: string }>;
 }) {
   const { id } = await params;
 

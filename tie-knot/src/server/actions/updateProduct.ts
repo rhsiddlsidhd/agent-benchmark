@@ -72,7 +72,7 @@ export const updateProduct = async (
 
     revalidatePath(routes.admin.products.root);
     revalidatePath(routes.products.root);
-    revalidatePath(routes.products.detail(productId));
+    revalidatePath(routes.products.detail(parsed.data.category, productId));
 
     return {
       success: true,

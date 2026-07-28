@@ -22,7 +22,7 @@ export function ProductCard({ product }: { product: Product }) {
     : null;
 
   return (
-    <Link href={routes.products.detail(product._id)}>
+    <Link href={routes.products.detail(product.category, product._id)}>
       <article className="group relative cursor-pointer">
       {/* Image — the card itself */}
       <div className="relative aspect-3/4 overflow-hidden rounded-2xl bg-neutral-100">

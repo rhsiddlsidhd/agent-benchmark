@@ -5,7 +5,7 @@ export const routes = {
   findId: "/find-id",
   findPw: "/find-pw",
   changePw: "/change-pw",
-  profile: "/profile",
+  profile: "/my-profile",
   coupleInfo: "/couple-info",
   support: "/support",
   reviews: "/reviews",
@@ -21,8 +21,8 @@ export const routes = {
   },
   products: {
     root: "/products",
-    byCategory: (category: string) => `/products?category=${category}`,
-    detail: (id: string) => `/products/${id}`,
+    byCategory: (category: string) => `/products/${category}`,
+    detail: (category: string, id: string) => `/products/${category}/${id}`,
   },
   preview: {
     detail: (id: string) => `/preview/${id}`,

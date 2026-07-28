@@ -33,6 +33,6 @@ describe("ProductCard", () => {
     render(<ProductCard product={buildProduct()} />);
 
     const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "/products/product-1");
+    expect(link).toHaveAttribute("href", "/products/invitation/product-1");
   });
 });
