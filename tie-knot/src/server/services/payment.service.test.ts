@@ -80,6 +80,22 @@ describe("payment.service", () => {
       expect(updatedProduct?.salesCount).toBe(2);
     });
 
+    it("Order.confirmedAt이 결제 완료 시점으로 세팅된다(자동취소 기한 계산용)", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue(
+        paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+      );
+
+      const before = new Date();
+      await syncPayment(order.merchantUid);
+      const after = new Date();
+
+      const updatedOrder = await OrderModel.findById(order._id).lean();
+      expect(updatedOrder?.confirmedAt).toBeInstanceOf(Date);
+      expect(updatedOrder!.confirmedAt!.getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(updatedOrder!.confirmedAt!.getTime()).toBeLessThanOrEqual(after.getTime());
+    });
+
     it("이미 Payment 문서가 있으면 새로 만들지 않고 갱신한다", async () => {
       const { savedProduct, order } = await setupProductAndOrder(1);
       getPaymentMock.mockResolvedValue(

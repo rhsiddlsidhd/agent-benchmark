@@ -105,7 +105,7 @@ const MyOrdersTemplate = ({ groupedOrders }: MyOrdersTemplateProps) => {
                         {order.orderStatus !== "CANCELLED" && (
                           <Button size="lg" variant="outline" asChild>
                             <Link
-                              href={`${routes.myOrders.edit}?q=${order.coupleInfoId.toString()}`}
+                              href={`${routes.myOrders.edit}?q=${order.coupleInfoId?.toString()}`}
                             >
                               <Edit className="mr-1 h-4 w-4" />
                               수정하기
