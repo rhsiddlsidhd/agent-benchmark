@@ -12,7 +12,7 @@ import { useCheckoutData } from "@/client/hooks";
 import { useCheckoutForm } from "@/client/hooks";
 import { CheckoutForm as PureCheckoutForm } from "@/client/components/organisms";
 import { routes } from "@/shared/constants";
-export function CheckoutForm({ query }: { query: string }) {
+export function CheckoutForm() {
   const router = useRouter();
   const clearOrder = useOrderStore((state) => state.clearOrder);
 
@@ -43,7 +43,7 @@ export function CheckoutForm({ query }: { query: string }) {
     skip: paymentStatus === "PENDING" || paymentStatus === "FAILED" || paymentStatus === "PAID",
   });
 
-  const { errors, handleSubmit } = useCheckoutForm({ query, order, action, router });
+  const { errors, handleSubmit } = useCheckoutForm({ order, action, router });
 
   const [prevActionState, setPrevActionState] = useState(state);
   if (state !== prevActionState) {

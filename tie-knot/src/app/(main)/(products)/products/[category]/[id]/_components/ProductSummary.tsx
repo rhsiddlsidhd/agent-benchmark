@@ -22,7 +22,7 @@ export function ProductSummary({
   const handlePurchase = useCallback(
     (checkoutData: CheckoutItem) => {
       setOrder(checkoutData);
-      router.push(routes.coupleInfo);
+      router.push(routes.payment.root);
     },
     [setOrder, router],
   );
