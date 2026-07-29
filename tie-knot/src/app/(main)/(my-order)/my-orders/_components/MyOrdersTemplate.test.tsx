@@ -92,4 +92,39 @@ describe("MyOrdersTemplate", () => {
 
     expect(screen.queryByRole("link", { name: /수정하기/ })).not.toBeInTheDocument();
   });
+
+  it("결제완료(CONFIRMED)인데 coupleInfoId가 없으면 정보입력 대기 배너를 보여주고 수정하기는 숨긴다", () => {
+    render(
+      <MyOrdersTemplate
+        groupedOrders={[
+          ["2026-01-01", [buildOrder({ orderStatus: "CONFIRMED", coupleInfoId: undefined })]],
+        ]}
+      />,
+    );
+
+    expect(
+      screen.getByText(/청첩장 정보가 아직 입력되지 않았어요/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /정보 입력하기/ })).toHaveAttribute(
+      "href",
+      "/my-orders/couple-info?orderId=order-1",
+    );
+    expect(screen.queryByRole("link", { name: /수정하기/ })).not.toBeInTheDocument();
+  });
+
+  it("coupleInfoId가 있으면 정보입력 대기 배너 없이 수정하기 링크를 보여준다", () => {
+    render(
+      <MyOrdersTemplate
+        groupedOrders={[["2026-01-01", [buildOrder({ orderStatus: "CONFIRMED" })]]]}
+      />,
+    );
+
+    expect(
+      screen.queryByText(/청첩장 정보가 아직 입력되지 않았어요/),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /수정하기/ })).toHaveAttribute(
+      "href",
+      "/my-orders/edit?q=couple-1",
+    );
+  });
 });
