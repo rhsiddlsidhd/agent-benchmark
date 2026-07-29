@@ -7,9 +7,9 @@ import { Command, CommandInput, Button, DropdownMenu, DropdownMenuContent, Dropd
 import { useSuggestProducts } from "@/client/hooks";
 
 
-import { useState } from "react";
+import { Dispatch, useState } from "react";
 
-import { useProductFilter } from "@/client/context/productFilter";
+import { ProductFilterState, ProductFilterAction } from "@/client/context/productFilter";
 import { Product, PremiumFeature } from "@/server/services";
 
 import {
@@ -31,12 +31,15 @@ export function ProductFilters({
   data,
   category,
   premiumFeatures,
+  state,
+  dispatch,
 }: {
   data: Product[];
   category: ProductCategory;
   premiumFeatures: PremiumFeature[];
+  state: ProductFilterState;
+  dispatch: Dispatch<ProductFilterAction>;
 }) {
-  const [state, dispatch] = useProductFilter();
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
   const { suggestions } = useSuggestProducts({
     data,

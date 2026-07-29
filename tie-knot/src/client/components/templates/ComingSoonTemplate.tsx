@@ -3,13 +3,13 @@ import { TypographyMuted } from "@/client/components/atoms";
 import { Hammer } from "lucide-react";
 import { routes } from "@/shared/constants";
 
-interface ComingSoonPageProps {
+interface ComingSoonTemplateProps {
   title: React.ReactNode;
   description: React.ReactNode;
   secondaryLink?: { href: string; label: string };
 }
 
-export function ComingSoonPage({ title, description, secondaryLink }: ComingSoonPageProps) {
+export function ComingSoonTemplate({ title, description, secondaryLink }: ComingSoonTemplateProps) {
   return (
     <main
       className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden"
