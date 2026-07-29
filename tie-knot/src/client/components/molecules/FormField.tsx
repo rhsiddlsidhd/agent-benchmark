@@ -1,4 +1,4 @@
-import { Alert } from "@/client/components/molecules/Alert";
+import { Alert } from "@/client/components/molecules";
 import { Label } from "@/client/components/atoms";
 import React from "react";
 import { Asterisk } from "lucide-react";

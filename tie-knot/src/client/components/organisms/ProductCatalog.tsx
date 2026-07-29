@@ -2,8 +2,7 @@
 
 import { initialFilterState, ProductFilterProvider } from "@/client/context/productFilter";
 import React from "react";
-import { ProductFilters } from "@/client/components/organisms/ProductFilters";
-import { ProductGrid } from "@/client/components/organisms/ProductGrid";
+import { ProductFilters, ProductGrid } from "@/client/components/organisms";
 import { Product, PremiumFeature } from "@/server/services";
 
 import { ProductCategory } from "@/shared/utils";

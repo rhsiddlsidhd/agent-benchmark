@@ -1,4 +1,4 @@
-import { BaseSelect } from "@/client/components/molecules/BaseSelect";
+import { BaseSelect } from "@/client/components/molecules";
 import React from "react";
 
 const StatusSelect = ({

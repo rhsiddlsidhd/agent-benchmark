@@ -8,7 +8,7 @@ import { Button, Calendar, Popover, PopoverContent, PopoverTrigger, Input } from
 
 
 
-import { FormField } from "@/client/components/molecules/FormField";
+import { FormField } from "@/client/components/molecules";
 import { FieldBase } from "@/shared/types";
 import { cn } from "@/client/lib/cn";
 
