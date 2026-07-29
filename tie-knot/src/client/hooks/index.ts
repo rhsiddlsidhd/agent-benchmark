@@ -5,7 +5,6 @@ export * from "./useCheckoutForm";
 export * from "./useCopy";
 export * from "./useCountdown";
 export * from "./useCoupleInfoForm";
-export * from "./useDaumPopup";
 export * from "./useFetchCoupleInfo";
 export * from "./useImageList";
 export * from "./useImageUpload";

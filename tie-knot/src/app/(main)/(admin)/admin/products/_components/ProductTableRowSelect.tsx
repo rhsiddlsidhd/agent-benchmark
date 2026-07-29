@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { isStatus, STATUS_ITEMS } from "@/shared/types";
+import { isStatus, STATUS_ITEMS } from "../_types";
 import { updateProductStatus } from "@/server/actions";
 import { toast } from "sonner";
 import { StatusSelect } from "@/client/components/molecules";

@@ -2,7 +2,7 @@
 
 import { Input } from "@/client/components/atoms";
 import { FormField } from "@/client/components/molecules/FormField";
-import { useDaumPopup } from "@/client/hooks";
+import { useDaumPopup } from "@/client/lib/daum";
 import { useState } from "react";
 
 interface AddressFieldProps {

@@ -38,7 +38,7 @@ export type Submenu = {
   href: string;
 };
 
-const ADMIN_NAVIGATE_ITEMS: NavigateItem[] = [
+const adminNavigateItems: NavigateItem[] = [
   {
     title: "대시보드",
     href: routes.admin.dashboard,
@@ -77,7 +77,7 @@ const ADMIN_NAVIGATE_ITEMS: NavigateItem[] = [
   },
 ];
 
-const AUTH_USER_ORDER_NAVIGATE_ITEMS: NavigateItem[] = [
+const authUserOrderNavigateItems: NavigateItem[] = [
   {
     title: "주문 정보",
     icon: ShoppingCart,
@@ -93,7 +93,7 @@ const AUTH_USER_ORDER_NAVIGATE_ITEMS: NavigateItem[] = [
   },
 ];
 
-const AUTH_USER_PROFILE_NAVIGATE_ITEMS: NavigateItem[] = [
+const authUserProfileNavigateItems: NavigateItem[] = [
   {
     title: "프로필",
     href: routes.profile,
@@ -102,9 +102,9 @@ const AUTH_USER_PROFILE_NAVIGATE_ITEMS: NavigateItem[] = [
 ];
 
 export const allNavigateItems = {
-  ADMIN: ADMIN_NAVIGATE_ITEMS,
-  MY_ORDER: AUTH_USER_ORDER_NAVIGATE_ITEMS,
-  MY_PROFILE: AUTH_USER_PROFILE_NAVIGATE_ITEMS,
+  ADMIN: adminNavigateItems,
+  MY_ORDER: authUserOrderNavigateItems,
+  MY_PROFILE: authUserProfileNavigateItems,
 } as const;
 
 export const SUBMENU_PARENT_TITLES = [

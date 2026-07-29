@@ -7,7 +7,7 @@ import { useAuth } from "@/client/hooks";
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/client/components/atoms";
 
 import { UserIcon, LogOut } from "lucide-react";
-import { USER_NAV_ITEMS, routes } from "@/shared/constants";
+import { userNavItems, routes } from "@/shared/constants";
 import { logoutUser } from "@/server/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -39,7 +39,7 @@ const UserAccountNav = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        {USER_NAV_ITEMS
+        {userNavItems
           .filter((item) => (item.adminOnly ? session?.role === "ADMIN" : true))
           .map((item) => (
             <DropdownMenuItem key={item.href} asChild>
