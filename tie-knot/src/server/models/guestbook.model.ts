@@ -43,6 +43,6 @@ const guestbookSchema = new Schema<IGuestbook>(
   },
 );
 
-export const GuestbookModel: Model<IGuestbook> =
-  mongoose.models.Guestbook ||
+export const GuestbookModel =
+  (mongoose.models.Guestbook as Model<IGuestbook>) ||
   mongoose.model<IGuestbook>("Guestbook", guestbookSchema);
