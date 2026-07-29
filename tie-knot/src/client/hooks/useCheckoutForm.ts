@@ -10,14 +10,12 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { routes } from "@/shared/constants";
 
 interface UseCheckoutFormOptions {
-  query: string;
   order: CheckoutItem | null;
   action: (formData: FormData) => void;
   router: AppRouterInstance;
 }
 
 export function useCheckoutForm({
-  query,
   order,
   action,
   router,
@@ -56,7 +54,8 @@ export function useCheckoutForm({
     formData.append("originalPrice", String(originalPrice));
     formData.append("discountedPrice", String(discountedPrice));
     formData.append("selectedFeatures", JSON.stringify(selectedFeatures ?? []));
-    formData.append("coupleInfoId", coupleInfoId ?? query);
+    // 결제 이후 my-orders 흐름에서 채워지는 콘텐츠라 결제 시점엔 없을 수 있다.
+    if (coupleInfoId) formData.append("coupleInfoId", coupleInfoId);
 
     startTransition(() => action(formData));
   };

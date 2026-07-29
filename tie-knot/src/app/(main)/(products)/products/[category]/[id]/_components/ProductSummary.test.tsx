@@ -62,14 +62,14 @@ describe("ProductSummary (컨테이너)", () => {
     expect(receivedPropsRef.current?.options).toBe(options);
   });
 
-  it("구매 시 주문 정보를 store에 저장하고 /couple-info로 이동한다", () => {
+  it("구매 시 주문 정보를 store에 저장하고 /payment로 이동한다", () => {
     render(<ProductSummary product={{ _id: "product-1" } as never} options={[]} />);
 
     receivedPropsRef.current?.onPurchase?.(CHECKOUT_ITEM);
 
     expect(setOrderMock).toHaveBeenCalledWith(CHECKOUT_ITEM);
     expect(setOrderMock).toHaveBeenCalledTimes(1);
-    expect(pushMock).toHaveBeenCalledWith("/couple-info");
+    expect(pushMock).toHaveBeenCalledWith("/payment");
     expect(pushMock).toHaveBeenCalledTimes(1);
   });
 

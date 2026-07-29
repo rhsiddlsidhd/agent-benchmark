@@ -47,6 +47,6 @@ describe("PaymentButton (컨테이너)", () => {
     expect(setOrderMock).toHaveBeenCalledWith(
       expect.objectContaining({ productId: "product-1", coupleInfoId: "couple-1" }),
     );
-    expect(pushMock).toHaveBeenCalledWith("/payment?q=couple-1");
+    expect(pushMock).toHaveBeenCalledWith("/payment");
   });
 });

@@ -36,7 +36,7 @@ describe("CheckoutForm (컨테이너)", () => {
   });
 
   it("결제 성공 시 주문 정보를 비우고 /payment/success로 이동한다", () => {
-    render(<CheckoutForm query="q1" />);
+    render(<CheckoutForm />);
 
     const { onSuccess } = usePortOnePaymentMock.mock.calls[0][0];
     onSuccess("merchant-1");

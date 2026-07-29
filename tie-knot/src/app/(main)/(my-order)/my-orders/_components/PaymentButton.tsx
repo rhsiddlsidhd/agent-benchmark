@@ -40,7 +40,7 @@ const PaymentButton = ({ order }: { order: IOrder }) => {
     };
 
     setOrder(checkoutItem);
-    router.push(`${routes.payment.root}?q=${order.coupleInfoId?.toString()}`);
+    router.push(routes.payment.root);
   };
 
   return (
