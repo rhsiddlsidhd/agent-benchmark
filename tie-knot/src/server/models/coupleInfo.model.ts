@@ -96,6 +96,6 @@ const coupleInfoSchema = new Schema<ICoupleInfo>(
   },
 );
 
-export const CoupleInfoModel: Model<ICoupleInfo> =
-  mongoose.models.CoupleInfo ||
+export const CoupleInfoModel =
+  (mongoose.models.CoupleInfo as Model<ICoupleInfo>) ||
   mongoose.model<ICoupleInfo>("CoupleInfo", coupleInfoSchema);
