@@ -11,8 +11,7 @@
 
 ## 새 피처
 
-- [ ] **결제수단 6종으로 확장** (카드/가상계좌/계좌이체/휴대폰 기존 4종 + 간편결제·상품권 신규 2종) — `PaymentMethodSelector.tsx`, `constants/payment.ts`(`PAY_METHOD`), `payment.model.ts`/`order.model.ts` enum, `my-orders/page.tsx` 라벨 전부 반영 완료(2026-07-28). PayPal/Alipay/편의점 3종은 dev 채널(KG이니시스)이 지원 안 해서 제외 확정(`이니시스 V2에서 지원하지 않는 결제 수단` 에러로 실제 확인됨) — 나중에 채널 계약 추가되면 그때 재검토.
-- [ ] Stage C 신기능/UI (병렬, 미착수) — 세부 항목 미정, 추후 별도 정리
+- [x] **결제수단 6종으로 확장** (카드/가상계좌/계좌이체/휴대폰 기존 4종 + 간편결제·상품권 신규 2종) — `PaymentMethodSelector.tsx`, `constants/payment.ts`(`PAY_METHOD`), `payment.model.ts`/`order.model.ts` enum, `my-orders/page.tsx` 라벨 전부 반영 완료(2026-07-28). PayPal/Alipay/편의점 3종은 dev 채널(KG이니시스)이 지원 안 해서 제외 확정(`이니시스 V2에서 지원하지 않는 결제 수단` 에러로 실제 확인됨) — 나중에 채널 계약 추가되면 그때 재검토.
 - [ ] **결제 워크플로우에서 `couple-info` 입력을 분리(payment 이후로)** — 지금은 `couple-info`(청첩장 콘텐츠 입력, 신랑/신부·결혼식 정보·갤러리)가 결제 전 필수 게이트다: `Order.coupleInfoId`가 `required: true`(`order.model.ts`)라 coupleInfo 없이는 주문 자체가 생성 불가, `ProductSummary`의 "구매하기"가 무조건 `routes.coupleInfo`로 먼저 보내고, `payment/page.tsx`는 `?q={coupleInfoId}` 없으면 렌더 자체를 거부한다. 이 결합이 잘못됐다고 판단 — 논의 결과(2026-07-29) 방향:
   - 근거: `coupleInfoId`는 가격(`ProductSnapShot.pricing`)에 영향 없음 — 결제 전에 반드시 알아야 할 정보가 아니라 주문 후 채워도 되는 콘텐츠. 무거운 폼(계좌 정보까지 포함)을 결제 직전에 강제하면 이탈 위험. `my-orders/edit/_components/CoupleInfoForm.tsx`가 이미 "주문목록 → 폼 입력(update)" 패턴을 구현해놔서, CREATE 쪽도 같은 패턴(결제 완료 → 주문목록에서 안내 → 폼 라우팅에서 POST)으로 맞추면 됨.
   - 비용: `Order.coupleInfoId`를 `required: false`로(불변조건 약화, `getActiveOrderInfoByCoupleInfoId` 등 이 필드로 역조회하는 로직 전부 nullable 대응 필요) / "결제완료·정보입력 대기" order status 신설 / `payment/page.tsx`가 `q`(coupleInfoId) 대신 product/cart(`order.store.ts`의 `CheckoutItem`) 기반으로 렌더하도록 변경 / 결제만 하고 정보 영영 안 채우는 케이스 운영 정책 필요(비즈니스 판단, 엔지니어링만으론 결정 불가).
@@ -39,7 +38,7 @@
 
 ## UI 수정
 
-- [ ] **PaymentMethodSelector 라디오 UI 6종 대응** — 기존 4종 라디오 목록에 간편결제/상품권 옵션 추가(아이콘: `Wallet`/`Gift`), 기존 라디오 스타일 그대로 유지. `PaymentMethodSelector.test.tsx` 렌더링/상호작용 테스트 동반 작성 완료(2026-07-28).
+- [x] **PaymentMethodSelector 라디오 UI 6종 대응** — 기존 4종 라디오 목록에 간편결제/상품권 옵션 추가(아이콘: `Wallet`/`Gift`), 기존 라디오 스타일 그대로 유지. `PaymentMethodSelector.test.tsx` 렌더링/상호작용 테스트 동반 작성 완료(2026-07-28).
 
 ---
 
