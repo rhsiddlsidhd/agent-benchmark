@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import React from "react";
-import { CloudImage } from "@/client/components/molecules/CloudImage";
+import { CloudImage } from "@/client/components/molecules";
 import { Button } from "@/client/components/atoms";
 interface ImagePreviewItemProps {
   id: string;

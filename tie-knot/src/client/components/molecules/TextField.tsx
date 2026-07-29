@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/client/components/atoms";
-import { FormField } from "@/client/components/molecules/FormField";
+import { FormField } from "@/client/components/molecules";
 import { FieldBase } from "@/shared/types";
 import { HTMLInputTypeAttribute, useState } from "react";
 

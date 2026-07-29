@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/client/components/atoms";
-import { FormField } from "@/client/components/molecules/FormField";
+import { FormField } from "@/client/components/molecules";
 import { useDaumPopup } from "@/client/lib/daum";
 import { useState } from "react";
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { FormField } from "@/client/components/molecules/FormField";
-import { BaseSelect, SelectOption } from "@/client/components/molecules/BaseSelect";
+import { FormField, BaseSelect, SelectOption } from "@/client/components/molecules";
 import { useState } from "react";
 import { FieldBase } from "@/shared/types";
 

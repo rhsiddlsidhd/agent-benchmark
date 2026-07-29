@@ -1,6 +1,6 @@
 "use client";
 
-import { ProductCard } from "@/client/components/organisms/ProductCard";
+import { ProductCard } from "@/client/components/organisms";
 
 import { useVisibleProducts } from "@/client/hooks";
 import { useProductFilter } from "@/client/context/productFilter";
