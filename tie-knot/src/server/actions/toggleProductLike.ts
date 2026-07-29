@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { APIResponse, AppError } from "@/shared/types";
 import { requireAuth, updateProductLikeService } from "@/server/services";
 import { actionError } from "@/server/boundary";
+import { routes } from "@/shared/constants";
 
 export const toggleProductLike = async (
   productId: string,
@@ -17,6 +19,8 @@ export const toggleProductLike = async (
         "상품을 찾을 수 없거나 좋아요 업데이트에 실패했습니다.",
       );
     }
+
+    revalidatePath(routes.products.root);
 
     return { success: true, data: { message: "좋아요 업데이트에 성공하였습니다." } };
   } catch (e) {

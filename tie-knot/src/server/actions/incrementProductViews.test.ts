@@ -18,14 +18,14 @@ describe("incrementProductViews", () => {
     const result = await incrementProductViews("product-1");
 
     expect(incrementProductViewsService).toHaveBeenCalledWith("product-1");
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, data: { success: true } });
   });
 
-  it("서비스가 false를 리턴하면 success: false를 리턴한다", async () => {
+  it("서비스가 false를 리턴하면 data.success: false를 리턴한다", async () => {
     vi.mocked(incrementProductViewsService).mockResolvedValue(false);
 
     const result = await incrementProductViews("not-a-valid-id");
 
-    expect(result).toEqual({ success: false });
+    expect(result).toEqual({ success: true, data: { success: false } });
   });
 });

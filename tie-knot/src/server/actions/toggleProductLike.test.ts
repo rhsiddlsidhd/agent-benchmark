@@ -6,7 +6,12 @@ vi.mock("@/server/services", () => ({
   updateProductLikeService: vi.fn(),
 }));
 
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
 import { requireAuth, updateProductLikeService } from "@/server/services";
+import { revalidatePath } from "next/cache";
 import { toggleProductLike } from "./toggleProductLike";
 
 describe("toggleProductLike", () => {
@@ -63,5 +68,6 @@ describe("toggleProductLike", () => {
       success: true,
       data: { message: "좋아요 업데이트에 성공하였습니다." },
     });
+    expect(revalidatePath).toHaveBeenCalledOnce();
   });
 });
