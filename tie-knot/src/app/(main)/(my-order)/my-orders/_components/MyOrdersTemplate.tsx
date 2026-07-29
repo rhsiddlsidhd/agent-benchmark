@@ -14,6 +14,7 @@ import { IOrder } from "@/server/models";
 import { routes } from "@/shared/constants";
 import { PAYMENT_STATUS, PAY_METHOD_LABEL } from "../_constants";
 import { PaymentButton } from "./PaymentButton";
+import { PendingCoupleInfoBanner } from "./PendingCoupleInfoBanner";
 
 interface MyOrdersTemplateProps {
   groupedOrders: [string, IOrder[]][];
@@ -43,6 +44,10 @@ const MyOrdersTemplate = ({ groupedOrders }: MyOrdersTemplateProps) => {
                   const product = order.product;
                   const hasDiscount =
                     order.discountRate > 0 || order.discountAmount > 0;
+                  // 결제는 완료됐지만 청첩장 콘텐츠(couple-info)를 아직 안 채운
+                  // 주문 — TODO.md "couple-info를 payment 이후로 분리" 참고.
+                  const needsCoupleInfo =
+                    order.orderStatus === "CONFIRMED" && !order.coupleInfoId;
 
                   return (
                     <div
@@ -96,16 +101,20 @@ const MyOrdersTemplate = ({ groupedOrders }: MyOrdersTemplateProps) => {
                             </div>
                           </div>
                         </div>
+
+                        {needsCoupleInfo && (
+                          <PendingCoupleInfoBanner orderId={order._id.toString()} />
+                        )}
                       </div>
 
                       <div className="flex shrink-0 flex-col gap-2">
                         {order.orderStatus === "PENDING" && (
                           <PaymentButton order={order} />
                         )}
-                        {order.orderStatus !== "CANCELLED" && (
+                        {order.coupleInfoId && order.orderStatus !== "CANCELLED" && (
                           <Button size="lg" variant="outline" asChild>
                             <Link
-                              href={`${routes.myOrders.edit}?q=${order.coupleInfoId?.toString()}`}
+                              href={`${routes.myOrders.edit}?q=${order.coupleInfoId.toString()}`}
                             >
                               <Edit className="mr-1 h-4 w-4" />
                               수정하기
