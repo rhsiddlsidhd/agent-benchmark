@@ -1,9 +1,11 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { APIResponse, AppError } from "@/shared/types";
 import { syncPayment, requireAuth } from "@/server/services";
 import { PayStatus } from "@/server/models";
 import { actionError } from "@/server/boundary";
+import { routes } from "@/shared/constants";
 
 export const completePayment = async (
   paymentId: string,
@@ -20,6 +22,8 @@ export const completePayment = async (
     if (!payment) {
       throw new AppError("INTERNAL", "결제 동기화에 실패했습니다.");
     }
+
+    revalidatePath(routes.myOrders.root);
 
     return { success: true, data: { status: payment.status } };
   } catch (e) {

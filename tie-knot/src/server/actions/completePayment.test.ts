@@ -6,7 +6,12 @@ vi.mock("@/server/services", () => ({
   syncPayment: vi.fn(),
 }));
 
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
 import { requireAuth, syncPayment } from "@/server/services";
+import { revalidatePath } from "next/cache";
 import { completePayment } from "./completePayment";
 
 describe("completePayment", () => {
@@ -79,5 +84,6 @@ describe("completePayment", () => {
     const result = await completePayment("merchant-1");
 
     expect(result).toEqual({ success: true, data: { status: "PAID" } });
+    expect(revalidatePath).toHaveBeenCalledOnce();
   });
 });
