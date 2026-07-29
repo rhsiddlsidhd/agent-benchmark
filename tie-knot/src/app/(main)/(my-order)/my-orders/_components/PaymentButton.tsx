@@ -21,7 +21,7 @@ const PaymentButton = ({ order }: { order: IOrder }) => {
 
     const checkoutItem: CheckoutItem = {
       productId: order.product.productId.toString(),
-      coupleInfoId: order.coupleInfoId.toString(),
+      coupleInfoId: order.coupleInfoId?.toString(),
       title: order.product.title,
       thumbnail: order.product.thumbnail,
       originalPrice: order.product.pricing.originalPrice,
@@ -40,7 +40,7 @@ const PaymentButton = ({ order }: { order: IOrder }) => {
     };
 
     setOrder(checkoutItem);
-    router.push(`${routes.payment.root}?q=${order.coupleInfoId.toString()}`);
+    router.push(`${routes.payment.root}?q=${order.coupleInfoId?.toString()}`);
   };
 
   return (

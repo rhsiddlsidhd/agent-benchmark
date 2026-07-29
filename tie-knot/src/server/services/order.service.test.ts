@@ -31,6 +31,15 @@ describe("order.service", () => {
       expect(saved?.coupleInfoId?.toString()).toBe(input.coupleInfoId);
     });
 
+    it("coupleInfoId 없이도(결제 이후 my-orders에서 채우는 흐름) 주문이 생성된다", async () => {
+      const input = buildOrderInput({ coupleInfoId: undefined });
+
+      const result = await createOrderService(input);
+
+      const saved = await OrderModel.findById(result._id).lean();
+      expect(saved?.coupleInfoId).toBeUndefined();
+    });
+
     describe("finalPrice 계산", () => {
       it("할인 없으면 상품가*수량 + 옵션가 합산이 finalPrice다", async () => {
         const input = buildOrderInput({

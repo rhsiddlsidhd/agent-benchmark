@@ -74,7 +74,9 @@ type OrderStatusType = (typeof ORDER_STATUS)[number];
 export interface IOrder {
   _id: Types.ObjectId;
   merchantUid: string;
-  coupleInfoId: Types.ObjectId | string;
+  // 결제 이후 my-orders 흐름에서 채워지는 콘텐츠 — 결제 시점엔 없을 수 있다(TODO.md
+  // "couple-info를 payment 이후로 분리" 참고).
+  coupleInfoId?: Types.ObjectId | string;
   userId: Types.ObjectId | string;
   buyerName: string;
   buyerEmail: string;
@@ -86,6 +88,8 @@ export interface IOrder {
   payMethod: PayMethod;
   orderStatus: OrderStatusType;
   paymentId?: Types.ObjectId | string;
+  // 결제 완료(CONFIRMED 전이) 시각 — coupleInfo 미입력 주문 자동취소 기한 계산용.
+  confirmedAt?: Date;
   cancelledAt?: Date;
   cancelReason?: string;
   createdAt: Date;
@@ -99,7 +103,6 @@ const orderSchema = new Schema<IOrder>(
     coupleInfoId: {
       type: Schema.Types.ObjectId,
       ref: "CoupleInfo",
-      required: true,
       index: true, // getActiveOrderInfoByCoupleInfoId가 이 필드로 조회한다
     },
 
@@ -141,6 +144,7 @@ const orderSchema = new Schema<IOrder>(
     paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
 
     // 이력
+    confirmedAt: { type: Date },
     cancelledAt: { type: Date },
     cancelReason: { type: String },
   },

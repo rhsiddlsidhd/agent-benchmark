@@ -16,7 +16,7 @@ export const createOrderService = async (
 ): Promise<IOrder> => {
   await dbConnect();
 
-  assertObjectIdLike(data.coupleInfoId, "커플 정보 ID");
+  if (data.coupleInfoId) assertObjectIdLike(data.coupleInfoId, "커플 정보 ID");
   assertObjectIdLike(data.userId, "사용자 ID");
   assertObjectIdLike(data.product.productId, "상품 ID");
   data.product.selectedFeatures.forEach((f) => assertObjectIdLike(f.featureId, "옵션 ID"));
@@ -38,7 +38,9 @@ export const createOrderService = async (
   // DB 저장을 위한 최종 데이터 가공(Trans)
   const orderData = {
     ...data,
-    coupleInfoId: new mongoose.Types.ObjectId(data.coupleInfoId),
+    coupleInfoId: data.coupleInfoId
+      ? new mongoose.Types.ObjectId(data.coupleInfoId)
+      : undefined,
     userId: new mongoose.Types.ObjectId(data.userId),
     merchantUid,
     finalPrice,
@@ -106,7 +108,7 @@ export const getOrdersByUserId = async (
   // 이미 이 필드들에 .toString()을 호출하므로 동작은 그대로다.
   return orders.map((order) => ({
     ...order,
-    coupleInfoId: order.coupleInfoId.toString(),
+    coupleInfoId: order.coupleInfoId?.toString(),
     userId: order.userId.toString(),
     paymentId: order.paymentId?.toString(),
     product: {

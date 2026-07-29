@@ -108,4 +108,24 @@ describe("createOrder", () => {
       }),
     });
   });
+
+  it("coupleInfoId 없이도(결제 이후 my-orders에서 채우는 흐름) 정상 생성된다", async () => {
+    vi.mocked(getCookie).mockResolvedValue({ name: "token", value: "t" } as never);
+    vi.mocked(requireAuth).mockResolvedValue({ role: "USER", email: "a@b.com", userId: "user-1" });
+    vi.mocked(createOrderService).mockResolvedValue({
+      merchantUid: "merchant-1",
+      finalPrice: 9000,
+      payMethod: "CARD",
+      buyerName: "홍길동",
+      buyerEmail: "a@b.com",
+      buyerPhone: "010-1234-5678",
+      userId: { toString: () => "user-1" },
+      product: { title: "봄맞이 청첩장", productId: { toString: () => "product-1" } },
+    } as never);
+
+    const result = await createOrder(undefined, buildFormData({ coupleInfoId: "" }));
+
+    expect(result.success).toBe(true);
+    expect(vi.mocked(createOrderService).mock.calls[0][0]).not.toHaveProperty("coupleInfoId", "");
+  });
 });

@@ -32,7 +32,8 @@ const ProductSnapshotSchema = z.object({
 });
 
 export const createOrderSchema = BuyerInfoSchema.extend({
-  coupleInfoId: z.string().min(1, "커플 정보 ID가 필요합니다."),
+  // 결제 이후 my-orders 흐름에서 채워지는 콘텐츠라 주문 생성 시점엔 없을 수 있다.
+  coupleInfoId: z.string().min(1, "커플 정보 ID가 필요합니다.").optional(),
   buyerName: z.string().min(2, "이름은 2자 이상 입력해주세요."),
   buyerEmail: z.email("유효한 이메일을 입력해주세요."),
   buyerPhone: z

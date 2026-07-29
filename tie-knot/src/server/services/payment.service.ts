@@ -291,6 +291,7 @@ export const syncPayment = async (paymentId: string) => {
         // 5. Order 상태 업데이트
         order.orderStatus = "CONFIRMED";
         order.paymentId = payment._id;
+        order.confirmedAt = new Date();
         await order.save({ session });
 
         // 6. 판매 수량 반영 — "판매 건수"가 아니라 quantity 합산 기준(수량 개념 있는
