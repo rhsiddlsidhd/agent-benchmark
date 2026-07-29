@@ -1,0 +1,155 @@
+import { Button, Card, CardContent, CardHeader, CardTitle, TypographyH1, TypographyH3, TypographyMuted } from "@/client/components/atoms";
+import { CloudImage } from "@/client/components/molecules";
+import {
+  Edit,
+  RefreshCw,
+  Star,
+  EllipsisVertical,
+  Inbox,
+  CreditCard,
+} from "lucide-react";
+import { format } from "date-fns";
+import Link from "next/link";
+import { IOrder } from "@/server/models";
+import { routes } from "@/shared/constants";
+import { PAYMENT_STATUS, PAY_METHOD_LABEL } from "../_constants";
+import { PaymentButton } from "./PaymentButton";
+
+interface MyOrdersTemplateProps {
+  groupedOrders: [string, IOrder[]][];
+}
+
+const MyOrdersTemplate = ({ groupedOrders }: MyOrdersTemplateProps) => {
+  return (
+    <div className="space-y-6">
+      <div>
+        <TypographyH1 className="text-left mb-2 text-3xl font-bold">주문 목록</TypographyH1>
+        <TypographyMuted>
+          구매한 템플릿과 주문 상태를 확인합니다.
+        </TypographyMuted>
+      </div>
+
+      <div className="space-y-4">
+        {groupedOrders.length > 0 ? (
+          groupedOrders.map(([date, dateOrders]) => (
+            <Card key={date}>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {format(new Date(date), "yyyy년 MM월 dd일")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {dateOrders.map((order) => {
+                  const product = order.product;
+                  const hasDiscount =
+                    order.discountRate > 0 || order.discountAmount > 0;
+
+                  return (
+                    <div
+                      key={order._id.toString()}
+                      className="border-border flex items-start justify-between gap-6 rounded-lg border p-4"
+                    >
+                      <div className="flex min-w-0 flex-1 flex-col gap-4">
+                        <div className="flex justify-between text-2xl font-bold">
+                          <div className="flex items-center gap-4">
+                            <p>{PAYMENT_STATUS[order.orderStatus]}</p>
+                            <TypographyMuted>
+                              {order.merchantUid}
+                            </TypographyMuted>
+                          </div>
+                          <Button size="sm" variant="ghost">
+                            <EllipsisVertical className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="flex items-start gap-4">
+                          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg">
+                            <CloudImage
+                              src={product.thumbnail ?? "#"}
+                              alt={product.title}
+                              sizes="128px"
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <TypographyH3 className="text-foreground text-base font-semibold">
+                                {product.title}
+                              </TypographyH3>
+                            </div>
+                            <div className="pt-2">
+                              {hasDiscount && (
+                                <div className="mb-1 text-xs text-red-500">
+                                  {order.discountRate > 0 &&
+                                    `${Math.round(order.discountRate * 100)}% 할인`}
+                                  {order.discountAmount > 0 &&
+                                    ` -${order.discountAmount.toLocaleString()}원`}
+                                </div>
+                              )}
+                              <TypographyMuted>
+                                {order.finalPrice.toLocaleString()}원{" "}
+                                {product.quantity}개
+                              </TypographyMuted>
+                              <TypographyMuted className="flex items-center gap-1">
+                                <CreditCard className="h-3 w-3" />
+                                {PAY_METHOD_LABEL[order.payMethod]}
+                              </TypographyMuted>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex shrink-0 flex-col gap-2">
+                        {order.orderStatus === "PENDING" && (
+                          <PaymentButton order={order} />
+                        )}
+                        {order.orderStatus !== "CANCELLED" && (
+                          <Button size="lg" variant="outline" asChild>
+                            <Link
+                              href={`${routes.myOrders.edit}?q=${order.coupleInfoId.toString()}`}
+                            >
+                              <Edit className="mr-1 h-4 w-4" />
+                              수정하기
+                            </Link>
+                          </Button>
+                        )}
+                        {order.orderStatus === "CONFIRMED" && (
+                          <Button size="lg" variant="outline">
+                            <RefreshCw className="mr-1 h-4 w-4" />
+                            환불신청
+                          </Button>
+                        )}
+                        {order.orderStatus === "COMPLETED" && (
+                          <Button size="lg" variant="default">
+                            <Star className="mr-1 h-4 w-4" />
+                            리뷰
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+              <Inbox className="h-8 w-8 text-gray-500" />
+            </div>
+            <TypographyH3 className="mt-4 text-xl font-semibold">
+              주문 내역이 없습니다.
+            </TypographyH3>
+            <TypographyMuted className="mt-2 text-gray-500">
+              아직 주문한 상품이 없어요. 상품을 구경하고 첫 주문을 해보세요.
+            </TypographyMuted>
+            <Button asChild className="mt-6">
+              <Link href={routes.products.byCategory("invitation")}>청첩장 보러가기</Link>
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export { MyOrdersTemplate };
