@@ -15,7 +15,6 @@ export default async function proxy(request: NextRequest) {
   const protectedPaths = [
     routes.myOrders.root,
     routes.profile,
-    routes.coupleInfo,
     routes.payment.root,
     routes.deliveryInfo,
   ];
@@ -67,7 +66,6 @@ export const config = {
     "/my-orders/:path*",
     "/my-orders",
     "/my-profile",
-    "/couple-info",
     "/payment/:path*",
     "/delivery-info",
   ],

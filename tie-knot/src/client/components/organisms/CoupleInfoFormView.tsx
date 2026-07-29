@@ -24,6 +24,7 @@ export function CoupleInfoFormView({
   uploadProgress,
   handleSubmit,
   coupleInfoId,
+  orderId,
 }: CoupleInfoFormViewProps) {
   if (type === "edit" && isLoading)
     return (
@@ -45,6 +46,9 @@ export function CoupleInfoFormView({
     <form className="space-y-6" onSubmit={handleSubmit}>
       {type === "edit" && coupleInfoId && (
         <input type="hidden" name="couple_info_id" value={coupleInfoId} />
+      )}
+      {type === "create" && orderId && (
+        <input type="hidden" name="orderId" value={orderId} />
       )}
 
       <BasicInfoSection data={data} subwayStations={subwayStations} />

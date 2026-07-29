@@ -6,7 +6,6 @@ export const routes = {
   findPw: "/find-pw",
   changePw: "/change-pw",
   profile: "/my-profile",
-  coupleInfo: "/couple-info",
   support: "/support",
   reviews: "/reviews",
   deliveryInfo: "/delivery-info",
@@ -18,6 +17,7 @@ export const routes = {
     root: "/my-orders",
     edit: "/my-orders/edit",
     refund: "/my-orders/refund",
+    coupleInfo: "/my-orders/couple-info",
   },
   products: {
     root: "/products",

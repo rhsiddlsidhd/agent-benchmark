@@ -18,6 +18,7 @@ export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const coupleInfoId = searchParams.get("q");
+  const orderId = searchParams.get("orderId");
 
   const currentAction =
     type === "edit" ? updateCoupleInfo : createCoupleInfo;
@@ -54,19 +55,14 @@ export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
   useEffect(() => {
     if (!state) return;
 
-    if (state && state.success === true && state.data._id)
-      switch (type) {
-        case "create":
-          router.push(`${routes.payment.root}?q=${state.data._id}`);
-          break;
-        case "edit":
-          toast.success(state.data.message);
-          router.push(routes.myOrders.root);
-          break;
-        default:
-          break;
-      }
-  }, [state, router, type]);
+    // 결제 이후 my-orders 흐름에서 채워지는 콘텐츠라, create/edit 모두 완료 후
+    // my-orders로 돌아간다(payment로 다시 보내지 않는다 — TODO.md "couple-info를
+    // payment 이후로 분리" 참고).
+    if (state && state.success === true && state.data._id) {
+      toast.success(state.data.message);
+      router.push(routes.myOrders.root);
+    }
+  }, [state, router]);
 
   return {
     data,
@@ -79,5 +75,6 @@ export function useCoupleInfoForm({ type }: { type: "create" | "edit" }) {
     uploadProgress,
     handleSubmit,
     coupleInfoId,
+    orderId,
   };
 }
