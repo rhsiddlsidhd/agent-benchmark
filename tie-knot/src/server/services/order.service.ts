@@ -3,11 +3,23 @@ import { IOrder, OrderModel } from "@/server/models";
 import { CreateOrderDto } from "@/shared/schemas";
 import { generateUid } from "@/shared/utils";
 import { dbConnect } from "@/server/lib/mongodb";
+import { AppError } from "@/shared/types";
+
+const assertObjectIdLike = (id: string, label: string): void => {
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    throw new AppError("VALIDATION", `${label} 형식이 올바르지 않습니다.`);
+  }
+};
 
 export const createOrderService = async (
   data: CreateOrderDto & { userId: string },
 ): Promise<IOrder> => {
   await dbConnect();
+
+  assertObjectIdLike(data.coupleInfoId, "커플 정보 ID");
+  assertObjectIdLike(data.userId, "사용자 ID");
+  assertObjectIdLike(data.product.productId, "상품 ID");
+  data.product.selectedFeatures.forEach((f) => assertObjectIdLike(f.featureId, "옵션 ID"));
 
   const merchantUid = generateUid("ORDER");
 
@@ -40,7 +52,12 @@ export const createOrderService = async (
     },
   };
 
-  const order = await OrderModel.create(orderData);
+  const order = await OrderModel.create(orderData).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "주문 생성에 실패했습니다.",
+    );
+  });
 
   return order.toObject();
 };
@@ -50,11 +67,9 @@ export const getOrderSeviceByMerchantUid = async (
 ): Promise<IOrder | null> => {
   await dbConnect();
 
-  const order = await OrderModel.findOne({ merchantUid });
+  const order = await OrderModel.findOne({ merchantUid }).lean<IOrder>();
 
-  if (!order) return null;
-
-  return order.toObject({ versionKey: false }) as IOrder;
+  return order;
 };
 
 export const getActiveOrderInfoByCoupleInfoId = async (
@@ -79,12 +94,28 @@ export const getActiveOrderInfoByCoupleInfoId = async (
 
 export const getOrdersByUserId = async (
   userId: string | mongoose.Types.ObjectId,
-) => {
+): Promise<IOrder[]> => {
   await dbConnect();
 
   const orders = await OrderModel.find({ userId })
     .sort({ createdAt: -1 })
-    .lean();
+    .lean<IOrder[]>();
 
-  return orders;
+  // .lean() 결과의 ObjectId 유니온 필드(_id 제외 — IOrder에서 ObjectId로 고정 타입)를
+  // 명시적으로 문자열화한다(services/CLAUDE.md 컨벤션) — 소비처(my-orders/page.tsx)가
+  // 이미 이 필드들에 .toString()을 호출하므로 동작은 그대로다.
+  return orders.map((order) => ({
+    ...order,
+    coupleInfoId: order.coupleInfoId.toString(),
+    userId: order.userId.toString(),
+    paymentId: order.paymentId?.toString(),
+    product: {
+      ...order.product,
+      productId: order.product.productId.toString(),
+      selectedFeatures: order.product.selectedFeatures.map((f) => ({
+        ...f,
+        featureId: f.featureId.toString(),
+      })),
+    },
+  }));
 };

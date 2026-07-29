@@ -187,7 +187,7 @@ export const syncPayment = async (paymentId: string) => {
         await ProductModel.findByIdAndUpdate(
           order.product.productId,
           { $inc: { salesCount: order.product.quantity } },
-          { session },
+          { session, runValidators: true },
         );
       });
 
@@ -249,6 +249,14 @@ export const syncPayment = async (paymentId: string) => {
     if (e instanceof PortOne.PortOneError) {
       throw new AppError("EXTERNAL_SERVICE", `포트원 오류: ${e.message}`);
     }
-    throw e;
+    if (e instanceof AppError) {
+      throw e;
+    }
+    // mongoose 자체 에러(ValidationError 등)를 포함해 분류 안 된 예외는 전부 AppError로 감싼다
+    // — services는 AppError 하나로 통일한다(docs/ERROR_HANDLING.md 에러 표현 규칙).
+    throw new AppError(
+      "INTERNAL",
+      e instanceof Error ? e.message : "결제 동기화에 실패했습니다.",
+    );
   }
 };
