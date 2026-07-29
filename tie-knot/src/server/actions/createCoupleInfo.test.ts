@@ -5,9 +5,15 @@ vi.mock("@/server/services", () => ({
   requireAuth: vi.fn(),
   createCoupleInfoService: vi.fn(),
   isValidSubwayStationName: vi.fn(),
+  attachCoupleInfoToOrder: vi.fn(),
 }));
 
-import { requireAuth, createCoupleInfoService, isValidSubwayStationName } from "@/server/services";
+import {
+  requireAuth,
+  createCoupleInfoService,
+  isValidSubwayStationName,
+  attachCoupleInfoToOrder,
+} from "@/server/services";
 import { createCoupleInfo } from "./createCoupleInfo";
 
 const USER_ID = "user-1";
@@ -84,6 +90,41 @@ describe("createCoupleInfo", () => {
         message: "커플 정보가 성공적으로 등록되었습니다.",
         _id: COUPLE_INFO_ID,
       },
+    });
+  });
+
+  it("orderId가 없으면 attachCoupleInfoToOrder를 호출하지 않는다(기존 흐름)", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({ userId: USER_ID } as never);
+    vi.mocked(createCoupleInfoService).mockResolvedValue({ _id: COUPLE_INFO_ID } as never);
+
+    await createCoupleInfo(null, buildFormData());
+
+    expect(attachCoupleInfoToOrder).not.toHaveBeenCalled();
+  });
+
+  it("orderId가 있으면 생성된 커플 정보를 해당 주문에 연결한다(결제 이후 흐름)", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({ userId: USER_ID } as never);
+    vi.mocked(createCoupleInfoService).mockResolvedValue({ _id: COUPLE_INFO_ID } as never);
+    vi.mocked(attachCoupleInfoToOrder).mockResolvedValue({} as never);
+
+    const result = await createCoupleInfo(null, buildFormData({ orderId: "order-1" }));
+
+    expect(attachCoupleInfoToOrder).toHaveBeenCalledWith("order-1", COUPLE_INFO_ID, USER_ID);
+    expect(result.success).toBe(true);
+  });
+
+  it("attachCoupleInfoToOrder가 던진 AppError를 리턴값으로 번역한다", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({ userId: USER_ID } as never);
+    vi.mocked(createCoupleInfoService).mockResolvedValue({ _id: COUPLE_INFO_ID } as never);
+    vi.mocked(attachCoupleInfoToOrder).mockRejectedValue(
+      new AppError("FORBIDDEN", "본인 주문만 연결할 수 있습니다."),
+    );
+
+    const result = await createCoupleInfo(null, buildFormData({ orderId: "order-1" }));
+
+    expect(result).toEqual({
+      success: false,
+      error: { category: "FORBIDDEN", message: "본인 주문만 연결할 수 있습니다.", fieldErrors: undefined },
     });
   });
 

@@ -64,6 +64,43 @@ export const createOrderService = async (
   return order.toObject();
 };
 
+/**
+ * 결제 완료된 주문에 couple-info를 연결한다(TODO.md "couple-info를 payment
+ * 이후로 분리" 참고) — 소유권과 결제 상태를 재검증한 뒤에만 연결한다.
+ */
+export const attachCoupleInfoToOrder = async (
+  orderId: string,
+  coupleInfoId: string,
+  userId: string,
+): Promise<IOrder> => {
+  await dbConnect();
+
+  assertObjectIdLike(orderId, "주문 ID");
+  assertObjectIdLike(coupleInfoId, "커플 정보 ID");
+
+  const order = await OrderModel.findById(orderId);
+
+  if (!order) {
+    throw new AppError("NOT_FOUND", "주문을 찾을 수 없습니다.");
+  }
+
+  if (order.userId.toString() !== userId) {
+    throw new AppError("FORBIDDEN", "본인 주문만 연결할 수 있습니다.");
+  }
+
+  if (order.orderStatus !== "CONFIRMED") {
+    throw new AppError(
+      "VALIDATION",
+      "결제 완료된 주문에만 커플 정보를 연결할 수 있습니다.",
+    );
+  }
+
+  order.coupleInfoId = new mongoose.Types.ObjectId(coupleInfoId);
+  await order.save();
+
+  return order.toObject();
+};
+
 export const getOrderSeviceByMerchantUid = async (
   merchantUid: string,
 ): Promise<IOrder | null> => {

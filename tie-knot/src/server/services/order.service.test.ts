@@ -9,6 +9,7 @@ import {
   getOrderSeviceByMerchantUid,
   getActiveOrderInfoByCoupleInfoId,
   getOrdersByUserId,
+  attachCoupleInfoToOrder,
 } from "./order.service";
 
 describe("order.service", () => {
@@ -137,6 +138,65 @@ describe("order.service", () => {
 
         expect(result.finalPrice).toBe(Math.floor(999 * 0.85));
       });
+    });
+  });
+
+  describe("attachCoupleInfoToOrder", () => {
+    it("결제완료(CONFIRMED)된 본인 주문에 커플 정보를 연결한다", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const created = await createOrderService(
+        buildOrderInput({ userId, coupleInfoId: undefined }),
+      );
+      await OrderModel.updateOne({ _id: created._id }, { orderStatus: "CONFIRMED" });
+      const coupleInfoId = new mongoose.Types.ObjectId().toString();
+
+      const result = await attachCoupleInfoToOrder(created._id.toString(), coupleInfoId, userId);
+
+      expect(result.coupleInfoId?.toString()).toBe(coupleInfoId);
+    });
+
+    it("존재하지 않는 주문이면 NOT_FOUND를 던진다", async () => {
+      const missingOrderId = new mongoose.Types.ObjectId().toString();
+
+      await expect(
+        attachCoupleInfoToOrder(
+          missingOrderId,
+          new mongoose.Types.ObjectId().toString(),
+          new mongoose.Types.ObjectId().toString(),
+        ),
+      ).rejects.toMatchObject({ category: "NOT_FOUND" });
+    });
+
+    it("본인 주문이 아니면 FORBIDDEN을 던진다", async () => {
+      const ownerId = new mongoose.Types.ObjectId().toString();
+      const created = await createOrderService(
+        buildOrderInput({ userId: ownerId, coupleInfoId: undefined }),
+      );
+      await OrderModel.updateOne({ _id: created._id }, { orderStatus: "CONFIRMED" });
+      const otherUserId = new mongoose.Types.ObjectId().toString();
+
+      await expect(
+        attachCoupleInfoToOrder(
+          created._id.toString(),
+          new mongoose.Types.ObjectId().toString(),
+          otherUserId,
+        ),
+      ).rejects.toMatchObject({ category: "FORBIDDEN" });
+    });
+
+    it("결제 완료(CONFIRMED) 상태가 아니면 VALIDATION을 던진다", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const created = await createOrderService(
+        buildOrderInput({ userId, coupleInfoId: undefined }),
+      );
+
+      await expect(
+        attachCoupleInfoToOrder(
+          created._id.toString(),
+          new mongoose.Types.ObjectId().toString(),
+          userId,
+        ),
+      ).rejects.toMatchObject({ category: "VALIDATION" });
     });
   });
 
