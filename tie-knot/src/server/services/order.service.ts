@@ -4,6 +4,7 @@ import { CreateOrderDto } from "@/shared/schemas";
 import { generateUid } from "@/shared/utils";
 import { dbConnect } from "@/server/lib/mongodb";
 import { AppError } from "@/shared/types";
+import { COUPLE_INFO_DEADLINE_DAYS } from "@/shared/constants";
 
 const assertObjectIdLike = (id: string, label: string): void => {
   if (!mongoose.isObjectIdOrHexString(id)) {
@@ -99,6 +100,30 @@ export const attachCoupleInfoToOrder = async (
   await order.save();
 
   return order.toObject();
+};
+
+/**
+ * 결제완료(CONFIRMED)됐지만 coupleInfoId를 채우지 않은 채 기한을 넘긴
+ * 주문을 조회한다(자동취소 대상, TODO.md "couple-info를 payment 이후로
+ * 분리" 참고) — 순수 조회만 담당. 실제 취소(PortOne 환불)는
+ * payment.service의 cancelPayment가 맡는다(order.service가 payment.service를
+ * import하면 순환 의존이 생기므로, 오케스트레이션은 호출부에서 두 함수를
+ * 조합한다).
+ */
+export const findExpiredAwaitingCoupleInfoOrders = async (
+  userId: string | mongoose.Types.ObjectId,
+): Promise<IOrder[]> => {
+  await dbConnect();
+
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() - COUPLE_INFO_DEADLINE_DAYS);
+
+  return OrderModel.find({
+    userId,
+    orderStatus: "CONFIRMED",
+    coupleInfoId: { $exists: false },
+    confirmedAt: { $lt: deadline },
+  }).lean<IOrder[]>();
 };
 
 export const getOrderSeviceByMerchantUid = async (

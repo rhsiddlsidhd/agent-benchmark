@@ -10,6 +10,7 @@ import {
   getActiveOrderInfoByCoupleInfoId,
   getOrdersByUserId,
   attachCoupleInfoToOrder,
+  findExpiredAwaitingCoupleInfoOrders,
 } from "./order.service";
 
 describe("order.service", () => {
@@ -197,6 +198,71 @@ describe("order.service", () => {
           userId,
         ),
       ).rejects.toMatchObject({ category: "VALIDATION" });
+    });
+  });
+
+  describe("findExpiredAwaitingCoupleInfoOrders", () => {
+    it("CONFIRMED + coupleInfoId 없음 + 7일 초과면 조회된다", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const created = await createOrderService(
+        buildOrderInput({ userId, coupleInfoId: undefined }),
+      );
+      const eightDaysAgo = new Date();
+      eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+      await OrderModel.updateOne(
+        { _id: created._id },
+        { orderStatus: "CONFIRMED", confirmedAt: eightDaysAgo },
+      );
+
+      const result = await findExpiredAwaitingCoupleInfoOrders(userId);
+
+      expect(result.map((o) => o._id.toString())).toEqual([created._id.toString()]);
+    });
+
+    it("7일이 안 지났으면 조회되지 않는다", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const created = await createOrderService(
+        buildOrderInput({ userId, coupleInfoId: undefined }),
+      );
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      await OrderModel.updateOne(
+        { _id: created._id },
+        { orderStatus: "CONFIRMED", confirmedAt: oneDayAgo },
+      );
+
+      const result = await findExpiredAwaitingCoupleInfoOrders(userId);
+
+      expect(result).toEqual([]);
+    });
+
+    it("coupleInfoId가 이미 있으면 조회되지 않는다", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const created = await createOrderService(buildOrderInput({ userId }));
+      const eightDaysAgo = new Date();
+      eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+      await OrderModel.updateOne(
+        { _id: created._id },
+        { orderStatus: "CONFIRMED", confirmedAt: eightDaysAgo },
+      );
+
+      const result = await findExpiredAwaitingCoupleInfoOrders(userId);
+
+      expect(result).toEqual([]);
+    });
+
+    it("CONFIRMED가 아니면(PENDING/CANCELLED 등) 조회되지 않는다", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const created = await createOrderService(
+        buildOrderInput({ userId, coupleInfoId: undefined }),
+      );
+      const eightDaysAgo = new Date();
+      eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+      await OrderModel.updateOne({ _id: created._id }, { confirmedAt: eightDaysAgo });
+
+      const result = await findExpiredAwaitingCoupleInfoOrders(userId);
+
+      expect(result).toEqual([]);
     });
   });
 
