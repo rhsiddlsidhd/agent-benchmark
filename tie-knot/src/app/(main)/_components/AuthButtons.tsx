@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/client/hooks";
 import { UserAccountNav } from "./UserAccountNav";
-import { LoginEntryButton } from "@/client/components/organisms";
+import { LoginEntryButton } from "@/client/components/molecules";
 import { Skeleton } from "@/client/components/atoms";
 export function AuthButtons() {
   const { session, isLoading } = useAuth();

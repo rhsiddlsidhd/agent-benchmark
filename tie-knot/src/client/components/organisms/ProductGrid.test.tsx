@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { ProductFilterProvider, initialFilterState } from "@/client/context/productFilter";
+import { initialFilterState } from "@/client/context/productFilter";
 import { Product } from "@/server/services";
 import { ProductGrid } from "./ProductGrid";
 
@@ -29,22 +29,26 @@ const buildProduct = (overrides?: Partial<Product>): Product =>
     ...overrides,
   }) as Product;
 
-const renderWithProvider = (data: Product[]) =>
-  render(
-    <ProductFilterProvider initialValue={initialFilterState}>
-      <ProductGrid data={data} />
-    </ProductFilterProvider>,
-  );
-
 describe("ProductGrid", () => {
   it("상품이 있으면 카드를 렌더링한다", () => {
-    renderWithProvider([buildProduct()]);
+    render(<ProductGrid data={[buildProduct()]} state={initialFilterState} />);
 
     expect(screen.getByText("봄맞이 청첩장")).toBeInTheDocument();
   });
 
   it("상품이 없으면 빈 상태 메시지를 렌더링한다", () => {
-    renderWithProvider([]);
+    render(<ProductGrid data={[]} state={initialFilterState} />);
+
+    expect(screen.getByText("상품을 준비 중에 있습니다")).toBeInTheDocument();
+  });
+
+  it("state로 넘어온 필터 조건에 안 맞으면 빈 상태 메시지를 렌더링한다", () => {
+    render(
+      <ProductGrid
+        data={[buildProduct()]}
+        state={{ ...initialFilterState, keyword: "존재하지-않는-상품" }}
+      />,
+    );
 
     expect(screen.getByText("상품을 준비 중에 있습니다")).toBeInTheDocument();
   });

@@ -1,10 +1,10 @@
-import { ComingSoonPage } from "@/client/components/organisms";
+import { ComingSoonTemplate } from "@/client/components/templates";
 import { routes } from "@/shared/constants";
 
 // mock UI만 구현 — navigation.ts가 참조하는 href를 채운 것, 실제 리뷰 목록/작성 기능은 별도 작업.
 export default function ReviewsPage() {
   return (
-    <ComingSoonPage
+    <ComingSoonTemplate
       title={
         <>
           리뷰 페이지를 <br /> 준비하고 있습니다

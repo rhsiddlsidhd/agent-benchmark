@@ -3,13 +3,18 @@
 import { ProductCard } from "@/client/components/organisms";
 
 import { useVisibleProducts } from "@/client/hooks";
-import { useProductFilter } from "@/client/context/productFilter";
+import { ProductFilterState } from "@/client/context/productFilter";
 import { Product } from "@/server/services";
 import { TypographyMuted, TypographyP } from "../atoms/typography";
 import { PackageOpen } from "lucide-react";
 
-export function ProductGrid({ data }: { data: Product[] }) {
-  const [state] = useProductFilter();
+export function ProductGrid({
+  data,
+  state,
+}: {
+  data: Product[];
+  state: ProductFilterState;
+}) {
   const { visibleProducts } = useVisibleProducts({
     state,
     data,
