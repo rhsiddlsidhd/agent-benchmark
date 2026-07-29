@@ -5,7 +5,7 @@ import { comparePasswords } from "@/server/lib/bcrypt";
 import { validateAndFlatten } from "@/shared/utils";
 import { GuestbookSchema } from "@/shared/schemas";
 import { getPrivateGuestbookService, deleteGuestbookService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { routes } from "@/shared/constants";
 import * as z from "zod";
 import { revalidatePath } from "next/cache";
@@ -74,6 +74,6 @@ export const deleteGuestbook = async (
       data: { message: "게시글이 성공적으로 삭제되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

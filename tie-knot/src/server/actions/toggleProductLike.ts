@@ -2,7 +2,7 @@
 
 import { APIResponse, AppError } from "@/shared/types";
 import { requireAuth, updateProductLikeService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 
 export const toggleProductLike = async (
   productId: string,
@@ -20,6 +20,6 @@ export const toggleProductLike = async (
 
     return { success: true, data: { message: "좋아요 업데이트에 성공하였습니다." } };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

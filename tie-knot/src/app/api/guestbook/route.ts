@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { AppError } from "@/shared/types";
 import { getGuestbookService } from "@/server/services";
 import { IGuestbook } from "@/server/models";
@@ -26,8 +26,8 @@ export const GET = async (
     if (!id) throw new AppError("VALIDATION", "coupleInfoId가 필요합니다.");
 
     const guestbooks = await getGuestbookService(id);
-    return apiOk(toGuestbookListResponse(guestbooks));
+    return routeSuccess(toGuestbookListResponse(guestbooks));
   } catch (e) {
-    return apiFail(e);
+    return routeError(e);
   }
 };

@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiFail } from "@/server/response";
+import { APIRouteResponse, routeError } from "@/server/boundary";
 import { AppError } from "@/shared/types";
 import { NextRequest } from "next/server";
 import { z } from "zod";
@@ -47,6 +47,6 @@ export const POST = async (
     // payment는 결제 완료 후 syncPayment로 생성됩니다.
     throw new AppError("DISABLED", "이 API는 현재 사용할 수 없습니다.");
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

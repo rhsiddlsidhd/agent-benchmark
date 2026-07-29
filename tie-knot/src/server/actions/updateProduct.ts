@@ -3,7 +3,7 @@
 import { APIResponse } from "@/shared/types";
 import { uploadProductImage } from "@/server/lib/cloudinary";
 import { requireAuth, updateProductService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { validateAndFlatten } from "@/shared/utils";
 
 import { productSchema } from "@/shared/schemas";
@@ -79,6 +79,6 @@ export const updateProduct = async (
       data: { message: "상품이 성공적으로 수정되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

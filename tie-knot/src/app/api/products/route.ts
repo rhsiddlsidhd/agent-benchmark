@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { getAllProductsService } from "@/server/services";
 import { ProductResponse } from "@/shared/schemas";
 export const GET = async (
@@ -11,8 +11,8 @@ export const GET = async (
 
     const products = await getAllProductsService(category);
 
-    return apiOk(products);
+    return routeSuccess(products);
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

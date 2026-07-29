@@ -1,0 +1,13 @@
+import { describe, it, expect } from "vitest";
+import { createCoupleInfo } from "./createCoupleInfo";
+
+describe("createCoupleInfo", () => {
+  it("입력값 검증에 실패하면 VALIDATION을 리턴한다", async () => {
+    const result = await createCoupleInfo(null, new FormData());
+
+    expect(result).toEqual({
+      success: false,
+      error: { category: "VALIDATION", message: "입력값을 확인해주세요", fieldErrors: expect.any(Object) },
+    });
+  });
+});

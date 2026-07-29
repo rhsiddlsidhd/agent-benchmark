@@ -4,7 +4,7 @@ import { APIResponse } from "@/shared/types";
 import { validateAndFlatten } from "@/shared/utils";
 import { premiumFeatureSchema } from "@/shared/schemas";
 import { updatePremiumFeatureService, requireAuth } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { routes } from "@/shared/constants";
 import { revalidatePath } from "next/cache";
 
@@ -55,6 +55,6 @@ export const updatePremiumFeature = async (
       data: { message: "프리미엄 기능이 수정되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

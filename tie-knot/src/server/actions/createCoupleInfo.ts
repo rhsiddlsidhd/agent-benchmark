@@ -2,7 +2,7 @@
 
 import { APIResponse } from "@/shared/types";
 import { requireAuth, createCoupleInfoService, isValidSubwayStationName } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { validateAndFlatten } from "@/shared/utils";
 import { coupleInfoSchema } from "@/shared/schemas";
 
@@ -116,6 +116,6 @@ export const createCoupleInfo = async (
       },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

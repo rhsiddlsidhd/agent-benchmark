@@ -3,7 +3,7 @@
 import { APIResponse } from "@/shared/types";
 import { uploadProductImage } from "@/server/lib/cloudinary";
 import { requireAuth, createProductService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { productSchema } from "@/shared/schemas";
 import { routes } from "@/shared/constants";
 
@@ -75,6 +75,6 @@ export const createProduct = async (
       data: { message: "상품이 성공적으로 등록되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

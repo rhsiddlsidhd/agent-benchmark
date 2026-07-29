@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { AppError } from "@/shared/types";
 import { KakaomapResponse } from "@/shared/schemas";
 import { NextRequest } from "next/server";
@@ -27,8 +27,8 @@ export const GET = async (
       );
     }
 
-    return apiOk(data);
+    return routeSuccess(data);
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

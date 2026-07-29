@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { AppError } from "@/shared/types";
 import { parseSeoulOpenApiResponse } from "@/shared/utils";
 import { SUBWAY_LINE_COLORS, DEFAULT_SUBWAY_LINE_COLOR } from "@/shared/constants";
@@ -40,8 +40,8 @@ export const GET = async (
       color: SUBWAY_LINE_COLORS[name] ?? DEFAULT_SUBWAY_LINE_COLOR,
     }));
 
-    return apiOk({ station, lines });
+    return routeSuccess({ station, lines });
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

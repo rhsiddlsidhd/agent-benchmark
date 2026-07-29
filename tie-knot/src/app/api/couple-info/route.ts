@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { AppError } from "@/shared/types";
 import { requireAuth, getCoupleInfoById } from "@/server/services";
 import { ICoupleInfo } from "@/server/models";
@@ -31,8 +31,8 @@ export const GET = async (
     const coupleInfo = await getCoupleInfoById(query);
     if (!coupleInfo) throw new AppError("NOT_FOUND", "커플 정보를 찾을 수 없습니다.");
 
-    return apiOk(toCoupleInfoResponse(coupleInfo));
+    return routeSuccess(toCoupleInfoResponse(coupleInfo));
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

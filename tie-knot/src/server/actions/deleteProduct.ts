@@ -2,7 +2,7 @@
 
 import { APIResponse } from "@/shared/types";
 import { requireAuth, deleteProductService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { routes } from "@/shared/constants";
 
 import { revalidatePath } from "next/cache";
@@ -29,6 +29,6 @@ export const deleteProduct = async (
       data: { message: "상품이 성공적으로 삭제되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

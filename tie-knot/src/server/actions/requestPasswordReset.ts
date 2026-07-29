@@ -6,7 +6,7 @@ import { sendEmail } from "@/server/lib/nodemailer";
 import { emailSchema } from "@/shared/schemas";
 import { APIResponse } from "@/shared/types";
 import { checkEmailDuplicate } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 const createChangePWDomain = (token: string): string => {
   return process.env.NODE_ENV === "development"
     ? `http://localhost:3000/change-pw?t=${encodeURIComponent(token)}`
@@ -61,6 +61,6 @@ export const requestPasswordReset = async (
       data: { message: "이메일 발송에 성공하였습니다.", email },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

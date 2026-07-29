@@ -9,7 +9,7 @@ import { APIResponse } from "@/shared/types";
 import { UserEmailSchema } from "@/shared/schemas";
 
 import { getUserEmail } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { validateAndFlatten } from "@/shared/utils";
 
 export const findUserEmail = async (
@@ -38,6 +38,6 @@ export const findUserEmail = async (
     const email = await getUserEmail({ name, phone });
     return { success: true, data: { email } };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };
