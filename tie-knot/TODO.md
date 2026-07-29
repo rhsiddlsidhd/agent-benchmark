@@ -26,7 +26,8 @@
 - [ ] **PortOne 결제수단 매핑 코드 실제 검증** (구 Stage B #10 잔여분 — 스키마 재설계 자체는 PR #50으로 완료됨) — `methodDetail` discriminated union 스키마는 반영됐지만 실제 결제 응답이 그 스키마에 맞게 매핑되는지 아직 검증 안 됨. PortOne 스토어에 테스트 결제가 0건이라 확인 불가능했던 게 원인.
   - **DB 확인 완료**: `new-invitation-cluster`(Atlas)는 개발자 전용 dev DB, 고객 데이터 없음 — 현재 product 상품 자체가 아직 노출 안 된 상태라 고객 트래픽도 없음. Playwright 실결제 테스트로 인한 오염 위험 없음, 블로커 해제.
   - **결제창 호출 필수 파라미터 누락 버그 3건 수정(2026-07-28)**: `src/client/hooks/usePortOnePayment.ts`의 `PortOne.requestPayment()` 호출에서 발견 — `productType`(휴대폰 결제 시 이니시스 V2 필수) 누락, `virtualAccount`(가상계좌 결제 시 필수) 누락, `easyPay.easyPayProvider`(간편결제 시 필수, `KAKAOPAY`로 고정) 누락. Playwright로 6개 결제수단 전부 결제하기 버튼까지 태워보며 발견·수정 완료 — 수정 후 6개 전부 결제창 정상 호출 확인(신용카드는 카드번호 입력 화면까지, 간편결제는 카카오페이 브릿지 오픈까지 확인).
-  - **다음 단계(대기)**: 실제 결제 1건(카드번호 직접입력 완주)까지 끝내서 PortOne 응답의 `methodDetail`이 DB(`payment.model.ts`)에 스키마대로 저장되는지까지는 아직 미검증 — 카드번호 입력 화면 도달까지만 확인하고 완주는 보류함.
+  - **매핑 코드 구현 완료(2026-07-29, PR #76)**: 재조사 결과 "검증 안 됨"이 아니라 **매핑 코드 자체가 없었음** — `syncPayment`가 PortOne 응답의 `actualPayment.method`를 아예 읽지 않아 `payMethod`/`methodDetail`이 매 결제마다 빈 채로 저장되던 상태. `mapPortOnePaymentMethod` 신설해 7종 discriminant(카드/가상계좌/계좌이체/휴대폰/간편결제/상품권/편의점) + 미인식 폴백까지 매핑, `payment.service.test.ts`에 SDK 타입 정의(`node_modules/@portone/server-sdk`) 기준 mock 응답으로 9개 케이스 검증 완료.
+  - **다음 단계(보류, 의도적 결정)**: 실제 결제 1건 카드번호 완주까지 태워 진짜 PortOne 응답으로 DB 반영을 확인하는 건 dev 채널이라도 외부 PG 시스템에 실호출이 나가는 별도 위험급 작업이라 이번 라운드에서는 진행 안 하기로 함(2026-07-29). 매핑 로직 자체는 SDK 타입 정의를 그대로 따라 만들었고 mock 테스트로 검증됐으므로 신뢰도는 높으나, 실결제 완주 검증은 여전히 미완료 — 나중에 진행할 때는 PortOne 공식 테스트카드 확보 후 진행.
 
 ---
 
