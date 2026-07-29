@@ -98,8 +98,13 @@ export const updateCoupleInfoService = async (
   const updated = await CoupleInfoModel.findByIdAndUpdate(
     new mongoose.Types.ObjectId(coupleInfoId),
     { $set: updateData },
-    { new: true },
-  );
+    { new: true, runValidators: true },
+  ).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "커플 정보 수정에 실패했습니다.",
+    );
+  });
 
   return !!updated;
 };

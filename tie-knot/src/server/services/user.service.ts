@@ -52,7 +52,13 @@ export const changePassword = async (
   const userBeforeUpdate = await UserModel.findOneAndUpdate(
     { email, isDelete: false },
     { password: hashedNewPassword },
-  );
+    { runValidators: true },
+  ).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "비밀번호 변경에 실패했습니다.",
+    );
+  });
 
   return !!userBeforeUpdate;
 };

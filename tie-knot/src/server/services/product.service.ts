@@ -108,8 +108,13 @@ export const incrementProductViewsService = async (
   const updated = await ProductModel.findOneAndUpdate(
     { _id: productId, deletedAt: null },
     { $inc: { views: 1 } },
-    { new: true },
-  );
+    { new: true, runValidators: true },
+  ).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "조회수 갱신에 실패했습니다.",
+    );
+  });
 
   return !!updated;
 };
@@ -209,8 +214,13 @@ export const deleteProductService = async (
   const deletedProduct = await ProductModel.findOneAndUpdate(
     { _id: productId, deletedAt: null },
     { status: "deleted", deletedAt: new Date() },
-    { new: true },
-  );
+    { new: true, runValidators: true },
+  ).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "상품 삭제에 실패했습니다.",
+    );
+  });
 
   return !!deletedProduct;
 };
@@ -242,8 +252,13 @@ export const updateProductLikeService = async (
     hasLiked
       ? { $pull: { likes: userObjectId } }
       : { $addToSet: { likes: userObjectId } },
-    { new: true },
-  );
+    { new: true, runValidators: true },
+  ).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "좋아요 갱신에 실패했습니다.",
+    );
+  });
 
   return !!updated;
 };

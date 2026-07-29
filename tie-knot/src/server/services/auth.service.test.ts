@@ -118,6 +118,24 @@ describe("auth.service", () => {
 
       expect(result).toBeNull();
     });
+
+    it("유저 조회 자체가 실패하면(인프라 예외) null로 삼키지 않고 AppError(INTERNAL)를 던진다", async () => {
+      const input = buildUser();
+      const saved = await UserModel.create(input);
+      const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
+      vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
+
+      const findOneSpy = vi.spyOn(UserModel, "findOne").mockReturnValue({
+        select: () => ({
+          lean: () => Promise.reject(new Error("connection timeout")),
+        }),
+      } as never);
+
+      await expect(getAuth()).rejects.toBeInstanceOf(AppError);
+      await expect(getAuth()).rejects.toMatchObject({ category: "INTERNAL" });
+
+      findOneSpy.mockRestore();
+    });
   });
 
   describe("requireAuth", () => {

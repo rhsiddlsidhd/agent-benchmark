@@ -44,7 +44,9 @@ export const getAllPremiumFeatureService = async (): Promise<
 export const getPremiumFeatureService = async (ids: string[] | []) => {
   if (ids.length === 0) return [];
   await dbConnect();
-  const _ids = ids.map((id) => new mongoose.Types.ObjectId(id));
+  const _ids = ids
+    .filter((id) => mongoose.isObjectIdOrHexString(id))
+    .map((id) => new mongoose.Types.ObjectId(id));
   const features = await FeatureModel.find({ _id: { $in: _ids } }).lean<
     IFeature[]
   >();
