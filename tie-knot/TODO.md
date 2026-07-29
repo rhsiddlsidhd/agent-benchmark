@@ -47,10 +47,10 @@
 
 3개 병렬 조사(서버 레이어/클라이언트 컴포넌트·라우팅/shared·client-util)로 34개 위반 항목 발견(2026-07-29) — 리스크 낮은 순으로 Phase 분리, Phase 1개 = branch 1개 = PR 1개(`docs/GIT.md` 원칙). 상세는 각 Phase PR 설명 참고.
 
-- [ ] **Phase 1 — 서비스 레이어 데이터 정합성/에러 처리**(`refactor/services-data-integrity`, 최우선) — `runValidators: true` 누락(6곳), mongoose 에러 AppError 미포장, `.lean()` ObjectId 미변환(2곳), ObjectId 형식 검증 누락(2곳), `auth.service.ts`의 `getAuth()`가 인프라 예외까지 삼켜 `null` 리턴하는 문제(DB 장애→미로그인 오분류 위험) 등 실제 버그 위험 수정.
-- [ ] **Phase 2 — Server Action revalidate/에러 처리 누락**(`refactor/actions-revalidate-error`) — `toggleProductLike`/`completePayment` revalidate 누락, `incrementProductViews`/`logoutUser`/`clearUserEmailCookie` try/catch+`actionError` 누락.
-- [ ] **Phase 3 — 모델 레이어 정리**(`refactor/models-cleanup`) — `coupleInfo.model.ts`/`guestbook.model.ts` 캐스팅 없는 `||` 가드, `product.feature.model.ts` 파일명 불일치.
-- [ ] **Phase 4 — shared 상수 케이스/하드코딩/오배치**(`refactor/shared-constants-cleanup`) — `navigation.ts`/`sidebar.ts` SCREAMING_SNAKE_CASE 오적용(컴포넌트 참조 섞임) 3곳, `(admin)/error.tsx` 라우트 하드코딩, `useDaumPopup.ts` 오배치(`hooks/`→`client/lib/daum/`), `product-table-row.ts` 라우트 로컬로 강등.
-- [ ] **Phase 5 — 배럴 import 정합화**(`refactor/barrel-import-fix`, Phase 6보다 먼저 머지) — molecules/organisms 내부 딥패스 import ~17곳.
-- [ ] **Phase 6 — 컴포넌트 계층 재분류**(`refactor/component-tier-reclassify`, Phase 5 이후 분기) — `ProductGrid`/`ProductFilters`가 props 대신 Context 직접 구독(핵심 원칙 1 위반) 수정, `LoginEntryButton` organisms→molecules 강등, `ComingSoonPage` organisms→templates 승격.
-- [ ] **Phase 7 — page.tsx Template 추출**(`refactor/page-template-extraction`) — `my-orders`/`admin/products`/`products/[category]/[id]`/`products/[category]`/`(main)`/`payment/success` 6개 라우트, 라우트당 커밋 분리.
+- [x] **Phase 1 — 서비스 레이어 데이터 정합성/에러 처리**(`refactor/services-data-integrity`, 최우선) — `runValidators: true` 누락(6곳), mongoose 에러 AppError 미포장, `.lean()` ObjectId 미변환(2곳), ObjectId 형식 검증 누락(2곳), `auth.service.ts`의 `getAuth()`가 인프라 예외까지 삼켜 `null` 리턴하는 문제(DB 장애→미로그인 오분류 위험) 등 실제 버그 위험 수정.
+- [x] **Phase 2 — Server Action revalidate/에러 처리 누락**(`refactor/actions-revalidate-error`) — `toggleProductLike`/`completePayment` revalidate 누락, `incrementProductViews`/`logoutUser`/`clearUserEmailCookie` try/catch+`actionError` 누락.
+- [x] **Phase 3 — 모델 레이어 정리**(`refactor/models-cleanup`) — `coupleInfo.model.ts`/`guestbook.model.ts` 캐스팅 없는 `||` 가드, `product.feature.model.ts` 파일명 불일치.
+- [x] **Phase 4 — shared 상수 케이스/하드코딩/오배치**(`refactor/shared-constants-cleanup`) — `navigation.ts`/`sidebar.ts` SCREAMING_SNAKE_CASE 오적용(컴포넌트 참조 섞임) 3곳, `(admin)/error.tsx` 라우트 하드코딩, `useDaumPopup.ts` 오배치(`hooks/`→`client/lib/daum/`), `product-table-row.ts` 라우트 로컬로 강등.
+- [x] **Phase 5 — 배럴 import 정합화**(`refactor/barrel-import-fix`, Phase 6보다 먼저 머지) — molecules/organisms 내부 딥패스 import 17곳.
+- [x] **Phase 6 — 컴포넌트 계층 재분류**(`refactor/component-tier-reclassify`, Phase 5 이후 분기) — `ProductGrid`/`ProductFilters`가 props 대신 Context 직접 구독(핵심 원칙 1 위반) 수정, `LoginEntryButton` organisms→molecules 강등, `ComingSoonPage` organisms→templates 승격.
+- [x] **Phase 7 — page.tsx Template 추출**(`refactor/page-template-extraction`) — `my-orders`/`admin/products`/`products/[category]/[id]`/`(main)`/`payment/success` 5개 라우트, 라우트당 커밋 분리. `products/[category]/page.tsx`는 제외 — 자식(`ProductCatalog` 컨테이너)이 `useSWR`로 자체 데이터 페칭 중이라 `templates/CLAUDE.md` Gotchas의 순수성 예외(`(preview)/preview/[id]`의 `GuestbookSection` 선례와 동일)에 해당해 Template 추출을 강제하지 않음 — 최초 audit 항목이었으나 실제 코드 확인 후 false positive로 정정.

@@ -2,6 +2,8 @@
   "src/test/**",
   "src/shared/types/**",
   "src/shared/constants/**",
+  "src/app/**/_types/**",
+  "src/app/**/_constants/**",
   "src/server/models/**",
   "src/server/lib/*/type.ts",
   "src/client/components/atoms/**",
