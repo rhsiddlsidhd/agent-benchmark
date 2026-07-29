@@ -26,9 +26,4 @@
 
 ## 관련 문서
 
-- Atoms 세부: `src/client/components/atoms/CLAUDE.md`
-- Molecules 세부: `src/client/components/molecules/CLAUDE.md`
-- Organisms 세부: `src/client/components/organisms/CLAUDE.md`
-- Templates 세부: `src/client/components/templates/CLAUDE.md`
-- 라우트 레이어/컨테이너 승격 규칙: `src/app/CLAUDE.md`
-- 추상화 네이밍 규칙(공유 구현체 이름 짓는 법): `src/CLAUDE.md`
+- 컨테이너 승격 규칙(축 B), 셸 조각 배치 규칙, `_components/` 규칙: `src/app/CLAUDE.md`

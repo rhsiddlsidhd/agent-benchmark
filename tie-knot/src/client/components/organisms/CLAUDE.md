@@ -26,10 +26,12 @@ src/client/components/organisms/
 
 - `CoupleInfoForm`은 라우트 2곳(`couple-info/`, `order/edit/`)이 공유한다 — 오케스트레이션 로직은 `src/client/hooks/useCoupleInfoForm.ts`({type}로 분기), 순수 UI는 `organisms/CoupleInfoFormView.tsx`(2곳 이상 공유라 추상 접미사 `View`), 각 라우트는 자기 `_components/CoupleInfoForm.tsx`(얇은 컨테이너, 훅 호출+View 렌더만)를 따로 둔다 — "라우트당 컨테이너 1개" 원칙 예외 없음.
 
-## 관련 문서
+## References
 
-- 상위 4단계 정의 및 순수성 원칙: `src/client/components/CLAUDE.md`
-- 컨테이너(도메인 로직 담당) 및 승격 규칙: `src/app/CLAUDE.md`
-- 조합 재료: `src/client/components/molecules/CLAUDE.md`
-- 추상화 네이밍 규칙: `src/CLAUDE.md`
-- 테스트 작성 컨벤션(렌더링+상호작용 오케스트레이션): `docs/TESTING_GUIDELINE.md`
+즉시 로드(`@import`) 아님 — 트리거 열 키워드에 해당하는 작업일 때만 해당 문서를 읽는다.
+
+| 문서                   | 위치                                | 트리거                             | 요약                          |
+| ---------------------- | ------------------------------------ | ----------------------------------- | ----------------------------- |
+| `CLAUDE.md`            | `src/app/`                           | 컨테이너(도메인 로직) 승격 규칙 확인 시 | 컨테이너 및 승격 규칙     |
+| `CLAUDE.md`            | `src/client/components/molecules/`   | 조합 재료 확인 시                   | molecule 정의                 |
+| `TESTING_GUIDELINE.md` | `docs/`                              | 이 폴더 테스트 작성 시              | 렌더링+상호작용 오케스트레이션 assertion 패턴 |

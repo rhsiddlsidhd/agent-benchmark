@@ -31,6 +31,5 @@ src/client/components/templates/
 
 ## 관련 문서
 
-- 상위 4단계 정의 및 순수성 원칙, 축 A/축 B: `src/client/components/CLAUDE.md`
 - 한 단계 아래(organism): `src/client/components/organisms/CLAUDE.md`
 - Pages(`page.tsx`) 역할, private 폴더, layout.tsx 경계: `src/app/CLAUDE.md`

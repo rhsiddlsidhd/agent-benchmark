@@ -5,14 +5,14 @@
 
 ## Overview
 
-`services/`는 DB 접근 + 비즈니스 로직을 모아둔다 — `src/server/models/`(스키마)와 `src/lib/`(외부 연동 wrapper)를 조합해 실제 유스케이스를 구현한다(예: `auth.service.ts`의 `getAuth`가 `lib/cookies`+`lib/jose`+`models/user.model`을 조합). 한 파일에 같은 도메인의 여러 관련 함수(조회/생성/로그아웃 등)를 같이 둘 수 있다 — film-wiki식 "파일당 export 1개" 원칙은 여기 적용 안 함.
+`services/`는 DB 접근 + 비즈니스 로직을 모아둔다 — `src/server/models/`(스키마)와 `src/server/lib/`(외부 연동 wrapper)를 조합해 실제 유스케이스를 구현한다(예: `auth.service.ts`의 `getAuth`가 `lib/cookies`+`lib/jose`+`models/user.model`을 조합). 한 파일에 같은 도메인의 여러 관련 함수(조회/생성/로그아웃 등)를 같이 둘 수 있다.
 
 ## Structure
 
 ```
 src/server/services/
 ├── index.ts               # 배럴 — export *
-├── auth.service.ts        # getUser, getAuth, requireAuth, logoutService
+├── auth.service.ts        # getUser, getAuth, requireAuth, logoutService, verifySession
 ├── user.service.ts
 ├── product.service.ts
 └── ...                       # 도메인당 파일 1개(내부에 관련 함수 여러 개 허용)
@@ -59,10 +59,15 @@ src/server/services/
 - `requireAuth()`는 `getAuth()`를 감싸서 세션 없으면 `AppError(UNAUTHENTICATED)`를 throw하는 얇은 헬퍼다 — HTTP status(401)는 여기서 모른다, 각 채널 공용 핸들러가 UNAUTHENTICATED를 자기 형태(route.ts는 401 Response, Server Action은 `ErrorPayload`)로 번역한다. 인증이 필수인 Route Handler·Server Action 둘 다 세션 검증에 이 함수를 공유한다(`src/app/api/CLAUDE.md` Gotchas 참고).
 - mongoose에 `mongoose.set('transactionAsyncLocalStorage', true)` 글로벌 옵션이 있다(설치된 버전 8.20.3에 실재 확인) — 켜면 트랜잭션 콜백 안의 모든 연산에 `session`을 자동 주입해 위 "session 빠뜨림" 실수 자체를 없앤다. 지금은 안 켠다 — 트랜잭션을 쓰는 지점이 `syncPayment` 하나뿐이라 켰을 때의 영향 범위(다른 서비스 함수들의 기존 동작)를 실제로 검증할 근거가 부족하다. 트랜잭션 쓰는 지점이 늘어나 session 누락 실수가 반복되면 그때 켤지 재검토한다(가정만으로 미리 켜지 않는다).
 
-## 관련 문서
+## References
 
-- DB 스키마: `src/server/models/CLAUDE.md`
-- 외부 연동 wrapper: `src/lib/CLAUDE.md`
-- 이 서비스를 호출하는 쪽: `src/app/api/CLAUDE.md`, `src/server/actions/CLAUDE.md`
-- 테스트 작성 컨벤션(DB/목킹 전략, assertion 패턴): `docs/TESTING_GUIDELINE.md`
-- 레이어 간 에러 흐름 전체 그림, 분류 taxonomy, 레이어별 규칙 위치: `docs/ERROR_HANDLING.md`
+즉시 로드(`@import`) 아님 — 트리거 열 키워드에 해당하는 작업일 때만 해당 문서를 읽는다.
+
+| 문서                 | 위치                   | 트리거                              | 요약                               |
+| -------------------- | ----------------------- | ------------------------------------ | ----------------------------------- |
+| `CLAUDE.md`          | `src/server/models/`    | DB 스키마 확인 시                    | 모델 정의                           |
+| `CLAUDE.md`          | `src/server/lib/`       | 외부 연동 wrapper 확인 시            | 외부 연동 컨벤션                    |
+| `CLAUDE.md`          | `src/app/api/`          | 이 서비스를 호출하는 쪽(route.ts) 확인 시 | Route Handler 컨벤션           |
+| `CLAUDE.md`          | `src/server/actions/`   | 이 서비스를 호출하는 쪽(action) 확인 시   | Server Action 컨벤션           |
+| `TESTING_GUIDELINE.md` | `docs/`                | 이 폴더 테스트 작성 시               | DB/목킹 전략, assertion 패턴        |
+| `ERROR_HANDLING.md`  | `docs/`                 | 에러 처리 로직 작성/수정 시          | 레이어 간 에러 흐름, 분류 taxonomy  |

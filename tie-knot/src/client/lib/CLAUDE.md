@@ -36,6 +36,4 @@ src/client/lib/
 ## 관련 문서
 
 - 서버 전용 연동: `src/server/lib/CLAUDE.md`
-- 외부 SDK 초기화 훅 배치 경계: `src/CLAUDE.md`
 - 배치 경계 상대측: `src/client/hooks/CLAUDE.md`
-- server/client/shared 3분할 배경: `docs/ARCHITECTURE.md`

@@ -7,7 +7,7 @@
 
 `schemas/`는 zod 기반 런타임 검증 스키마를 모아둔다 — 폼/API **입력값** 검증과, Route Handler가 돌려주는 **응답** 양쪽 다 다룬다. 여러 스키마가 서로 조합(import)될 수 있다(`login.schema.ts`가 `pw.schema.ts`의 `PWSchema`를 재사용).
 
-**API 요청/응답처럼 실제 데이터가 오가는 경계(boundary) 타입은 예외 없이 이 폴더에 zod로 선언하고 `z.infer`로 타입을 뽑는다.** 손으로 쓴 interface를 경계 타입으로 재사용하지 않는다 — `src/shared/types/`는 그 경계와 무관한 타입(제네릭 envelope처럼 T가 가변이라 애초에 zod로 고정할 수 없는 것) 전용이다(`src/shared/types/CLAUDE.md` 참고). DB 레이어 타입(`src/server/models/`의 `ICoupleInfo` 등)은 이 규칙 대상이 아니다 — Date/ObjectId를 쓰는 DB 표현과 문자열로 직렬화되는 응답 표현은 실질적으로 다른 타입이라, 응답 경계에서 별도 zod 스키마로 다시 정의한다(같은 인터페이스를 두 레이어에 겸용하면 직렬화 시점에 타입이 실제로 어긋나도 컴파일러가 못 잡는다 — `src/app/api/banks/route.ts`가 겪은 문제).
+경계 타입 소유권 규칙(zod로 선언 + 같은 파일 안에서 `z.infer`로 파생, `src/shared/types/`로 안 옮김)은 `src/shared/CLAUDE.md` 참고. DB 레이어 타입(`src/server/models/`의 `ICoupleInfo` 등)은 이 규칙 대상이 아니다 — Date/ObjectId를 쓰는 DB 표현과 문자열로 직렬화되는 응답 표현은 실질적으로 다른 타입이라, 응답 경계에서 별도 zod 스키마로 다시 정의한다(같은 인터페이스를 두 레이어에 겸용하면 직렬화 시점에 타입이 실제로 어긋나도 컴파일러가 못 잡는다 — `src/app/api/banks/route.ts`가 겪은 문제).
 
 ## Structure
 
@@ -38,9 +38,12 @@ src/shared/schemas/
 - `config.ts`(zod 에러 메시지 한국어화, `z.config(z.locales.ko())`)는 이 폴더 어떤 스키마 파일도 직접 import하지 않는다 — `index.ts` 배럴 맨 위의 `import "./config"` side-effect로만 실행된다. 개별 파일 경로(`@/schemas/x.schema`)로 직접 import하면 이 side-effect를 안 타서 로케일 설정이 적용 안 된다 — 반드시 배럴(`@/schemas`) 경유로 import해야 하는 이유.
 - `app/api/order/create/route.ts`는 이 폴더를 아예 안 쓰고 자체 인라인 zod 스키마를 정의한다 — 이 폴더의 컨벤션 대상이 아니다(별개 이슈).
 
-## 관련 문서
+## References
 
-- 이 스키마를 쓰는 폼 훅: `src/client/hooks/CLAUDE.md`
-- 이 폴더와 `src/shared/types/`의 소유권 경계: `src/shared/types/CLAUDE.md`
-- 배럴 import 정책(공통): `src/CLAUDE.md`
-- 테스트 작성 컨벤션(1차 커버 범위 우선순위): `docs/TESTING_GUIDELINE.md`
+즉시 로드(`@import`) 아님 — 트리거 열 키워드에 해당하는 작업일 때만 해당 문서를 읽는다.
+
+| 문서                   | 위치                  | 트리거                            | 요약                     |
+| ---------------------- | ---------------------- | ----------------------------------- | ------------------------ |
+| `CLAUDE.md`            | `src/client/hooks/`    | 이 스키마를 쓰는 폼 훅 확인 시      | 훅 컨벤션                |
+| `CLAUDE.md`            | `src/shared/types/`    | 이 폴더와의 소유권 경계 확인 시     | 타입 원본 소유권 경계    |
+| `TESTING_GUIDELINE.md` | `docs/`                | 이 폴더 테스트 작성 시              | 1차 커버 범위 우선순위   |
