@@ -59,7 +59,7 @@ export const MAIN_NAV_ITEMS = [
   },
 ] as const;
 
-export const USER_NAV_ITEMS = [
+export const userNavItems = [
   {
     label: "관리자 페이지",
     href: routes.admin.dashboard,
