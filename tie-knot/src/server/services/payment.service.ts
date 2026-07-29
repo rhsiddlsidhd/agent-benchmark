@@ -1,6 +1,14 @@
 import mongoose from "mongoose";
 import * as PortOne from "@portone/server-sdk";
-import { PaymentModel, PayStatus, IPayment, OrderModel, ProductModel } from "@/server/models";
+import {
+  PaymentModel,
+  PayStatus,
+  PayMethod,
+  PaymentMethodDetail,
+  IPayment,
+  OrderModel,
+  ProductModel,
+} from "@/server/models";
 
 import { getProductService } from "./product.service";
 import { getOrderSeviceByMerchantUid } from "./order.service";
@@ -52,6 +60,105 @@ function mapPortOneStatus(status: unknown): PayStatus {
 
   return statusMap[status];
 }
+
+type SdkPaymentMethod = NonNullable<PaidPayment["method"]>;
+
+/**
+ * PortOne 결제수단(discriminated union)을 시스템 payMethod/methodDetail로 매핑
+ * - 우리 PAY_METHOD 6종에 없는 편의점(PaymentMethodConvenienceStore)은 payMethod
+ *   없이 methodDetail만 기록한다(TODO.md 확정 사항 — 채널 미지원으로 판매수단
+ *   자체는 제외했지만, 응답 원문 보존은 계속한다).
+ * - 미인식 값은 Unrecognized로 폴백해 methodDetail에 흔적을 남긴다(silent
+ *   failure 방지 — mapPortOneStatus와 같은 원칙).
+ */
+function mapPortOnePaymentMethod(
+  method: SdkPaymentMethod | undefined,
+): { payMethod?: PayMethod; methodDetail?: PaymentMethodDetail } {
+  if (!method) return {};
+
+  switch (method.type) {
+    case "PaymentMethodCard":
+      return {
+        payMethod: "CARD",
+        methodDetail: {
+          type: "PaymentMethodCard",
+          card: {
+            ...method.card,
+            approvalNumber: method.approvalNumber,
+            installment: method.installment,
+            pointUsed: method.pointUsed,
+          },
+        },
+      };
+    case "PaymentMethodVirtualAccount":
+      return {
+        payMethod: "VIRTUAL_ACCOUNT",
+        methodDetail: {
+          type: "PaymentMethodVirtualAccount",
+          virtualAccount: {
+            bank: method.bank,
+            accountNumber: method.accountNumber,
+            accountType: method.accountType,
+            remitteeName: method.remitteeName,
+            remitterName: method.remitterName,
+            expiredAt: method.expiredAt ? new Date(method.expiredAt) : undefined,
+            issuedAt: method.issuedAt ? new Date(method.issuedAt) : undefined,
+            refundStatus: method.refundStatus,
+          },
+        },
+      };
+    case "PaymentMethodTransfer":
+      return {
+        payMethod: "TRANSFER",
+        methodDetail: {
+          type: "PaymentMethodTransfer",
+          transfer: { bank: method.bank, accountNumber: method.accountNumber },
+        },
+      };
+    case "PaymentMethodMobile":
+      return {
+        payMethod: "MOBILE",
+        methodDetail: {
+          type: "PaymentMethodMobile",
+          mobile: { phoneNumber: method.phoneNumber },
+        },
+      };
+    case "PaymentMethodEasyPay":
+      return {
+        payMethod: "EASY_PAY",
+        methodDetail: {
+          type: "PaymentMethodEasyPay",
+          easyPay: { provider: method.provider, easyPayMethod: method.easyPayMethod },
+        },
+      };
+    case "PaymentMethodGiftCertificate":
+      return {
+        payMethod: "GIFT_CERTIFICATE",
+        methodDetail: {
+          type: "PaymentMethodGiftCertificate",
+          giftCertificate: {
+            giftCertificateType: method.giftCertificateType,
+            approvalNumber: method.approvalNumber,
+          },
+        },
+      };
+    case "PaymentMethodConvenienceStore":
+      return {
+        methodDetail: {
+          type: "PaymentMethodConvenienceStore",
+          convenienceStore: {
+            convenienceStoreBrand: method.convenienceStoreBrand,
+            confirmationNumber: method.confirmationNumber,
+            receiptNumber: method.receiptNumber,
+            paymentDeadline: method.paymentDeadline ? new Date(method.paymentDeadline) : undefined,
+          },
+        },
+      };
+    default:
+      return { methodDetail: { type: "Unrecognized" } };
+  }
+}
+
 /**
  * 결제 데이터 검증 (위변조 방지)
  */
@@ -154,6 +261,8 @@ export const syncPayment = async (paymentId: string) => {
       await mongoose.connection.transaction(async (session) => {
         const existing = await PaymentModel.findOne({ merchantUid: paymentId }).session(session);
 
+        const { payMethod, methodDetail } = mapPortOnePaymentMethod(actualPayment.method);
+
         const paymentData = {
           merchantUid: paymentId,
           impUid: actualPayment.transactionId,
@@ -164,6 +273,8 @@ export const syncPayment = async (paymentId: string) => {
           requestAmount: order.finalPrice,
           paidAmount: actualPayment.amount.paid,
           status: mapPortOneStatus(actualPayment.status),
+          payMethod,
+          methodDetail,
           pgProvider: actualPayment.channel?.pgProvider,
           pgTid: actualPayment.pgTxId,
           paidAt: new Date(actualPayment.paidAt),
@@ -208,6 +319,8 @@ export const syncPayment = async (paymentId: string) => {
       await mongoose.connection.transaction(async (session) => {
         const existing = await PaymentModel.findOne({ merchantUid: paymentId }).session(session);
 
+        const { payMethod, methodDetail } = mapPortOnePaymentMethod(failedPayment.method);
+
         const paymentData = {
           merchantUid: paymentId,
           orderId: order._id,
@@ -216,6 +329,8 @@ export const syncPayment = async (paymentId: string) => {
           buyerTel: order.buyerPhone,
           requestAmount: order.finalPrice,
           status: mapPortOneStatus(actualPayment.status),
+          payMethod,
+          methodDetail,
           failedAt: new Date(failedPayment.failedAt),
           failReason: failedPayment.failure?.reason,
         };

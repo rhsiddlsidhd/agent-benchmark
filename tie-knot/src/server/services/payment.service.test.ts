@@ -165,6 +165,157 @@ describe("payment.service", () => {
     });
   });
 
+  describe("결제수단(payMethod/methodDetail) 매핑", () => {
+    it("카드 결제: payMethod=CARD, methodDetail.card에 SDK 필드 그대로 저장된다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: {
+          type: "PaymentMethodCard",
+          card: { publisher: "kb", issuer: "kb", brand: "MASTER", number: "1234-****-****-5678" },
+          approvalNumber: "app-1",
+          installment: { month: 3, isInterestFree: true },
+          pointUsed: false,
+        },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBe("CARD");
+      expect(payment?.methodDetail?.type).toBe("PaymentMethodCard");
+      expect(payment?.methodDetail?.card).toMatchObject({
+        publisher: "kb",
+        number: "1234-****-****-5678",
+        approvalNumber: "app-1",
+        installment: { month: 3, isInterestFree: true },
+        pointUsed: false,
+      });
+    });
+
+    it("가상계좌: payMethod=VIRTUAL_ACCOUNT, 날짜 필드가 Date로 변환되어 저장된다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      const expiredAt = new Date("2026-08-01T00:00:00.000Z").toISOString();
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: {
+          type: "PaymentMethodVirtualAccount",
+          bank: "KOOKMIN",
+          accountNumber: "110-1234-5678",
+          expiredAt,
+        },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBe("VIRTUAL_ACCOUNT");
+      expect(payment?.methodDetail?.virtualAccount?.accountNumber).toBe("110-1234-5678");
+      expect(payment?.methodDetail?.virtualAccount?.expiredAt?.toISOString()).toBe(expiredAt);
+    });
+
+    it("계좌이체: payMethod=TRANSFER로 매핑된다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: { type: "PaymentMethodTransfer", bank: "SHINHAN", accountNumber: "110-9999" },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBe("TRANSFER");
+      expect(payment?.methodDetail?.transfer?.bank).toBe("SHINHAN");
+    });
+
+    it("휴대폰: payMethod=MOBILE로 매핑된다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: { type: "PaymentMethodMobile", phoneNumber: "01000000000" },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBe("MOBILE");
+      expect(payment?.methodDetail?.mobile?.phoneNumber).toBe("01000000000");
+    });
+
+    it("간편결제: payMethod=EASY_PAY로 매핑된다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: { type: "PaymentMethodEasyPay", provider: "KAKAOPAY", easyPayMethod: { type: "CARD" } },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBe("EASY_PAY");
+      expect(payment?.methodDetail?.easyPay?.provider).toBe("KAKAOPAY");
+    });
+
+    it("상품권: payMethod=GIFT_CERTIFICATE로 매핑된다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: {
+          type: "PaymentMethodGiftCertificate",
+          giftCertificateType: "CULTURELAND",
+          approvalNumber: "gc-1",
+        },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBe("GIFT_CERTIFICATE");
+      expect(payment?.methodDetail?.giftCertificate?.approvalNumber).toBe("gc-1");
+    });
+
+    it("편의점: 우리 PAY_METHOD 6종에 없으므로 payMethod는 비워두고 methodDetail만 기록한다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: { type: "PaymentMethodConvenienceStore", convenienceStoreBrand: "CU" },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBeUndefined();
+      expect(payment?.methodDetail?.type).toBe("PaymentMethodConvenienceStore");
+    });
+
+    it("인식 불가한 type 값이면 Unrecognized로 폴백해 흔적을 남긴다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue({
+        ...paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+        method: { type: "PaymentMethodFutureThing" },
+      });
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBeUndefined();
+      expect(payment?.methodDetail?.type).toBe("Unrecognized");
+    });
+
+    it("method 자체가 없으면 payMethod/methodDetail 둘 다 비운다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(1);
+      getPaymentMock.mockResolvedValue(
+        paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+      );
+
+      await syncPayment(order.merchantUid);
+
+      const payment = await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean();
+      expect(payment?.payMethod).toBeUndefined();
+      expect(payment?.methodDetail).toBeUndefined();
+    });
+  });
+
   describe("FAILED 상태 처리", () => {
     it("salesCount를 증가시키지 않고 Order를 CANCELLED로 전이시킨다", async () => {
       const { savedProduct, order } = await setupProductAndOrder(3);
