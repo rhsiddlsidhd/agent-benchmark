@@ -37,7 +37,5 @@ src/server/lib/
 
 ## 관련 문서
 
-- 식별자 케이스 공통 규칙: `src/CLAUDE.md`
 - 순수 함수와의 경계: `src/shared/utils/CLAUDE.md`
 - 클라이언트 전용 연동(kakao)/조합 유틸(cn): `src/client/lib/CLAUDE.md`
-- server/client/shared 3분할 배경: `docs/ARCHITECTURE.md`

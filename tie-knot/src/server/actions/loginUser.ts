@@ -9,7 +9,7 @@ import { setCookie } from "@/server/lib/cookies";
 import { getUser } from "@/server/services";
 import { UserRole } from "@/server/models";
 import { comparePasswords } from "@/server/lib/bcrypt";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 
 export const loginUser = async (
   _prev: null,
@@ -76,6 +76,6 @@ export const loginUser = async (
       data: { role: user.role, email: user.email, userId: user._id.toString() },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

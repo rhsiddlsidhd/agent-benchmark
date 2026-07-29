@@ -7,7 +7,7 @@ import { hashPassword } from "@/server/lib/bcrypt";
 import { validateAndFlatten } from "@/shared/utils";
 import { RegisterSchema } from "@/shared/schemas";
 import { checkEmailDuplicate, createUser } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 export async function signupUser(
   prev: unknown,
   formData: FormData,
@@ -60,6 +60,6 @@ export async function signupUser(
       data: { message: `${data.email}님 회원가입을 축하드립니다.` },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 }

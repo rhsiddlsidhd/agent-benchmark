@@ -32,5 +32,4 @@ src/client/components/atoms/
 
 ## 관련 문서
 
-- 상위 4단계 정의 및 순수성 원칙: `src/client/components/CLAUDE.md`
 - 조합이 시작되는 다음 단계: `src/client/components/molecules/CLAUDE.md`

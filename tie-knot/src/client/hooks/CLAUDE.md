@@ -24,9 +24,8 @@ src/client/hooks/
 
 ## Gotchas
 
-- 없음
+- 없음.
 
 ## 관련 문서
 
-- 식별자 케이스 공통 규칙, 배럴 import 정책, 추상화 네이밍 규칙(`useCoupleInfoForm` 등): `src/CLAUDE.md`
 - 외부 SDK 초기화 훅의 실제 위치(lib과의 배치 경계): `src/client/lib/CLAUDE.md`

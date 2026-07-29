@@ -4,7 +4,7 @@ import { validateAndFlatten } from "@/shared/utils";
 import { PWConfirmSchema } from "@/shared/schemas";
 import { APIResponse } from "@/shared/types";
 import { changePassword } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { decrypt } from "@/server/lib/jose";
 import { deleteCookie } from "@/server/lib/cookies";
 
@@ -64,6 +64,6 @@ export const updateUserPassword = async (
       data: { message: "비밀번호가 성공적으로 변경되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

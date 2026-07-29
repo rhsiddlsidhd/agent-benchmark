@@ -17,23 +17,15 @@ src/shared/utils/
 
 ## Critical Convention
 
-- 파일명은 kebab-case, 목적명(기능/역할 기반 이름, 도메인명과 대비)으로 짓는다.
+- 파일명/파일당 목적 1개 원칙은 `src/shared/CLAUDE.md` 공통 규칙 참고.
 - DB 연결, 외부 API 호출, 파일시스템 접근, 브라우저 전용 side-effect(`window.open` 등) 있는 로직을 여기 두지 않는다 — 특정 외부 라이브러리/서비스를 감싸면 `src/server/lib/`(서버 전용) 또는 `src/client/lib/`(브라우저 전용), 특정 라이브러리를 감싸지 않는 순수 브라우저 API 호출(예: `open-app.ts`)이면 `src/client/utils/`로 옮긴다. 반대로 side-effect 없는 로직을 "npm 패키지를 쓴다"는 이유만으로 `lib/`에 두지 않는다.
-
-## 에러 판단 로직 — 제거됨
-
-- 클라이언트 쪽 "실패를 보고 field/message/silent 중 뭘 보여줄지 판단"하는 로직(`handleClientError`)은 제거했다 — 서버 공용 핸들러(채널 A/B)가 이미 표시-안전한 `ErrorPayload { 분류, message, fieldErrors? }`를 만들어 보내므로(민감 분류 message는 서버에서 일반화, 필드 에러는 fieldErrors에), 컴포넌트는 폼이면 `useActionState` state를, GET이면 `useSWR` `error`를 그대로 렌더할 뿐이다. 원문/일반화 판단·outcome 분류를 `utils`에서 하지 않는다(공통 규칙은 `docs/ERROR_HANDLING.md` 참고).
-- `error.ts`의 `getFieldError`/`hasFieldErrors`는 이 제거 대상이 아니다 — 서버가 이미 채워준 `fieldErrors`를 그대로 읽기만 할 뿐 "무엇을 보여줄지" 판단하지 않는다, 폼 다수가 계속 쓰는 유틸이라 남겨둔다.
 
 ## Gotchas
 
-- 없음.
 - 진단용 `console.error` 호출은 "side-effect 없음" 원칙 위반으로 안 친다(service/util 파일들 공통).
-- `validate-and-flatten.ts`는 `src/lib/validation/`에서 옮겨왔다 — zod(`schema.safeParse`)만 쓰는 순수 함수라 side-effect/시크릿/외부 통신이 전혀 없는데, 예전엔 "zod가 npm 패키지"라는 이유만으로 `lib/`에 잘못 분류돼있었다. npm 패키지 사용 자체가 `lib/` 분류 기준이 아니라는 걸 보여주는 실사례.
+- `category.ts`의 `ProductCategory`는 카테고리 타입의 단일 소스다 — 새 카테고리를 추가할 땐 여기부터 넓힌다. `src/server/models/product.model.ts`가 이 타입을 그대로 re-export하고, `products/[category]` route의 `generateStaticParams()`/카테고리 검증(`isProductCategory`)이 전부 이 타입을 기준으로 삼으므로 여기 안 넓히면 하위가 다 어긋난다(`src/app/(main)/(products)/products/CLAUDE.md` 참고).
 
 ## 관련 문서
 
-- 식별자 케이스 공통 규칙: `src/CLAUDE.md`
-- side-effect 로직과의 경계: `src/lib/CLAUDE.md`
-- 배럴 import 정책: `src/CLAUDE.md`
+- side-effect 로직과의 경계: `src/server/lib/CLAUDE.md`(서버 전용), `src/client/lib/CLAUDE.md`(브라우저 전용)
 - 테스트 작성 컨벤션(1차 커버 범위 우선순위): `docs/TESTING_GUIDELINE.md`

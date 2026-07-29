@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { AppError } from "@/shared/types";
 import { requireAuth } from "@/server/services";
 import { signUploadRequest, UploadSignature } from "@/server/lib/cloudinary";
@@ -16,8 +16,8 @@ export const POST = async (
       throw new AppError("VALIDATION", "folder 파라미터가 필요합니다.");
     }
 
-    return apiOk(signUploadRequest(folder));
+    return routeSuccess(signUploadRequest(folder));
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

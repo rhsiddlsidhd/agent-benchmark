@@ -35,4 +35,90 @@ describe("ProductCard", () => {
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "/products/invitation/product-1");
   });
+
+  it("할인이 없으면 원가만 표시하고 할인 배지/취소선을 렌더링하지 않는다", () => {
+    render(<ProductCard product={buildProduct({ price: 10000, discount: { discountType: "rate", value: 0 } })} />);
+
+    expect(screen.getByText("10,000원")).toBeInTheDocument();
+    expect(screen.queryByText(/OFF/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/할인/)).not.toBeInTheDocument();
+  });
+
+  it("정률 할인이면 반올림된 %와 할인가를 표시한다", () => {
+    render(
+      <ProductCard
+        product={buildProduct({ price: 10000, discount: { discountType: "rate", value: 0.3 } })}
+      />,
+    );
+
+    expect(screen.getByText("30% OFF")).toBeInTheDocument();
+    expect(screen.getByText("7,000원")).toBeInTheDocument();
+    expect(screen.getByText("10,000원")).toBeInTheDocument();
+  });
+
+  it("정액 할인이면 원 단위 할인 라벨과 할인가를 표시한다", () => {
+    render(
+      <ProductCard
+        product={buildProduct({ price: 10000, discount: { discountType: "amount", value: 3000 } })}
+      />,
+    );
+
+    expect(screen.getByText("3,000원 할인")).toBeInTheDocument();
+    expect(screen.getByText("7,000원")).toBeInTheDocument();
+  });
+
+  it("최종가가 0원이면 '무료'로 표시한다", () => {
+    render(
+      <ProductCard
+        product={buildProduct({ price: 1000, discount: { discountType: "amount", value: 1000 } })}
+      />,
+    );
+
+    expect(screen.getByText("무료")).toBeInTheDocument();
+  });
+
+  it("isPremium이면 Premium 배지를 렌더링한다", () => {
+    render(<ProductCard product={buildProduct({ isPremium: true })} />);
+
+    expect(screen.getByText("Premium")).toBeInTheDocument();
+    expect(screen.queryByText("추천")).not.toBeInTheDocument();
+  });
+
+  it("isFeatured면 추천 배지를 렌더링한다", () => {
+    render(<ProductCard product={buildProduct({ isFeatured: true })} />);
+
+    expect(screen.getByText("추천")).toBeInTheDocument();
+    expect(screen.queryByText("Premium")).not.toBeInTheDocument();
+  });
+
+  it("isPremium/isFeatured 둘 다 아니면 배지를 렌더링하지 않는다", () => {
+    render(<ProductCard product={buildProduct({ isPremium: false, isFeatured: false })} />);
+
+    expect(screen.queryByText("Premium")).not.toBeInTheDocument();
+    expect(screen.queryByText("추천")).not.toBeInTheDocument();
+  });
+
+  it("likes가 비어있으면 좋아요 0으로 표시한다", () => {
+    render(<ProductCard product={buildProduct({ likes: [] })} />);
+
+    expect(screen.getByText("좋아요 0")).toBeInTheDocument();
+  });
+
+  it("likes 개수를 그대로 표시한다", () => {
+    render(<ProductCard product={buildProduct({ likes: ["u1", "u2", "u3"] })} />);
+
+    expect(screen.getByText("좋아요 3")).toBeInTheDocument();
+  });
+
+  it("subCategory 라벨을 매핑해 표시한다", () => {
+    render(<ProductCard product={buildProduct({ subCategory: "wedding" })} />);
+
+    expect(screen.getByText("청첩장")).toBeInTheDocument();
+  });
+
+  it("제목을 표시한다", () => {
+    render(<ProductCard product={buildProduct({ title: "여름 청첩장" })} />);
+
+    expect(screen.getByRole("heading", { name: "여름 청첩장" })).toBeInTheDocument();
+  });
 });

@@ -5,7 +5,7 @@ import { hashPassword } from "@/server/lib/bcrypt";
 
 import { GuestbookSchema } from "@/shared/schemas";
 import { createGuestbookService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { validateAndFlatten } from "@/shared/utils";
 import { routes } from "@/shared/constants";
 import { revalidatePath } from "next/cache";
@@ -43,6 +43,6 @@ export const createGuestbook = async (
       data: { message: "방명록 작성이 완료되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

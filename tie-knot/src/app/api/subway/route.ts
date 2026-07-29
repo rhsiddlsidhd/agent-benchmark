@@ -1,4 +1,4 @@
-import { APIRouteResponse, apiOk, apiFail } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { getAllSubwayStationNames } from "@/server/services";
 import { SubwayStationsResponse } from "@/shared/schemas";
 
@@ -15,8 +15,8 @@ export const GET = async (): Promise<
       label: `${name}역`,
     }));
 
-    return apiOk(stations);
+    return routeSuccess(stations);
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

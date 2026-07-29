@@ -4,19 +4,23 @@
 
 Next.js App Router 진입점 — 공유 `layout.tsx`/독립 `error.tsx` 근거가 있는 라우트를 그룹(`(folder)`)으로 묶어 섹션을 나눈다(그룹 목록·존재 근거는 아래 "라우트 그룹 구성" 참고). 괄호 폴더는 URL에 영향 없는 조직화 단위다. Route Handler(API) 세부 규칙은 `src/app/api/CLAUDE.md`에서 관리한다.
 
+## Key Files
+
+| File               | Purpose                                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `global-error.tsx` | root layout이 렌더 중 던지는 에러의 마지막 안전망 — `error.tsx`는 route segment 하위만 커버해서 root layout(`layout.tsx`) 자체 에러는 못 잡는다. 없이 배포하지 않는다(필수). |
+
+root layout을 통째로 대체하기 때문에 생기는 제약:
+
+| 제약              | 내용                                                                                                                                                                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider 소멸     | root layout 자체엔 provider가 없지만 `(main)/layout.tsx`의 Provider/Toaster까지 같이 사라진다 — 렌더하는 컴포넌트는 provider 없이도 동작하는 self-contained 컴포넌트여야 한다(예: `organisms/ErrorFallback.tsx` — atoms만 조합, context 의존 없음) |
+| CSS 재import 필요 | root layout이 담당하던 `globals.css` import도 같이 대체된다 — `global-error.tsx` 안에서 별도로 다시 import하지 않으면 스타일이 안 먹는다                                                                                                           |
+| metadata 미지원   | `metadata`/`generateMetadata` export가 안 먹힌다 — Client Component 강제라서다, 필요하면 React `<title>` 컴포넌트로 대체한다(공식문서)                                                                                                             |
+
 ## 라우트 그룹 구성
 
 라우트 그룹은 공유 `layout.tsx` 또는 독립 `error.tsx` 근거가 있을 때만 만든다 — 조직 편의만으로 만들지 않는다. "내 것" 계열 그룹(`(my-order)`, `(my-profile)` 등)은 그룹명과 폴더명을 동일하게 맞춘다 — URL엔 영향 없지만, 이름이 다르면 그 라우트를 찾을 때마다 "그룹은 my-X인데 폴더는 왜 X야"라는 탐색 비용이 생긴다.
-
-## 예정 라우트 (mock UI만 구현)
-
-- `delivery-info`(`(checkout)/delivery-info`, `/delivery-info`) — 실물 상품 카테고리(답례품/웨딩소품 등, 루트 `CLAUDE.md` 프로젝트 개요 참고) 확장 시 배송지 입력 스텝으로 쓸 자리. 지금은 `ComingSoonPage`(`src/client/components/organisms/`) mock UI만 있다 — 실제 폼은 배송지 데이터 요구사항(주소 형식, 배송비 계산 여부 등)을 실물 카테고리가 실제로 추가되는 시점에 알고 나서 구현한다, 모른 채 먼저 만들면 요구사항 확정 후 다시 갈아엎는다.
-- `support`((main) 바로 아래 단독 라우트, `/support`) — `sidebar.ts`의 `AUTH_USER_ORDER_NAVIGATE_ITEMS`가 참조하던 href를 실제 페이지로 채웠다. 마찬가지로 `ComingSoonPage` mock UI만 있다 — 실제 문의 폼/FAQ는 별도 작업.
-
-## 카테고리 라우팅
-
-- 카테고리는 경로 세그먼트로 구분한다(`/products/[category]`, `routes.products.byCategory`) — 상품 상세는 `/products/[category]/[id]`로 그 아래 중첩한다. Next.js는 같은 레벨의 형제 dynamic segment가 서로 다른 이름을 갖는 걸 허용하지 않는다("You cannot use different slug names for the same dynamic path", 공식 문서 근거) — `[category]`와 `[id]`를 형제로 두면 이 제약에 걸려서, `[id]`를 `[category]` 하위로 중첩했다.
-- 새 카테고리가 추가되면 `src/server/models/product.model.ts`가 re-export하는 `ProductCategory`(원본은 `src/shared/utils/category.ts`)부터 넓힌다 — `generateStaticParams()`/카테고리 검증(`isProductCategory`)이 전부 이 타입을 기준으로 삼는다.
 
 ## Structure
 
@@ -47,35 +51,25 @@ Next.js App Router 진입점 — 공유 `layout.tsx`/독립 `error.tsx` 근거�
 - 파일명/식별자 케이스는 `src/CLAUDE.md`의 공통 규칙을 따른다.
 - **`page.tsx`/`layout.tsx`/`error.tsx`/`not-found.tsx`/`proxy.ts`는 `export default`를 쓴다** — Next.js가 강제하는 파일 컨벤션이다.
 
-## global-error.tsx
-
-root `src/app/` 밑에 `global-error.tsx` 없이 배포하지 않는다 — `error.tsx`는 route segment 하위만 커버해서 root layout(`src/app/layout.tsx`) 자체가 렌더 중 던지는 에러는 어떤 `error.tsx`도 못 잡는다, `global-error.tsx`가 그 마지막 안전망이다.
-
-root layout을 통째로 대체하기 때문에 생기는 제약:
-
-| 제약              | 내용                                                                                                                                                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Provider 소멸     | root layout 자체엔 provider가 없지만 `(main)/layout.tsx`의 Provider/Toaster까지 같이 사라진다 — 렌더하는 컴포넌트는 provider 없이도 동작하는 self-contained 컴포넌트여야 한다(예: `organisms/ErrorFallback.tsx` — atoms만 조합, context 의존 없음) |
-| CSS 재import 필요 | root layout이 담당하던 `globals.css` import도 같이 대체된다 — `global-error.tsx` 안에서 별도로 다시 import하지 않으면 스타일이 안 먹는다                                                                                                           |
-| metadata 미지원   | `metadata`/`generateMetadata` export가 안 먹힌다 — Client Component 강제라서다, 필요하면 React `<title>` 컴포넌트로 대체한다(공식문서)                                                                                                             |
-
 ## Gotchas
 
-- 기존 라우트는 대부분 `page.tsx`가 `src/client/components/organisms/{Name}Form.tsx`를 바로 import하는 얇은 래퍼다 — 라우트 전용 스테이징 없이 처음부터 전역 `src/client/components/organisms/`에 들어가 있다. 이 구조를 지금 일괄로 되돌리지 않는다 — 새 라우트/새 기능부터, 그리고 컨테이너/순수 분리 리팩토링 대상이 되는 라우트부터 순차 적용(`login/`이 첫 사례: `_components/LoginForm.tsx`(컨테이너)가 `organisms/LoginForm.tsx`(순수)를 감쌈, `src/client/components/organisms/CLAUDE.md` Gotchas 참고). Templates 티어도 같은 정책 — 도입 시점/소급 범위는 `src/client/components/templates/CLAUDE.md` Gotchas 참고.
+- 컨테이너/순수 분리는 라우트별 순차 적용 중이라 진행 상태가 균일하지 않다 — `_components/`를 가진 라우트가 이미 다수(로그인/인증/체크아웃/관리자 등)로 늘었지만, 그중 실제로 라우트 로컬 컨테이너가 공용 순수 organism을 감싸는 정석 패턴인지는 라우트마다 다르다(예: `login/`의 `LoginForm`, `couple-info`/`my-orders/edit`의 `CoupleInfoForm` — 위 Critical Convention 예시 참고). 이 패턴은 새 라우트/새 기능부터 강제하고, 기존 라우트 전체를 지금 일괄 점검·전환하지는 않는다. Templates 티어도 같은 정책 — 도입 시점/소급 범위는 `src/client/components/templates/CLAUDE.md` Gotchas 참고.
 - `_components` private 폴더는 두 종류로 쓰인다 — 라우트 그룹 셸 전용과 페이지 전용. 둘 다 컨테이너/순수 분리가 끝난 라우트에 있다(각각 `index.tsx` 배럴 완비).
 - `loading.tsx`는 프로젝트 전체에 0개 — 필요해지면 그때 이 문서에 기준을 추가한다(지금은 규정 안 함).
-- `layout.tsx` 함수명 케이스가 파일마다 다름 — 루트/`(admin)/admin`은 `RootLayout`/`AdminLayout`(PascalCase), `(main)`/`(auth)`/`(preview)`는 전부 소문자 `layout`. Next.js는 `export default`라 이름 자체가 동작에 영향 없지만, 새로 만들 때 아무거나 따르지 말고 PascalCase(`{Scope}Layout`)로 통일하는 걸 권장 — 기존 3개 리네임은 코드 리팩토링 범위라 지금은 안 건드림.
 
-## 관련 문서
+## References
 
-- 식별자 케이스 공통 규칙: `src/CLAUDE.md`
-- 라우트 경로 문자열 상수화(`routes.ts`) 컨벤션: `src/shared/constants/CLAUDE.md`
-- 승격된 순수함수: `src/shared/utils/CLAUDE.md`
-- 승격된 훅: `src/client/hooks/CLAUDE.md`
-- 승격된 타입: `src/shared/types/CLAUDE.md`
-- 승격된 상수: `src/shared/constants/CLAUDE.md`
-- 컴포넌트 조직 구조: `src/client/components/CLAUDE.md`
-- Templates(페이지 전체 배치) 세부 규칙: `src/client/components/templates/CLAUDE.md`
-- Route Handler 세부 규칙: `src/app/api/CLAUDE.md`
-- Server Actions: `src/server/actions/CLAUDE.md`
-- 응답/에러 계약: `src/server/CLAUDE.md`(Route Handler), `src/client/CLAUDE.md`(Client fetch)
+즉시 로드(`@import`) 아님 — 트리거 열 키워드에 해당하는 작업일 때만 해당 문서를 읽는다.
+
+| 문서        | 위치                              | 트리거                                  | 요약                     |
+| ----------- | ---------------------------------- | ----------------------------------------- | ------------------------ |
+| `CLAUDE.md` | `src/shared/constants/`            | 라우트 경로 문자열(`routes.ts`) 상수화, 승격된 상수 확인 시 | 상수 컨벤션  |
+| `CLAUDE.md` | `src/shared/utils/`                | 승격된 순수함수 확인 시                   | 순수함수 컨벤션          |
+| `CLAUDE.md` | `src/client/hooks/`                | 승격된 훅 확인 시                         | 훅 컨벤션                |
+| `CLAUDE.md` | `src/shared/types/`                | 승격된 타입 확인 시                       | 타입 컨벤션              |
+| `CLAUDE.md` | `src/client/components/`           | 컴포넌트 조직 구조 확인 시                | Atomic Design 조직 구조  |
+| `CLAUDE.md` | `src/client/components/templates/` | Templates(페이지 전체 배치) 세부 규칙 확인 시 | template 컨벤션      |
+| `CLAUDE.md` | `src/app/api/`                     | Route Handler 세부 규칙 확인 시           | Route Handler 컨벤션     |
+| `CLAUDE.md` | `src/server/actions/`              | Server Actions 확인 시                    | Server Action 컨벤션     |
+| `CLAUDE.md` | `src/server/`                      | 응답/에러 계약(Route Handler) 확인 시     | 성공/에러 응답 빌더 계약 |
+| `CLAUDE.md` | `src/client/`                      | 응답/에러 계약(Client fetch) 확인 시      | fetcher 계약             |

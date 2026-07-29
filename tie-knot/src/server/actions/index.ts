@@ -8,7 +8,6 @@ export * from "./createProduct";
 export * from "./deleteGuestbook";
 export * from "./deleteProduct";
 export * from "./findUserEmail";
-export * from "./handleActionError";
 export * from "./incrementProductViews";
 export * from "./loginUser";
 export * from "./logoutUser";

@@ -3,7 +3,7 @@
 import { APIResponse, AppError } from "@/shared/types";
 import { syncPayment, requireAuth } from "@/server/services";
 import { PayStatus } from "@/server/models";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 
 export const completePayment = async (
   paymentId: string,
@@ -23,6 +23,6 @@ export const completePayment = async (
 
     return { success: true, data: { status: payment.status } };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

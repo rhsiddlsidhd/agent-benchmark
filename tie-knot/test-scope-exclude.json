@@ -9,6 +9,7 @@
   "src/app/**/layout.tsx",
   "src/app/**/error.tsx",
   "src/app/**/not-found.tsx",
+  "src/app/api/**/route.ts",
   "**/index.ts",
   "**/index.tsx"
 ]

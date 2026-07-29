@@ -1,4 +1,4 @@
-import { apiOk, apiFail, APIRouteResponse } from "@/server/response";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
 import { getAllPremiumFeatureService } from "@/server/services";
 import { PremiumFeaturesResponse } from "@/shared/schemas";
 
@@ -8,8 +8,8 @@ export const GET = async (): Promise<
   try {
     const features = await getAllPremiumFeatureService();
 
-    return apiOk({ features: features ?? [] });
+    return routeSuccess({ features: features ?? [] });
   } catch (error) {
-    return apiFail(error);
+    return routeError(error);
   }
 };

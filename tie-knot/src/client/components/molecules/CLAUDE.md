@@ -33,9 +33,12 @@ src/client/components/molecules/
 - `CloudImage.tsx` — Cloudinary라는 인프라에 의존하지만 비즈니스 도메인(Product/Order 등)엔 안 묶여있다 — 인프라 의존은 순수성 위반이 아니므로 그대로 유지.
 - `RadioField.tsx`, `SwitchField.tsx` — `FormField`를 안 쓰고 atoms만 직접 조합해서 라벨까지 자체 처리하는 molecule이다. "...Field"라는 이름만 보고 어디 소속인지 판단하지 않는다 — 위치는 이름이 아니라 실제 조합 복잡도(단순=molecule, 복잡=organism)로 판단한다.
 
-## 관련 문서
+## References
 
-- 상위 4단계 정의 및 순수성 원칙: `src/client/components/CLAUDE.md`
-- 더 복잡한 다음 단계: `src/client/components/organisms/CLAUDE.md`
-- 라우트 전용 승격 대기 공간: `src/app/CLAUDE.md`
-- 테스트 작성 컨벤션(렌더링+단일 상호작용): `docs/TESTING_GUIDELINE.md`
+즉시 로드(`@import`) 아님 — 트리거 열 키워드에 해당하는 작업일 때만 해당 문서를 읽는다.
+
+| 문서                   | 위치                                 | 트리거                       | 요약                       |
+| ---------------------- | ------------------------------------ | ----------------------------- | -------------------------- |
+| `CLAUDE.md`            | `src/client/components/organisms/`   | 더 복잡한 다음 단계 확인 시   | organism 정의              |
+| `CLAUDE.md`            | `src/app/`                           | 라우트 전용 승격 대기 공간 확인 시 | 컨테이너 승격 규칙    |
+| `TESTING_GUIDELINE.md` | `docs/`                              | 이 폴더 테스트 작성 시        | 렌더링+단일 상호작용 assertion 패턴 |

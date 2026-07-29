@@ -3,7 +3,7 @@
 import { APIResponse } from "@/shared/types";
 import { Status } from "@/server/models";
 import { requireAuth, updateProductService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 import { routes } from "@/shared/constants";
 
 import { revalidatePath } from "next/cache";
@@ -34,6 +34,6 @@ export const updateProductStatus = async (
       data: { message: "상품 상태가 변경되었습니다." },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 };

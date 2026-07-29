@@ -1,6 +1,6 @@
 # src/app/api
 
-> Last updated: 2026-07-19
+> Last updated: 2026-07-28
 
 ## Overview
 
@@ -23,17 +23,19 @@ src/app/api/
 - `next/headers`의 `cookies()`/`headers()`를 동기 함수처럼 호출하지 않는다 — 두 함수 모두 비동기이므로 `await cookies()`/`await headers()`로 사용한다.
 - GET 이외의 메서드(POST/PUT/PATCH/DELETE)에 캐싱 옵트인(`export const dynamic = 'force-static'`)을 적용하지 않는다 — 공식 문서: GET을 제외한 나머지 메서드는 같은 파일에 캐시되는 GET과 나란히 있어도 캐시되지 않는다.
 - Route Handler 안에서 `updateTag()`를 호출하지 않는다 — 공식 문서: `updateTag`는 Server Action 전용이며 Route Handler에서 호출하면 에러가 던져진다. Route Handler에서 캐시를 무효화해야 하면 `revalidateTag`/`revalidatePath`를 쓴다.
-- 응답 생성 시 이 프로젝트가 추가한 계약을 따른다 — 세부 규칙은 `src/server/CLAUDE.md` 참고.
+- 응답은 `src/server/boundary.ts`의 `routeSuccess`(성공)/`routeError`(에러)로만 만든다 — `NextResponse.json(...)`/`Response.json(...)`을 route.ts 안에서 직접 호출하지 않는다. Server Action은 이 계약 대상이 아니다(예상된 실패를 이 envelope 없이 plain 객체로 직접 리턴, `actionError` 사용 — `src/server/actions/CLAUDE.md` 참고). `routeSuccess`/`routeError`가 뭘 하는지는 `src/server/CLAUDE.md`(Key Files), 왜 두 채널이 갈라지는지는 `docs/ERROR_HANDLING.md` §채널 분리 규칙 참고.
 
 ## Gotchas
 
-- 수동 refresh 라우트(`auth/refresh`/`auth/verify`)는 없다 — access token이 httpOnly 쿠키라 클라이언트가 수동으로 refresh를 트리거할 필요가 없고, `services/auth.service.ts`의 `getAuth()`가 라우트 호출 시점에 자동으로 처리한다(`src/CLAUDE.md` 참고).
 - 인증이 필요한 Route Handler는 Bearer 헤더를 직접 파싱하지 않고 `services/auth.service.ts`의 `requireAuth()`를 호출한다(세션 없으면 401 throw) — `couple-info`/`order/create`가 이 패턴을 따른다. `kakaomap`의 `Authorization` 헤더는 별개(외부 Kakao API 인증용)라 해당 없음.
 
-## 관련 문서
+## References
 
-- 응답/에러 계약: `src/server/CLAUDE.md`
-- 이 라우트가 호출하는 비즈니스 로직: `src/server/services/CLAUDE.md`
-- Server Actions(자매 컨텍스트): `src/server/actions/CLAUDE.md`
-- Proxy/Middleware 경계: `src/CLAUDE.md`
-- 테스트 작성 컨벤션(1차 범위에서 후순위): `docs/TESTING_GUIDELINE.md`
+즉시 로드(`@import`) 아님 — 트리거 열 키워드에 해당하는 작업일 때만 해당 문서를 읽는다.
+
+| 문서                   | 위치                  | 트리거                          | 요약                     |
+| ---------------------- | ---------------------- | --------------------------------- | ------------------------ |
+| `CLAUDE.md`            | `src/server/`          | 응답/에러 계약 확인 시            | 성공/에러 응답 빌더 계약 |
+| `CLAUDE.md`            | `src/server/services/` | 이 라우트가 호출하는 비즈니스 로직 확인 시 | 서비스 레이어 컨벤션 |
+| `CLAUDE.md`            | `src/server/actions/`  | Server Actions(자매 컨텍스트) 확인 시 | Server Action 컨벤션 |
+| `TESTING_GUIDELINE.md` | `docs/`                | 이 폴더 테스트 작성 시(1차 범위에서 후순위) | 테스트 컨벤션      |

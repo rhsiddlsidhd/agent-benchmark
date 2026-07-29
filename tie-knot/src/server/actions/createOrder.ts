@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { getCookie } from "@/server/lib/cookies";
 import { requireAuth, createOrderService } from "@/server/services";
-import { handleActionError } from "@/server/actions/handleActionError";
+import { actionError } from "@/server/boundary";
 
 import { validateAndFlatten } from "@/shared/utils";
 import { createOrderSchema } from "@/shared/schemas";
@@ -90,6 +90,6 @@ export async function createOrder(
       },
     };
   } catch (e) {
-    return handleActionError(e);
+    return actionError(e);
   }
 }
