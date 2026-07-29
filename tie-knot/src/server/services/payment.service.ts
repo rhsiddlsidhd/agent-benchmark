@@ -11,7 +11,10 @@ import {
 } from "@/server/models";
 
 import { getProductService } from "./product.service";
-import { getOrderSeviceByMerchantUid } from "./order.service";
+import {
+  getOrderSeviceByMerchantUid,
+  findExpiredAwaitingCoupleInfoOrders,
+} from "./order.service";
 import { AppError } from "@/shared/types";
 import { dbConnect } from "@/server/lib/mongodb";
 
@@ -375,4 +378,89 @@ export const syncPayment = async (paymentId: string) => {
       e instanceof Error ? e.message : "결제 동기화에 실패했습니다.",
     );
   }
+};
+
+/**
+ * 결제 취소 — PortOne 환불 API 호출 후 Order/Payment 상태를 트랜잭션으로
+ * 함께 전이한다(syncPayment의 FAILED 분기와 같은 이유). coupleInfo 미입력
+ * 자동취소(order.service의 findExpiredAwaitingCoupleInfoOrders)에서 사용.
+ * @param merchantUid - 우리 서버에서 생성한 주문번호(PortOne paymentId)
+ */
+export const cancelPayment = async (
+  merchantUid: string,
+  reason: string,
+): Promise<void> => {
+  await dbConnect();
+
+  const order = await OrderModel.findOne({ merchantUid });
+
+  if (!order) {
+    throw new AppError("NOT_FOUND", "주문을 찾을 수 없습니다.");
+  }
+
+  try {
+    const result = await portone.payment.cancelPayment({
+      paymentId: merchantUid,
+      reason,
+      requester: "ADMIN",
+    });
+
+    if (result.cancellation.status === "FAILED") {
+      throw new AppError("EXTERNAL_SERVICE", "포트원 결제 취소에 실패했습니다.");
+    }
+
+    const cancelledAt =
+      "cancelledAt" in result.cancellation && result.cancellation.cancelledAt
+        ? new Date(result.cancellation.cancelledAt)
+        : new Date();
+    const cancelAmount =
+      "totalAmount" in result.cancellation ? result.cancellation.totalAmount : undefined;
+
+    await mongoose.connection.transaction(async (session) => {
+      await PaymentModel.updateOne(
+        { merchantUid },
+        { status: "CANCELLED", cancelledAt, cancelAmount, cancelReason: reason },
+        { session, runValidators: true },
+      );
+
+      order.orderStatus = "CANCELLED";
+      order.cancelledAt = cancelledAt;
+      order.cancelReason = reason;
+      await order.save({ session });
+    });
+  } catch (e) {
+    if (e instanceof PortOne.PortOneError) {
+      throw new AppError("EXTERNAL_SERVICE", `포트원 취소 오류: ${e.message}`);
+    }
+    if (e instanceof AppError) {
+      throw e;
+    }
+    throw new AppError(
+      "INTERNAL",
+      e instanceof Error ? e.message : "결제 취소에 실패했습니다.",
+    );
+  }
+};
+
+/**
+ * coupleInfo 미입력 자동취소 오케스트레이션 — cron 인프라가 없어(TODO.md
+ * "couple-info를 payment 이후로 분리" 참고) my-orders 목록 조회 직전에
+ * 호출하는 lazy-check 방식을 쓴다. 개별 주문 취소 실패가 다른 주문 처리를
+ * 막지 않도록 서로 격리한다(로깅 후 계속 진행 — silent swallow 아님).
+ */
+export const cancelExpiredAwaitingCoupleInfoOrders = async (
+  userId: string,
+): Promise<void> => {
+  const expiredOrders = await findExpiredAwaitingCoupleInfoOrders(userId);
+
+  await Promise.all(
+    expiredOrders.map((order) =>
+      cancelPayment(order.merchantUid, "정보 미입력으로 인한 자동 취소").catch((e) => {
+        console.error(
+          `[cancelExpiredAwaitingCoupleInfoOrders] ${order.merchantUid} 취소 실패:`,
+          e,
+        );
+      }),
+    ),
+  );
 };

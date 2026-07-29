@@ -12,12 +12,14 @@
 ## 새 피처
 
 - [x] **결제수단 6종으로 확장** (카드/가상계좌/계좌이체/휴대폰 기존 4종 + 간편결제·상품권 신규 2종) — `PaymentMethodSelector.tsx`, `constants/payment.ts`(`PAY_METHOD`), `payment.model.ts`/`order.model.ts` enum, `my-orders/page.tsx` 라벨 전부 반영 완료(2026-07-28). PayPal/Alipay/편의점 3종은 dev 채널(KG이니시스)이 지원 안 해서 제외 확정(`이니시스 V2에서 지원하지 않는 결제 수단` 에러로 실제 확인됨) — 나중에 채널 계약 추가되면 그때 재검토.
-- [ ] **결제 워크플로우에서 `couple-info` 입력을 분리(payment 이후로)** — 지금은 `couple-info`(청첩장 콘텐츠 입력, 신랑/신부·결혼식 정보·갤러리)가 결제 전 필수 게이트다: `Order.coupleInfoId`가 `required: true`(`order.model.ts`)라 coupleInfo 없이는 주문 자체가 생성 불가, `ProductSummary`의 "구매하기"가 무조건 `routes.coupleInfo`로 먼저 보내고, `payment/page.tsx`는 `?q={coupleInfoId}` 없으면 렌더 자체를 거부한다. 이 결합이 잘못됐다고 판단 — 논의 결과(2026-07-29) 방향:
-  - 근거: `coupleInfoId`는 가격(`ProductSnapShot.pricing`)에 영향 없음 — 결제 전에 반드시 알아야 할 정보가 아니라 주문 후 채워도 되는 콘텐츠. 무거운 폼(계좌 정보까지 포함)을 결제 직전에 강제하면 이탈 위험. `my-orders/edit/_components/CoupleInfoForm.tsx`가 이미 "주문목록 → 폼 입력(update)" 패턴을 구현해놔서, CREATE 쪽도 같은 패턴(결제 완료 → 주문목록에서 안내 → 폼 라우팅에서 POST)으로 맞추면 됨.
-  - 비용: `Order.coupleInfoId`를 `required: false`로(불변조건 약화, `getActiveOrderInfoByCoupleInfoId` 등 이 필드로 역조회하는 로직 전부 nullable 대응 필요) / "결제완료·정보입력 대기" order status 신설 / `payment/page.tsx`가 `q`(coupleInfoId) 대신 product/cart(`order.store.ts`의 `CheckoutItem`) 기반으로 렌더하도록 변경 / 결제만 하고 정보 영영 안 채우는 케이스 운영 정책 필요(비즈니스 판단, 엔지니어링만으론 결정 불가).
-  - 라우팅: `(checkout)/couple-info`(현재 create 진입점)는 개념상 더 이상 체크아웃 단계가 아니므로 `(my-order)` 그룹 쪽(기존 `my-orders/edit`와 같은 자리)으로 재배치돼야 함. **식별자가 `coupleInfoId`→`orderId`로 바뀐다** — 지금은 coupleInfo를 먼저 만들고 그 id로 order를 만들지만, 새 흐름은 order가 먼저 생기므로 진입 시점엔 coupleInfoId가 없고 orderId만 있다. `useCoupleInfoForm`(`searchParams.get("q")`로 create/edit 공용 처리)의 create 모드가 이 의미 변화를 반영해야 함 — 정확한 URL/라우트 이름은 구현 시점에 결정.
-  - `delivery-info`(현재 mock, 같은 `(checkout)` 그룹)도 실제 구현 시 동일 함정(무거운 폼을 결제 전에 강제)에 안 빠지도록 이 논의를 같이 참고할 것.
-  - 착수 전 제품 담당자 컨펌 필요 — 비용 항목 중 운영 정책은 순수 기술 결정이 아님.
+- [x] **결제 워크플로우에서 `couple-info` 입력을 분리(payment 이후로)** — 완료(2026-07-29~30). 8개 Phase로 분할 진행(`docs/GIT.md` 1작업=1PR 원칙):
+  - Phase 3(`refactor/order-couple-info-optional`, PR #77) — `Order.coupleInfoId` optional화, `confirmedAt` 필드 신설.
+  - Phase 4(`refactor/payment-entry-without-couple-info`, PR #78) — `payment/page.tsx`의 `?q` 필수 게이트 제거, `ProductSummary`/`PaymentButton`이 coupleInfoId 없이 바로 `/payment`로 이동.
+  - Phase 5(`refactor/attach-couple-info-to-order`, PR #79) — `attachCoupleInfoToOrder` 신설(소유권+결제상태 재검증 후 연결).
+  - Phase 6(`refactor/couple-info-route-migration`, PR #80) — `(checkout)/couple-info` → `(my-order)/my-orders/couple-info` 이동, 식별자 `q`(coupleInfoId) → `orderId`로 전환.
+  - Phase 7(`feat/pending-couple-info-banner`, PR #81) — my-orders 목록에 "정보입력 대기" 배너+CTA. 새 order status는 안 만들고 `orderStatus===CONFIRMED && !coupleInfoId` 파생판정으로 처리(과설계 방지).
+  - Phase 8(`feat/auto-cancel-pending-couple-info`, PR #82) — 결제 후 `COUPLE_INFO_DEADLINE_DAYS`(7일, `shared/constants/order.ts`) 초과까지 정보 미입력 시 자동취소+환불. cron 인프라 없어 lazy-check 방식(my-orders 목록 조회 직전 `cancelExpiredAwaitingCoupleInfoOrders` 호출) 채택.
+  - 실결제 완주 검증은 안 함(보류 결정, 위 "PortOne 결제수단 매핑" 항목과 같은 이유) — Phase 4/6/7은 Playwright로 실제 브라우저 검증 완료(DB 시드로 결제완료 상태 재현), Phase 8은 7일 대기가 실측 불가해 단위테스트로만 검증.
 
 ---
 
@@ -28,6 +30,7 @@
   - **결제창 호출 필수 파라미터 누락 버그 3건 수정(2026-07-28)**: `src/client/hooks/usePortOnePayment.ts`의 `PortOne.requestPayment()` 호출에서 발견 — `productType`(휴대폰 결제 시 이니시스 V2 필수) 누락, `virtualAccount`(가상계좌 결제 시 필수) 누락, `easyPay.easyPayProvider`(간편결제 시 필수, `KAKAOPAY`로 고정) 누락. Playwright로 6개 결제수단 전부 결제하기 버튼까지 태워보며 발견·수정 완료 — 수정 후 6개 전부 결제창 정상 호출 확인(신용카드는 카드번호 입력 화면까지, 간편결제는 카카오페이 브릿지 오픈까지 확인).
   - **매핑 코드 구현 완료(2026-07-29, PR #76)**: 재조사 결과 "검증 안 됨"이 아니라 **매핑 코드 자체가 없었음** — `syncPayment`가 PortOne 응답의 `actualPayment.method`를 아예 읽지 않아 `payMethod`/`methodDetail`이 매 결제마다 빈 채로 저장되던 상태. `mapPortOnePaymentMethod` 신설해 7종 discriminant(카드/가상계좌/계좌이체/휴대폰/간편결제/상품권/편의점) + 미인식 폴백까지 매핑, `payment.service.test.ts`에 SDK 타입 정의(`node_modules/@portone/server-sdk`) 기준 mock 응답으로 9개 케이스 검증 완료.
   - **다음 단계(보류, 의도적 결정)**: 실제 결제 1건 카드번호 완주까지 태워 진짜 PortOne 응답으로 DB 반영을 확인하는 건 dev 채널이라도 외부 PG 시스템에 실호출이 나가는 별도 위험급 작업이라 이번 라운드에서는 진행 안 하기로 함(2026-07-29). 매핑 로직 자체는 SDK 타입 정의를 그대로 따라 만들었고 mock 테스트로 검증됐으므로 신뢰도는 높으나, 실결제 완주 검증은 여전히 미완료 — 나중에 진행할 때는 PortOne 공식 테스트카드 확보 후 진행.
+- [ ] **`/my-orders`에서 `Order._id` 미직렬화로 콘솔 에러 발생** (couple-info 분리 Phase 6/7 검증 중 발견, 2026-07-29) — `order.service.ts`의 `getOrdersByUserId`가 `.lean()` 결과의 `coupleInfoId`/`userId`/`paymentId`/`product.productId`는 전부 `.toString()`으로 문자열화하면서 정작 `_id` 자체는 빠뜨렸다. Mongoose `ObjectId` 인스턴스가 Server Component → Client Component(`MyOrdersTemplate`) props로 그대로 전달돼 "Only plain objects can be passed to Client Components... Objects with toJSON methods are not supported" 콘솔 에러가 남(화면 자체는 정상 렌더링됨, 기능 영향 없음). 이번 couple-info 분리 작업과 무관한 기존 버그라 별도 처리하지 않고 여기 기록만 함.
 
 ---
 
