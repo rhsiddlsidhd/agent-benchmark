@@ -1,7 +1,12 @@
 "use server";
 
 import { APIResponse } from "@/shared/types";
-import { requireAuth, createCoupleInfoService, isValidSubwayStationName } from "@/server/services";
+import {
+  requireAuth,
+  createCoupleInfoService,
+  isValidSubwayStationName,
+  attachCoupleInfoToOrder,
+} from "@/server/services";
 import { actionError } from "@/server/boundary";
 import { validateAndFlatten } from "@/shared/utils";
 import { coupleInfoSchema } from "@/shared/schemas";
@@ -106,6 +111,13 @@ export const createCoupleInfo = async (
         success: false,
         error: { category: "INTERNAL", message: "커플 정보 등록에 실패하였습니다." },
       };
+    }
+
+    // 결제 이후 my-orders 흐름(orderId 전달)에서는 생성한 커플 정보를 해당
+    // 주문에 연결한다 — orderId가 없으면(기존 흐름) 연결을 건너뛴다.
+    const orderId = formData.get("orderId") as string | null;
+    if (orderId) {
+      await attachCoupleInfoToOrder(orderId, coupleInfo._id.toString(), userId);
     }
 
     return {
