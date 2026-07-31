@@ -1,0 +1,30 @@
+{
+  "branch": "feat/product-search",
+  "summary": "상품 검색 기능 — title 부분일치 + category/subCategory 필터를 $or로 결합한 검색 API와 /search 페이지",
+  "items": [
+    {
+      "id": "REQ-1",
+      "description": "GET /api/products/search?q=&category=&subCategory= 라우트 신설. title은 regex 부분일치($options:\"i\"), category/subCategory는 라벨→enum key 역조회 후 값으로 매칭, 두 조건을 $or로 결합. MongoDB $text 인덱스는 쓰지 않는다(한국어 형태소 분석 미지원). getAllProductsService와 동일하게 deletedAt:null, .lean() 조회, routeSuccess/routeError로 응답.",
+      "acceptance": "q로 title 부분(대소문자 무시) 검색 가능, category/subCategory 라벨 입력도 매칭 가능, 조건 없으면 빈 배열(에러 아님) 반환, 기존 getAllProductsService/getAllProducts route 패턴(services 레이어 분리, .lean(), routeSuccess/routeError) 그대로 따름.",
+      "passes": false
+    },
+    {
+      "id": "REQ-2",
+      "description": "Header에 검색 아이콘(lucide-react) 추가. 클릭 시 상태전환 없이 <Link href={routes.search}>로 /search 이동. routes.ts에 search 경로 추가.",
+      "acceptance": "Header에서 검색 아이콘 클릭 시 /search로 이동, 기존 데스크톱 nav/MobileNav 레이아웃 안 깨짐.",
+      "passes": false
+    },
+    {
+      "id": "REQ-3",
+      "description": "/search 페이지 신설. input autofocus, 입력값으로 REQ-1 API를 useSWR+fetcher로 호출. 결과는 기존 ProductCatalog(src/app/(main)/(products)/products/_components 또는 client/components/organisms, 실제 구현체 확인 후 재사용) 그리드로 렌더 — 결과 화면 새로 안 만든다.",
+      "acceptance": "/search에서 검색어 입력 시 결과가 기존 상품 그리드 컴포넌트로 렌더, 로딩/네트워크 에러 처리는 기존 useSWR 패턴(fetcher.ts envelope) 따름.",
+      "passes": false
+    },
+    {
+      "id": "REQ-4",
+      "description": "검색 결과 0건일 때 \"검색결과가 없습니다\" 메시지 노출. Phase3(서브카테고리 진입 섹션)은 아직 미구현이므로 그 카드는 붙이지 않고 메시지만 — 막다른 페이지 방지 목적의 의도는 남기되 실제 카드 연동은 스킵.",
+      "acceptance": "0건 검색 시 빈 화면/에러 대신 안내 메시지가 뜬다.",
+      "passes": false
+    }
+  ]
+}
