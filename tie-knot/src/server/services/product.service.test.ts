@@ -14,6 +14,7 @@ import {
   updateProductService,
   deleteProductService,
   updateProductLikeService,
+  searchProductsService,
 } from "./product.service";
 
 describe("product.service", () => {
@@ -367,6 +368,122 @@ describe("product.service", () => {
       );
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe("searchProductsService", () => {
+    it("q가 undefined면 DB를 치지 않고 빈 배열을 리턴한다", async () => {
+      await createProductService(buildProductInput({ title: "봄맞이 청첩장" }));
+
+      const result = await searchProductsService(undefined);
+
+      expect(result).toEqual([]);
+    });
+
+    it("q가 공백뿐이면 빈 배열을 리턴한다", async () => {
+      await createProductService(buildProductInput({ title: "봄맞이 청첩장" }));
+
+      const result = await searchProductsService("   ");
+
+      expect(result).toEqual([]);
+    });
+
+    it("title에 부분일치(대소문자 무시)하는 상품을 리턴한다", async () => {
+      await createProductService(
+        buildProductInput({ title: "Spring Wedding Card", subCategory: "vip" }),
+      );
+      await createProductService(
+        buildProductInput({ title: "가을 청첩장", subCategory: "vip" }),
+      );
+
+      const result = await searchProductsService("wedding");
+
+      expect(result).toHaveLength(1);
+      expect(result[0].title).toBe("Spring Wedding Card");
+    });
+
+    it("regex 메타문자가 포함된 검색어도 리터럴로 취급해 에러 없이 처리한다", async () => {
+      await createProductService(buildProductInput({ title: "a.b(c)" }));
+      await createProductService(buildProductInput({ title: "axbc" }));
+
+      const result = await searchProductsService("a.b(c)");
+
+      expect(result).toHaveLength(1);
+      expect(result[0].title).toBe("a.b(c)");
+    });
+
+    it("카테고리 라벨 부분일치로 역조회해 매칭한다 ('초대' -> '초대장' -> invitation)", async () => {
+      await createProductService(
+        buildProductInput({ title: "무관한 제목", category: "invitation" }),
+      );
+
+      const result = await searchProductsService("초대");
+
+      expect(result).toHaveLength(1);
+    });
+
+    it("서브카테고리 라벨 부분일치로 역조회해 매칭한다 ('돌잔' -> '돌잔치' -> first-birthday)", async () => {
+      await createProductService(
+        buildProductInput({ title: "무관한 제목1", subCategory: "first-birthday" }),
+      );
+      await createProductService(
+        buildProductInput({ title: "무관한 제목2", subCategory: "wedding" }),
+      );
+
+      const result = await searchProductsService("돌잔");
+
+      expect(result).toHaveLength(1);
+      expect(result[0].subCategory).toBe("first-birthday");
+    });
+
+    it("검색어 1글자는 title regex만 적용하고 라벨 역조회는 건너뛴다", async () => {
+      await createProductService(
+        buildProductInput({ title: "가을맞이 청첩장", subCategory: "business" }),
+      );
+
+      const result = await searchProductsService("비");
+
+      // "비"는 subCategoryLabels.business === "비즈니스"에 포함되지만
+      // 2글자 미만이라 라벨 역조회가 스킵된다. title("가을맞이 청첩장")에도 "비"가 없으므로 빈 배열이어야 한다.
+      expect(result).toEqual([]);
+    });
+
+    it("어떤 라벨과도 안 겹치는 검색어는 title 조건만으로 정상 조회된다 (에러 아님)", async () => {
+      await createProductService(buildProductInput({ title: "웨딩드레스 특가" }));
+
+      const result = await searchProductsService("웨딩드레스");
+
+      expect(result).toHaveLength(1);
+    });
+
+    it("삭제된 상품(deletedAt 존재)은 결과에서 제외한다", async () => {
+      await createProductService(buildProductInput({ title: "청첩장 매칭 대상" }));
+      const saved = await ProductModel.findOne({ title: "청첩장 매칭 대상" }).lean();
+      await deleteProductService(saved!._id.toString());
+
+      const result = await searchProductsService("청첩장");
+
+      expect(result).toEqual([]);
+    });
+
+    it("매칭되는 상품이 없으면 빈 배열을 리턴한다 (에러 아님)", async () => {
+      await createProductService(buildProductInput({ title: "봄맞이 청첩장" }));
+
+      const result = await searchProductsService("전혀다른검색어XYZ");
+
+      expect(result).toEqual([]);
+    });
+
+    it("userId를 넘기면 좋아요 여부(isLiked)를 반영한다", async () => {
+      await createProductService(buildProductInput({ title: "좋아요 테스트 청첩장" }));
+      const saved = await ProductModel.findOne({ title: "좋아요 테스트 청첩장" }).lean();
+      const userId = new mongoose.Types.ObjectId().toString();
+      await updateProductLikeService(saved!._id.toString(), userId);
+
+      const result = await searchProductsService("청첩장", userId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].isLiked).toBe(true);
     });
   });
 });

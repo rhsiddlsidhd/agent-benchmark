@@ -43,3 +43,32 @@ export const getSubCategoryOptions = (category: ProductCategory, includeAll = fa
   }));
   return [...allOption, ...options];
 };
+
+// 라벨 역조회 최소 길이 — 1글자는 오탐이 지나치다(예: "비" 하나로 "비즈니스" 전체가 딸려옴).
+const LABEL_MATCH_MIN_LENGTH = 2;
+
+// 검색어가 라벨 또는 enum key에 부분일치하는 카테고리 key들을 돌려준다 (대소문자 무시).
+export const findProductCategoriesByTerm = (term: string): ProductCategory[] => {
+  const normalized = term.trim().toLowerCase();
+  if (normalized.length < LABEL_MATCH_MIN_LENGTH) return [];
+
+  return (Object.entries(productCategoryLabels) as [ProductCategory, string][])
+    .filter(
+      ([key, label]) =>
+        label.toLowerCase().includes(normalized) || key.toLowerCase().includes(normalized),
+    )
+    .map(([key]) => key);
+};
+
+// 검색어가 라벨 또는 enum key에 부분일치하는 서브카테고리 key들을 돌려준다 (대소문자 무시).
+export const findSubCategoriesByTerm = (term: string): SubCategory[] => {
+  const normalized = term.trim().toLowerCase();
+  if (normalized.length < LABEL_MATCH_MIN_LENGTH) return [];
+
+  return (Object.entries(subCategoryLabels) as [SubCategory, string][])
+    .filter(
+      ([key, label]) =>
+        label.toLowerCase().includes(normalized) || key.toLowerCase().includes(normalized),
+    )
+    .map(([key]) => key);
+};

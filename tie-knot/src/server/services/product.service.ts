@@ -1,7 +1,7 @@
 import { ProductModel, InvitationProductModel, ProductJSON, ProductDB, IProduct } from "@/server/models";
 import { ProductDto } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
-import { calculatePrice } from "@/shared/utils";
+import { calculatePrice, escapeRegExp, findProductCategoriesByTerm, findSubCategoriesByTerm } from "@/shared/utils";
 import { AppError } from "@/shared/types";
 import { InvitationTheme } from "@/shared/constants";
 import mongoose, { Model, Types } from "mongoose";
@@ -132,6 +132,39 @@ export const getAllProductsService = async (
   }
 
   const products = await ProductModel.find(query)
+    .sort({ isFeatured: -1, priority: -1, createdAt: -1 })
+    .lean();
+
+  return products.map((p) => transformProduct(p, userId));
+};
+
+// 상품 검색 — title 부분일치(대소문자 무시) OR 카테고리/서브카테고리 라벨 부분일치(역조회 후 $in).
+// q가 없거나 공백뿐이면 DB를 치지 않고 즉시 빈 배열을 리턴한다 — 빈 $or는 MongoDB가 reject한다.
+export const searchProductsService = async (
+  q?: string,
+  userId?: string,
+): Promise<ProductJSON[]> => {
+  const term = q?.trim();
+
+  if (!term) return [];
+
+  const or: Record<string, unknown>[] = [
+    { title: { $regex: escapeRegExp(term), $options: "i" } },
+  ];
+
+  const categoryKeys = findProductCategoriesByTerm(term);
+  if (categoryKeys.length > 0) {
+    or.push({ category: { $in: categoryKeys } });
+  }
+
+  const subCategoryKeys = findSubCategoriesByTerm(term);
+  if (subCategoryKeys.length > 0) {
+    or.push({ subCategory: { $in: subCategoryKeys } });
+  }
+
+  await dbConnect();
+
+  const products = await ProductModel.find({ deletedAt: null, $or: or })
     .sort({ isFeatured: -1, priority: -1, createdAt: -1 })
     .lean();
 
