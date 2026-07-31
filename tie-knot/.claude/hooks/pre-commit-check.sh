@@ -12,7 +12,7 @@ if ! npm run lint; then
   exit 2
 fi
 
-if ! npm run test:coverage; then
+if ! npm run test:coverage:diff; then
   echo "" >&2
   echo "$SEPARATOR" >&2
   echo "❌ TEST/COVERAGE 실패 — 커밋 차단됨" >&2
