@@ -13,6 +13,15 @@ const testedSourceFiles = globSync("src/**/*.test.{ts,tsx}").map((testFile) =>
   testFile.replace(/\.test\.(ts|tsx)$/, ".$1"),
 );
 
+// scripts/test-coverage-diff.js가 설정하는 값 — 있으면 "이번에 바뀐 파일"로만
+// 커버리지 범위를 좁힌다(patch coverage). 기존 파일의 미달 커버리지 때문에
+// 무관한 커밋까지 막히는 걸 방지한다. 없으면(로컬 `npm run test:coverage`) 전체 그대로.
+const coverageInclude = process.env.COVERAGE_DIFF_FILES
+  ? testedSourceFiles.filter((file) =>
+      process.env.COVERAGE_DIFF_FILES.split(",").includes(file),
+    )
+  : testedSourceFiles;
+
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
@@ -25,7 +34,7 @@ export default defineConfig({
     fileParallelism: false,
     coverage: {
       provider: "v8",
-      include: testedSourceFiles,
+      include: coverageInclude,
       exclude: testScopeExclude,
       thresholds: {
         perFile: true,
