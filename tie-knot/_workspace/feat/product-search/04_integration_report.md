@@ -26,6 +26,7 @@
 4. **`isLiked` 항상 `false`** — 기존 `GET /api/products`와 파리티(v1 한계). `/search` 결과의 하트가 항상 빈 상태로 렌더된다. `getAuth()` 추가로 전환 가능하나 이번 스코프에서 안 함.
 5. **pre-commit 커버리지 리포트가 `(main)/...` 라우트그룹 하위 파일에서 `0/0 Unknown%`로 뜨는 기존 툴링 버그** — 스크립트 자체는 exit 0로 정상 종료돼 커밋을 막지는 않았음(frontend-impl 발견, 이번 기능 파일만의 문제 아니라 기존 이슈). 이번 PR 스코프 밖.
 6. **`npm run verify:api` 스크립트 자체가 깨져있음** — `scripts/lighthouse-audit/get-auth-cookie` 모듈 누락 + `scripts/api-verify/schemas.js`의 import 경로(`src/schemas/...`)가 실제 구조(`src/shared/schemas/...`)와 어긋남. 이번 기능과 무관한 기존 이슈, 대신 backend-impl의 실제 테스트(84케이스)와 boundary-verifier의 독립 `tsc`/vitest 실행으로 검증 완료.
+7. **`npm run report:api`가 `/api/products/search`를 "0건(미사용 후보)"로 오탐** — 병합 후 재실행해도 동일. 원인 확인: `useProductSearch.ts`의 `const key = trimmed ? \`/api/products/search?q=...\` : null;`가 3줄에 걸친 삼항식인데, `scripts/api-report/scan.js`의 변수-리터럴 역추적 로직이 `key\s*=[^\n]*`(같은 줄만)으로 리터럴을 찾아서 다음 줄의 템플릿 리터럴을 못 잡는다 — 스캐너의 기존 단일라인 가정 한계, 실제 미연결 아님. boundary-verifier가 커밋 레벨에서 훅↔라우트 문자열 일치를 직접 대조해 정상 연결 확인함(§03_boundary 판정 참고). 이번 기능과 무관한 기존 스캐너 결함.
 
 ## 산출/변경 파일
 
