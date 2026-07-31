@@ -7,6 +7,7 @@ export const routes = {
   changePw: "/change-pw",
   profile: "/my-profile",
   support: "/support",
+  search: "/search",
   reviews: "/reviews",
   deliveryInfo: "/delivery-info",
   payment: {
