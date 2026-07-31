@@ -246,7 +246,7 @@ export * from "./useDebouncedValue";
 
 import useSWR from "swr";
 import { fetcher } from "@/client/fetcher";
-import { ProductResponse } from "@/shared/schemas";
+import { Product } from "@/server/services";
 import { ErrorPayload } from "@/shared/types";
 
 export function useProductSearch(query: string) {
@@ -256,7 +256,7 @@ export function useProductSearch(query: string) {
     : null;
 
   const { data, error, isLoading, isValidating } = useSWR<
-    ProductResponse[],
+    Product[],
     ErrorPayload
   >(key, fetcher, {
     keepPreviousData: true,
@@ -278,7 +278,7 @@ export function useProductSearch(query: string) {
 | `fetcher` 밖 fetch 금지 | `src/client/CLAUDE.md` — envelope 파싱/에러 정규화가 `fetcher`에 집중돼 있음 |
 | 훅 위치 | 소비 라우트가 `/search` 1곳뿐 → `src/client/hooks/`로 승격하지 않고 `_hooks/`에 둔다(`src/app/CLAUDE.md`: 2곳 이상 공유 시 승격) |
 
-> ⚠ **api-designer 확인 필요**: 파라미터명(`q`), 경로(`/api/products/search`), 응답 `data` 타입(`ProductResponse[]`)은 현재 mock 전제다. §8 참고.
+> **리더 정정(2026-07-31, boundary-verifier B2 지적 반영)**: 훅 타입은 `ProductResponse[]`가 아니라 **`Product[]`**(`@/server/services`, = `ProductJSON`)로 쓴다. 런타임 shape은 동일하지만 `ProductGrid`/`ProductCard` prop이 `Product[]`(`subCategory: SubCategory` 유니온)를 요구하는데 `ProductResponse.subCategory`는 `z.string()`이라 `subCategory`에서 타입이 안 맞는다 — `ProductResponse[]`로 타이핑하면 구현자가 `as Product[]` 캐스팅으로 우회하게 된다. 기존 선례(`useProducts.ts`)도 `Product[]`를 쓴다. U6 판정 뒤집음.
 
 ### 4-4. `useDebouncedValue` — 디바운스 훅
 
@@ -568,7 +568,7 @@ export function SearchEmptyState({ query }: { query: string }) {
 | **U3** | 쿼리 파라미터명 / 엔드포인트 경로 | `GET /api/products/search?q=` | api-designer | 훅의 SWR key 문자열 1줄 수정 |
 | **U4** | 0건이 200+`[]`인가 404인가 | **200 + `data: []`** | api-designer | 404면 `EMPTY` 상태가 `ERROR`로 잘못 떨어져 REQ-4 acceptance 실패 |
 | **U5** | 검색에서 발생 가능한 `ErrorCategory` | VALIDATION / INTERNAL 정도로 가정 | api-designer | 문구 매핑은 안 하므로 UI 코드 변경은 없음. 문구 검토용 정보 |
-| **U6** | 훅의 타입을 `ProductResponse[]`로 할지 `Product[]`로 할지 | `ProductResponse[]` | api-designer | 기존 `useProducts.ts`는 route가 `ProductResponse[]`를 리턴하는데 `Product[]`로 타이핑하는 **기존 불일치**가 있다. 신규 훅은 실제 계약(`ProductResponse[]`)을 따르는 게 맞다고 판단했으나 의견 필요 |
+| **U6** | 훅의 타입을 `ProductResponse[]`로 할지 `Product[]`로 할지 | **✅ 리더 판정(뒤집음): `Product[]`** | boundary-verifier(B2) | `ProductResponse.subCategory: z.string()` vs `Product.subCategory: SubCategory` 유니온 — prop 타입 불일치로 `as` 캐스팅 유발. `Product[]`가 기존 선례와도 일치 |
 | **U7** | 검색어를 URL(`/search?q=`)에 동기화할지 | **✅ 리더 판정: 동기화 안 함 유지** | 리더 | 요구사항 범위 밖, Suspense 경계 복잡도 대비 이득 작음 — v1 스킵 확정 |
 | **U8** | 0건 화면에 `/products/invitation` 링크 하나라도 둘지 | **✅ 리더 판정: 링크 1개 추가** | 리더 | TODO.md 원 의도("막다른 페이지로 안 만듦")를 REQ-4 스코프 안에서 최소 비용으로 충족 — `SearchEmptyState`에 "검색결과가 없습니다" 문구 + `<Link href={routes.products.byCategory("invitation")}>` "전체 상품 보기" 1줄 추가. Phase3 서브카테고리 카드 자리(TODO 주석)는 그대로 유지 |
 
