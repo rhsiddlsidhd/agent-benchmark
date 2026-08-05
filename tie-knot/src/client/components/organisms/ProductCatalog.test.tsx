@@ -35,6 +35,7 @@ describe("ProductCatalog", () => {
         products={[buildProduct()]}
         category="invitation"
         premiumFeatures={[]}
+        initialSubCategory="all"
       />,
     );
 

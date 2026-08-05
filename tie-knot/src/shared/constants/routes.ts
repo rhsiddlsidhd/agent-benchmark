@@ -1,3 +1,5 @@
+import type { SubCategory } from "@/shared/utils";
+
 export const routes = {
   home: "/",
   login: "/login",
@@ -22,7 +24,11 @@ export const routes = {
   },
   products: {
     root: "/products",
-    byCategory: (category: string) => `/products/${category}`,
+    // subCategory를 안 넘기면 기존 동작 그대로 → 기존 호출부(navigation.ts, SearchEmptyState.tsx) 무회귀
+    byCategory: (category: string, subCategory?: SubCategory) =>
+      subCategory
+        ? `/products/${category}?subCategory=${subCategory}`
+        : `/products/${category}`,
     detail: (category: string, id: string) => `/products/${category}/${id}`,
   },
   preview: {
