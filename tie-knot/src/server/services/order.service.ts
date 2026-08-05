@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IOrder, OrderModel } from "@/server/models";
+import { IOrder, OrderJSON, OrderModel } from "@/server/models";
 import { CreateOrderDto } from "@/shared/schemas";
 import { generateUid } from "@/shared/utils";
 import { dbConnect } from "@/server/lib/mongodb";
@@ -158,18 +158,19 @@ export const getActiveOrderInfoByCoupleInfoId = async (
 
 export const getOrdersByUserId = async (
   userId: string | mongoose.Types.ObjectId,
-): Promise<IOrder[]> => {
+): Promise<OrderJSON[]> => {
   await dbConnect();
 
   const orders = await OrderModel.find({ userId })
     .sort({ createdAt: -1 })
     .lean<IOrder[]>();
 
-  // .lean() 결과의 ObjectId 유니온 필드(_id 제외 — IOrder에서 ObjectId로 고정 타입)를
-  // 명시적으로 문자열화한다(services/CLAUDE.md 컨벤션) — 소비처(my-orders/page.tsx)가
-  // 이미 이 필드들에 .toString()을 호출하므로 동작은 그대로다.
+  // .lean() 결과의 ObjectId 필드를 명시적으로 문자열화한다(services/CLAUDE.md
+  // 컨벤션) — Server Component(my-orders/page.tsx)가 Client Component로 그대로
+  // 넘기므로, ObjectId 인스턴스가 하나라도 남으면 "Only plain objects..." 에러가 난다.
   return orders.map((order) => ({
     ...order,
+    _id: order._id.toString(),
     coupleInfoId: order.coupleInfoId?.toString(),
     userId: order.userId.toString(),
     paymentId: order.paymentId?.toString(),

@@ -321,5 +321,15 @@ describe("order.service", () => {
 
       expect(result).toHaveLength(1);
     });
+
+    it("_id를 문자열로 직렬화한다", async () => {
+      const input = buildOrderInput();
+      const created = await createOrderService(input);
+
+      const result = await getOrdersByUserId(input.userId);
+
+      expect(typeof result[0]._id).toBe("string");
+      expect(result[0]._id).toBe(created._id.toString());
+    });
   });
 });

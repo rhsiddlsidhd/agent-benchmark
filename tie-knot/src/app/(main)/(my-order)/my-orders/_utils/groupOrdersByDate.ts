@@ -1,8 +1,8 @@
 import { format } from "date-fns";
-import { IOrder } from "@/server/models";
+import { OrderJSON } from "@/server/models";
 
-export const groupOrdersByDate = (orders: IOrder[]) => {
-  const grouped: Record<string, IOrder[]> = {};
+export const groupOrdersByDate = (orders: OrderJSON[]) => {
+  const grouped: Record<string, OrderJSON[]> = {};
 
   orders.forEach((order) => {
     const dateKey = format(new Date(order.createdAt), "yyyy-MM-dd");

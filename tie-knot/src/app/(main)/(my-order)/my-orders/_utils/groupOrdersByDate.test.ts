@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { IOrder } from "@/server/models";
+import { OrderJSON } from "@/server/models";
 import { groupOrdersByDate } from "./groupOrdersByDate";
 
-const buildOrder = (overrides?: Partial<IOrder>): IOrder =>
+const buildOrder = (overrides?: Partial<OrderJSON>): OrderJSON =>
   ({
     _id: "order-1",
     merchantUid: "merchant-1",
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     ...overrides,
-  }) as IOrder;
+  }) as OrderJSON;
 
 describe("groupOrdersByDate", () => {
   it("같은 날짜의 주문을 하나의 그룹으로 묶는다", () => {
