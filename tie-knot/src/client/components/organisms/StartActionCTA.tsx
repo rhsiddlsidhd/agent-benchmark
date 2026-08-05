@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import Link from "next/link";
 import ctaData from "@/data/cta.json";
 import {
   Button,
@@ -31,6 +32,20 @@ export function StartActionCTA() {
         <TypographyP className="text-primary-foreground/80 mx-auto mb-8 max-w-2xl text-lg leading-relaxed whitespace-pre-line">
           {ctaData.description}
         </TypographyP>
+
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Button asChild variant="secondary" size="lg">
+            <Link href={ctaData.primaryAction.href}>{ctaData.primaryAction.label}</Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <Link href={ctaData.secondaryAction.href}>{ctaData.secondaryAction.label}</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Decorative Elements */}
