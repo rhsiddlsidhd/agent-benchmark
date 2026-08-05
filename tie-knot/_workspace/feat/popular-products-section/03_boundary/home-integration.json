@@ -1,0 +1,87 @@
+{
+  "endpoint": "page.tsx → HomeTemplate → PopularProductsSection 데이터 배선 (생산자↔소비자 연결)",
+  "owner": ["frontend-impl", "리더(병합 충돌 해소)"],
+  "branches": {
+    "backend": "feat/popular-products-section--backend @ 4043898",
+    "frontend": "feat/popular-products-section--frontend @ 6de65d3"
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "FIX",
+      "at": "2026-08-06T08:25:00+09:00",
+      "criterion": "#5 API↔소비자 매핑 누락 — '만들었는데 아무도 안 쓴다'",
+      "findings": [
+        {
+          "id": "F-1",
+          "severity": "blocking",
+          "title": "getPopularProductsService의 프로덕션 소비처가 0건",
+          "evidence": "두 브랜치를 실제로 병합한 상태에서 grep 결과, getPopularProductsService 참조는 product.service.ts(정의)와 product.service.test.ts(테스트)뿐. src/app 이하 호출 0건.",
+          "cause": "설계 01_ui_flow.md §5.4 / 01_api_contract.md §3이 지정한 page.tsx의 Promise.all 3번째 항목 추가가 어느 브랜치에도 커밋되지 않음. frontend-impl이 backend 병합 대기로 의도적 보류(워킹트리에 popularProducts={[]} placeholder unstaged).",
+          "impact": "backend가 REQ-1을 정확히 구현했지만 화면에 도달하는 경로가 없다. 이 상태로 병합하면 인기 섹션은 영구히 렌더되지 않으며, dev DB 2건 함정(§6-3) 때문에 '원래 안 보이는 게 정상'과 육안 구분이 불가능하다."
+        },
+        {
+          "id": "F-2",
+          "severity": "blocking",
+          "title": "병합 상태가 typecheck 실패",
+          "evidence": "npx tsc --noEmit → src/app/(main)/page.tsx(15,11): error TS2741: Property 'popularProducts' is missing in type '{ invitation; product; infoId; }' but required in type 'HomeTemplateProps'.",
+          "cause": "HomeTemplate이 popularProducts를 필수 prop으로 선언했는데 page.tsx가 전달하지 않음. 각 브랜치 단독으로는 드러나지 않고(프론트는 unstaged placeholder가 가림) 병합 시점에만 발현.",
+          "impact": "에러 정확히 1건이며, 이 1건이 곧 F-1의 컴파일러 관측 형태다."
+        },
+        {
+          "id": "F-3",
+          "severity": "non-blocking",
+          "title": "src/shared/constants/product.ts 병합 충돌 — 양쪽이 같은 상수를 각자 추가",
+          "evidence": "backend 4043898과 frontend 6de65d3이 동일 파일 최상단에 동일 상수 2개를 각각 추가. 실제 병합 시 CONFLICT (content) 발생 확인.",
+          "detail": "충돌 범위는 주석 한 줄뿐이다. git이 export const 두 줄을 동일 라인으로 매칭해 값 충돌은 없고(양쪽 다 8 / 3), 중복 선언(TS2451)도 발생하지 않는다. 주석 중 하나를 고르면 해소된다.",
+          "impact": "값 불일치 위험은 없으나 리더가 병합 시 반드시 수동 해소해야 한다. '양쪽 다 살리기'로 잘못 해소하면 중복 선언이 되므로 주의."
+        }
+      ],
+      "passed": [
+        "prop명 popularProducts가 HomeTemplateProps 선언과 HomeTemplate→PopularProductsSection 전달(products={popularProducts})까지 일관 — page.tsx 배선만 채우면 전 구간 일치",
+        "배치 순서: SubCategoryNavSection 다음, {invitation.length > 0 && ...} 베스트 디자인 템플릿 블록 이전 — DOM 순서 회귀 테스트로 고정됨",
+        "병합 상태 테스트 72개 전부 통과(실패한 2개 스위트는 스크래치 클론의 .env 부재가 원인이었고 .env 복사 후 전부 통과 — 코드 결함 아님)"
+      ],
+      "instruction": {
+        "to": "frontend-impl",
+        "file": "src/app/(main)/page.tsx",
+        "steps": [
+          "import에 getPopularProductsService 추가, @/shared/constants에서 POPULAR_PRODUCTS_LIMIT import",
+          "Promise.all 배열에 세 번째 항목: getPopularProductsService(POPULAR_PRODUCTS_LIMIT).catch(() => [] as Product[]) — .catch 필수(계약 §3, 인기 섹션 실패가 Home 전체를 죽이면 안 됨)",
+          "구조분해를 [product, invitation, popularProducts]로 확장",
+          "<HomeTemplate ... popularProducts={popularProducts} /> 전달",
+          "userId는 넘기지 않는다 — revalidate=3600 ISR 공유 캐시 오염 방지(계약 §3)",
+          "placeholder popularProducts={[]}를 커밋하지 말 것 — 컴파일은 통과하지만 섹션이 영구 미렌더되고 증상이 정상과 동일해 추적 불가"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "verdict": "PASS",
+      "at": "2026-08-06T08:35:00+09:00",
+      "commit": "e3a554f (리더 병합 커밋 12bba82 위)",
+      "resolved": {
+        "F-1": "해소 — getPopularProductsService의 프로덕션 소비처가 src/app/(main)/page.tsx:19에 생성됨. 생산자↔소비자 매핑 성립.",
+        "F-2": "해소 — npx tsc --noEmit 에러 0건. TS2741 소멸.",
+        "F-3": "해소 — 리더가 병합 시 직접 해소(12bba82). 상수 정의가 constants/product.ts:2-3 두 줄뿐, 중복 선언·충돌 마커 잔존 0건 확인."
+      },
+      "checked": {
+        "배선_계약일치": "PASS — getPopularProductsService(POPULAR_PRODUCTS_LIMIT).catch(() => [] as Product[]). 계약 §3 코드블록과 동일",
+        "catch_흡수": "PASS — .catch 존재. DB 장애 시 빈 배열 → 길이 0 → 섹션 자동 숨김으로 수렴, Home 전체가 error.tsx로 떨어지지 않음",
+        "userId_미전달": "PASS — 인자 1개만 전달. revalidate=3600 ISR 공유 캐시 오염 방지(계약 §3)",
+        "placeholder_제거": "PASS — 프로덕션 코드에 popularProducts={[]} 0건(전수 grep), 워킹트리도 클린",
+        "prop명_전구간일관": "PASS — page.tsx popularProducts → HomeTemplateProps.popularProducts → HomeTemplate이 products={popularProducts}로 전달 → PopularProductsSection props.products. 전 구간 추적 완료",
+        "게이트_단일성_병합후재확인": "PASS — POPULAR_PRODUCTS_MIN_ITEMS 사용처가 PopularProductsSection.tsx:11 한 곳뿐. 병합으로 이중 게이트가 생기지 않았음",
+        "상수_단일정의_병합후재확인": "PASS — export const POPULAR_PRODUCTS* 가 constants/product.ts:2-3 두 줄뿐",
+        "파이프라인_병합무결성": "PASS — 병합 후 product.service.ts git hash a55d4875… 가 backend 원본과 동일. 5스테이지 및 tie-break 5단 변형 없음",
+        "무수정_최종대조": "PASS — product.model.ts 5d6e7428… / ProductGrid.tsx 2cfb51a7… / TemplateCarouselGroup.tsx d921adf7… 전부 baseline 동일",
+        "신규route": "PASS — 12개 유지",
+        "반응형접두사": "PASS — PopularProductsSection 0건"
+      },
+      "tests": "전체 스위트 121파일 632테스트 통과(회귀 0건), typecheck 클린"
+    }
+  ],
+  "redoCount": 0,
+  "forcedPass": false,
+  "finalVerdict": "PASS"
+}

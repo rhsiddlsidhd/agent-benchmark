@@ -1,0 +1,30 @@
+{
+  "branch": "feat/popular-products-section",
+  "summary": "Home에 '인기 상품' 섹션 신설 — 좋아요 수 기준 Top 8 가로 스크롤 캐러셀 + 순위 배지",
+  "background": [
+    "TODO.md 원문은 '인기 상품 섹션을 Hero 바로 다음 배치'라고 적었으나, 먼저 머지된 Phase 3(PR #92)에서 SubCategoryNavSection이 이미 Hero 바로 다음 자리를 차지했다(리더 승인된 배치 결정, 01_ui_flow.md §3.5 근거: 서브카테고리 띠는 길찾기 요소라 큐레이션보다 위, '베스트 디자인 템플릿'보다는 위 유지가 Phase4 의도). 따라서 실제 배치는 Hero → SubCategoryNavSection → 인기 상품(이번 기능) → 베스트 디자인 템플릿(TemplateCarouselGroup) 순서다. 이번 설계팀은 이 순서를 기정사실로 받아들이고 진행할 것 — 재논의 대상 아님.",
+    "getAllProductsService(src/server/services/product.service.ts:123-139) 현재 정렬은 { isFeatured: -1, priority: -1, createdAt: -1 } 고정이고 category 필터만 옵션이다. 좋아요 수 기준 정렬을 지원하지 않는다.",
+    "ProductCard.tsx(src/client/components/organisms/ProductCard.tsx) 확인 결과 가격/할인율/서브카테고리라벨/좋아요수까지 이미 다 노출 중이라 카드 자체 재설계 불필요 — optional 'rank' prop만 추가해서 값 있을 때만 순위 배지 렌더(안 넘기면 기존 ProductGrid/검색결과 사용처엔 영향 없음). product.likes: string[] (response shape), likes.length로 카운트 가능.",
+    "Home 개편 Phase1(PR #91)의 known issue: (main)/layout.tsx가 max-width 480px 캡을 걸었지만 Tailwind md:/lg:는 여전히 실제 뷰포트 폭 기준으로 발동한다. 신규 컴포넌트에 md:/lg: 브레이크포인트를 쓰지 않는다(Phase3에서 이미 지킨 원칙, 이번에도 동일 적용)."
+  ],
+  "items": [
+    {
+      "id": "REQ-1",
+      "description": "좋아요 수 기준 내림차순 정렬 + Top N 조회를 지원하는 조회 경로 신설(기존 getAllProductsService 확장 또는 신규 함수 — Phase1 설계팀이 결정). 좋아요 1개 이상인 상품만 후보로 삼는다.",
+      "acceptance": "좋아요 수 내림차순으로 정렬된 상품 목록을 최대 8개까지 가져올 수 있다. 좋아요 0개 상품은 결과에 포함되지 않는다. deletedAt:null 등 기존 조회 조건(soft delete 등) 유지.",
+      "passes": false
+    },
+    {
+      "id": "REQ-2",
+      "description": "Home에 '인기 상품' 섹션 신설 — 가로 스크롤 캐러셀, Hero 바로 다음이 아니라 SubCategoryNavSection 다음(background 참고)에 배치. 좋아요 1개 이상인 상품이 3개 미만이면 섹션 자체를 숨긴다.",
+      "acceptance": "좋아요 1개 이상 상품이 3개 미만이면 섹션이 DOM에 렌더되지 않는다(신뢰도 낮은 '인기' 표시 방지). 3개 이상이면 최대 8개까지 가로 스크롤로 노출.",
+      "passes": false
+    },
+    {
+      "id": "REQ-3",
+      "description": "ProductCard에 optional 'rank' prop 추가 — 값이 있을 때만 순위 배지(1/2/3...) 렌더. prop을 안 넘기는 기존 소비처(ProductGrid, 검색결과)는 배지 없이 기존 그대로 동작해야 한다.",
+      "acceptance": "rank prop 미전달 시 배지 렌더 없음, 기존 ProductGrid/검색결과 화면 무회귀. rank 전달 시 카드에 순위 숫자가 보인다.",
+      "passes": false
+    }
+  ]
+}
