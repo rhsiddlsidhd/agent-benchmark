@@ -3,6 +3,7 @@
 import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider } from "@/client/components/atoms";
 import { SidebarToggle as SidebarHeader } from "@/client/components/organisms";
 import type React from "react";
+import { Toaster } from "sonner";
 import { SidebarNavItem } from "@/client/components/molecules";
 import { AdminModal } from "./_components";
 import { useAuth } from "@/client/hooks";
@@ -42,6 +43,7 @@ export default function AdminLayout({
           <AdminModal />
         </main>
       </div>
+      <Toaster />
     </SidebarProvider>
   );
 }
