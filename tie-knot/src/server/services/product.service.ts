@@ -3,7 +3,7 @@ import { ProductDto } from "@/shared/schemas";
 import { dbConnect } from "@/server/lib/mongodb";
 import { calculatePrice, escapeRegExp, findProductCategoriesByTerm, findSubCategoriesByTerm } from "@/shared/utils";
 import { AppError } from "@/shared/types";
-import { InvitationTheme } from "@/shared/constants";
+import { InvitationTheme, POPULAR_PRODUCTS_LIMIT } from "@/shared/constants";
 import mongoose, { Model, Types } from "mongoose";
 
 // Product 타입을 export (다른 파일에서 사용)
@@ -188,6 +188,37 @@ export const getFeaturedTemplatesService = async (
   })
     .sort({ priority: -1, createdAt: -1 })
     .lean();
+
+  return products.map((p) => transformProduct(p, userId));
+};
+
+// Home 인기 상품 섹션 — 좋아요 수(likes.length) 내림차순 Top N 조회.
+// 배열 길이 정렬은 find().sort()로 불가능해 aggregation을 쓴다(01_db_schema.md §2-1).
+export const getPopularProductsService = async (
+  limit: number = POPULAR_PRODUCTS_LIMIT,
+  userId?: string,
+): Promise<ProductJSON[]> => {
+  await dbConnect();
+
+  // $limit은 0 이하를 받으면 빈 배열이 아니라 MongoServerError를 던진다 — 서비스가 방어한다.
+  const take = Math.min(Math.max(Math.trunc(limit), 1), 50);
+
+  // 파이프라인은 함수 안에서 매번 새 배열 리터럴로 만든다(모듈 상수로 빼지 않는다) —
+  // mongoose가 discriminator 모델 aggregate 시 첫 $match를 직접 mutate하므로,
+  // 상수로 빼면 discriminator 호출 한 번에 이후 모든 호출이 오염된다.
+  const products = await ProductModel.aggregate<LeanProduct>([
+    { $match: { deletedAt: null, "likes.0": { $exists: true } } },
+    // $ifNull은 방어적 중복이지만 유지한다 — $size는 인자가 missing이면 null이 아니라 에러(Location17124)를 던진다.
+    { $addFields: { likesCount: { $size: { $ifNull: ["$likes", []] } } } },
+    { $sort: { likesCount: -1, isFeatured: -1, priority: -1, createdAt: -1, _id: -1 } },
+    { $limit: take },
+    { $unset: "likesCount" },
+  ]).catch((err) => {
+    throw new AppError(
+      "INTERNAL",
+      err instanceof Error ? err.message : "인기 상품 조회에 실패했습니다.",
+    );
+  });
 
   return products.map((p) => transformProduct(p, userId));
 };

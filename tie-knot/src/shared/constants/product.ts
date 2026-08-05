@@ -1,3 +1,7 @@
+// 0. Home 인기 상품 섹션(좋아요순 Top N) 관련 상수 — service 기본값과 UI 노출 게이트가 같은 값을 본다.
+export const POPULAR_PRODUCTS_LIMIT = 8;
+export const POPULAR_PRODUCTS_MIN_ITEMS = 3;
+
 // 1. 필터 키 배열 정의 (UI 노출 순서 보장 및 타입 추출용)
 export const PRODUCT_SORT_KEYS = [
   "ALL",
