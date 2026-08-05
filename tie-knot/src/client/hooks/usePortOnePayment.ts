@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import PortOne from "@portone/browser-sdk/v2";
 import { PayStatus } from "@/server/models";
 import { completePayment, CreateOrderResult } from "@/server/actions";
+import { useOrderStore } from "@/client/store";
 import { toast } from "sonner";
 const storeId = process.env.NEXT_PUBLIC_POST_ONE_STORE_ID;
 const channelKey = process.env.NEXT_PUBLIC_POST_ONE_CHANNELKEY;
@@ -14,7 +15,10 @@ interface UsePortOnePaymentOptions {
 }
 
 export function usePortOnePayment({ onSuccess, onError }: UsePortOnePaymentOptions) {
-  const [paymentStatus, setPaymentStatus] = useState<PayStatus | "IDLE">("IDLE");
+  // OrderSummary(sibling)도 같은 결제 진행 상태를 봐야 "주문 없음" 오탐 리다이렉트를 막을 수
+  // 있어 로컬 state가 아니라 order.store에 둔다(useCheckoutData.ts 참고).
+  const paymentStatus = useOrderStore((state) => state.paymentStatus);
+  const setPaymentStatus = useOrderStore((state) => state.setPaymentStatus);
 
   const fail = (message: string, status: PayStatus = "FAILED") => {
     setPaymentStatus(status);

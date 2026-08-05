@@ -23,7 +23,6 @@ export function CheckoutForm() {
   const [agreed, setAgreed] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // paymentStatus를 먼저 확보해야 useCheckoutData의 skip 조건에 사용 가능
   const handlePaymentSuccess = useCallback(
     (merchantUid: string) => {
       clearOrder();
@@ -38,10 +37,9 @@ export function CheckoutForm() {
     onError: setErrorMessage,
   });
 
-  // 결제 진행 중이거나 실패한 경우, order 없음 감지로 인한 리다이렉트 방지
-  const { data: order, loading } = useCheckoutData({
-    skip: paymentStatus === "PENDING" || paymentStatus === "FAILED" || paymentStatus === "PAID",
-  });
+  // 결제 진행 중/실패/완료 상태는 useCheckoutData가 order.store의 paymentStatus를
+  // 직접 참조해 "주문 없음" 오탐 리다이렉트를 알아서 가드한다(OrderSummary도 동일).
+  const { data: order, loading } = useCheckoutData();
 
   const { errors, handleSubmit } = useCheckoutForm({ order, action, router });
 

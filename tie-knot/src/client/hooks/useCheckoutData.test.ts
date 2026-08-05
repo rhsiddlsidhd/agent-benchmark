@@ -15,10 +15,11 @@ vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
 import { toast } from "sonner";
 import { useCheckoutData } from "./useCheckoutData";
 
-type State = { order: unknown; _hasHydrated: boolean };
+type State = { order: unknown; _hasHydrated: boolean; paymentStatus: string };
 
-const mockState = (state: State) => {
-  useOrderStoreMock.mockImplementation((selector: (s: State) => unknown) => selector(state));
+const mockState = (state: Partial<State>) => {
+  const full: State = { order: null, _hasHydrated: false, paymentStatus: "IDLE", ...state };
+  useOrderStoreMock.mockImplementation((selector: (s: State) => unknown) => selector(full));
 };
 
 describe("useCheckoutData", () => {
@@ -56,12 +57,15 @@ describe("useCheckoutData", () => {
     expect(routerReplaceMock).not.toHaveBeenCalled();
   });
 
-  it("skip이 true면 order가 없어도 이동하지 않는다", () => {
-    mockState({ order: null, _hasHydrated: true });
+  it.each(["PENDING", "FAILED", "PAID"] as const)(
+    "paymentStatus가 %s면 order가 없어도 이동하지 않는다",
+    (paymentStatus) => {
+      mockState({ order: null, _hasHydrated: true, paymentStatus });
 
-    const { result } = renderHook(() => useCheckoutData({ skip: true }));
+      const { result } = renderHook(() => useCheckoutData());
 
-    expect(result.current.error).toBeNull();
-    expect(routerReplaceMock).not.toHaveBeenCalled();
-  });
+      expect(result.current.error).toBeNull();
+      expect(routerReplaceMock).not.toHaveBeenCalled();
+    },
+  );
 });
