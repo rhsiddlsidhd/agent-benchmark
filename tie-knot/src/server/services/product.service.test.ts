@@ -11,6 +11,7 @@ import {
   incrementProductViewsService,
   getAllProductsService,
   getFeaturedTemplatesService,
+  getPopularProductsService,
   updateProductService,
   deleteProductService,
   updateProductLikeService,
@@ -203,6 +204,135 @@ describe("product.service", () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].title).toBe("추천상품");
+    });
+  });
+
+  describe("getPopularProductsService", () => {
+    // 좋아요 N개를 만들기 위해 서로 다른 userId N명으로 각각 1회씩 toggle한다
+    // (updateProductLikeService는 유저 1명당 1회 토글이라 이렇게 해야 정확한 개수가 만들어진다).
+    const likeNTimes = async (productId: string, n: number) => {
+      for (let i = 0; i < n; i++) {
+        await updateProductLikeService(
+          productId,
+          new mongoose.Types.ObjectId().toString(),
+        );
+      }
+    };
+
+    it("좋아요 수 내림차순으로 정렬하고, 동점은 isFeatured가 앞선다 (0개/soft-deleted/likes필드없음 제외)", async () => {
+      await createProductService(buildProductInput({ title: "A-3좋아요" }));
+      await createProductService(
+        buildProductInput({ title: "B-2좋아요-일반", isFeatured: false }),
+      );
+      await createProductService(
+        buildProductInput({ title: "C-2좋아요-featured", isFeatured: true }),
+      );
+      await createProductService(buildProductInput({ title: "D-1좋아요" }));
+      await createProductService(buildProductInput({ title: "E-0좋아요" }));
+
+      const a = await ProductModel.findOne({ title: "A-3좋아요" }).lean();
+      const b = await ProductModel.findOne({ title: "B-2좋아요-일반" }).lean();
+      const c = await ProductModel.findOne({ title: "C-2좋아요-featured" }).lean();
+      const d = await ProductModel.findOne({ title: "D-1좋아요" }).lean();
+      await likeNTimes(a!._id.toString(), 3);
+      await likeNTimes(b!._id.toString(), 2);
+      await likeNTimes(c!._id.toString(), 2);
+      await likeNTimes(d!._id.toString(), 1);
+      // E는 좋아요 0개(제외 대상) — 아무것도 하지 않는다.
+
+      // soft-deleted: 좋아요가 많아도(5개) 제외돼야 한다.
+      await createProductService(buildProductInput({ title: "F-삭제됨" }));
+      const f = await ProductModel.findOne({ title: "F-삭제됨" }).lean();
+      await likeNTimes(f!._id.toString(), 5);
+      await deleteProductService(f!._id.toString());
+
+      // likes 필드 자체가 없는 레거시 문서 — mongoose 경로를 우회해 직접 삽입한다.
+      await ProductModel.collection.insertOne({
+        authorId: "legacy",
+        title: "G-likes필드없음",
+        description: "레거시 문서",
+        thumbnail: "https://example.com/legacy.jpg",
+        price: 1000,
+        category: "invitation",
+        subCategory: "wedding",
+        isPremium: false,
+        isFeatured: false,
+        priority: 0,
+        views: 0,
+        salesCount: 0,
+        discount: { discountType: "rate", value: 0 },
+        status: "active",
+        featureIds: [],
+        deletedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as never);
+
+      const result = await getPopularProductsService();
+
+      expect(result.map((p) => p.title)).toEqual([
+        "A-3좋아요",
+        "C-2좋아요-featured",
+        "B-2좋아요-일반",
+        "D-1좋아요",
+      ]);
+    });
+
+    it("limit을 넘겨주면 그 개수만큼만 리턴한다", async () => {
+      await createProductService(buildProductInput({ title: "1" }));
+      await createProductService(buildProductInput({ title: "2" }));
+      await createProductService(buildProductInput({ title: "3" }));
+      const p1 = await ProductModel.findOne({ title: "1" }).lean();
+      const p2 = await ProductModel.findOne({ title: "2" }).lean();
+      const p3 = await ProductModel.findOne({ title: "3" }).lean();
+      await likeNTimes(p1!._id.toString(), 3);
+      await likeNTimes(p2!._id.toString(), 2);
+      await likeNTimes(p3!._id.toString(), 1);
+
+      const result = await getPopularProductsService(2);
+
+      expect(result).toHaveLength(2);
+      expect(result.map((p) => p.title)).toEqual(["1", "2"]);
+    });
+
+    it("좋아요 1개 이상인 상품이 없으면 빈 배열을 리턴한다 (throw 아님)", async () => {
+      await createProductService(buildProductInput({ title: "좋아요없음" }));
+
+      const result = await getPopularProductsService();
+
+      expect(result).toEqual([]);
+    });
+
+    it("limit이 0 이하여도 에러 없이 클램프되어 최소 1개는 조회를 시도한다", async () => {
+      await createProductService(buildProductInput({ title: "클램프테스트" }));
+      const p = await ProductModel.findOne({ title: "클램프테스트" }).lean();
+      await likeNTimes(p!._id.toString(), 1);
+
+      await expect(getPopularProductsService(0)).resolves.toHaveLength(1);
+      await expect(getPopularProductsService(-5)).resolves.toHaveLength(1);
+    });
+
+    it("userId를 넘기면 isLiked를 반영하고, 넘기지 않으면 항상 false다", async () => {
+      await createProductService(buildProductInput({ title: "좋아요반영" }));
+      const p = await ProductModel.findOne({ title: "좋아요반영" }).lean();
+      const userId = new mongoose.Types.ObjectId().toString();
+      await updateProductLikeService(p!._id.toString(), userId);
+
+      const withUser = await getPopularProductsService(8, userId);
+      const withoutUser = await getPopularProductsService(8);
+
+      expect(withUser[0].isLiked).toBe(true);
+      expect(withoutUser[0].isLiked).toBe(false);
+    });
+
+    it("응답 객체에 likesCount 내부 계산 필드가 섞여 나가지 않는다 ($unset 확인)", async () => {
+      await createProductService(buildProductInput({ title: "unset확인" }));
+      const p = await ProductModel.findOne({ title: "unset확인" }).lean();
+      await likeNTimes(p!._id.toString(), 1);
+
+      const result = await getPopularProductsService();
+
+      expect(result[0]).not.toHaveProperty("likesCount");
     });
   });
 

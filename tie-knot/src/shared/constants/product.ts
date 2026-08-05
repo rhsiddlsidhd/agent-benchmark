@@ -1,4 +1,4 @@
-// 인기 상품 섹션(Home) — 서비스 기본값과 UI 게이트가 동일 상수를 본다
+// 0. Home 인기 상품 섹션(좋아요순 Top N) 관련 상수 — service 기본값과 UI 노출 게이트가 같은 값을 본다.
 export const POPULAR_PRODUCTS_LIMIT = 8;
 export const POPULAR_PRODUCTS_MIN_ITEMS = 3;
 
