@@ -10,14 +10,14 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
-import { IOrder } from "@/server/models";
+import { OrderJSON } from "@/server/models";
 import { routes } from "@/shared/constants";
 import { PAYMENT_STATUS, PAY_METHOD_LABEL } from "../_constants";
 import { PaymentButton } from "./PaymentButton";
 import { PendingCoupleInfoBanner } from "./PendingCoupleInfoBanner";
 
 interface MyOrdersTemplateProps {
-  groupedOrders: [string, IOrder[]][];
+  groupedOrders: [string, OrderJSON[]][];
 }
 
 const MyOrdersTemplate = ({ groupedOrders }: MyOrdersTemplateProps) => {

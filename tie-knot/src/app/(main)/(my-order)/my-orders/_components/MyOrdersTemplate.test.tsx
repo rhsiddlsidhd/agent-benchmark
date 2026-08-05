@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { IOrder } from "@/server/models";
+import { OrderJSON } from "@/server/models";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -13,18 +13,18 @@ vi.mock("@/client/store", () => ({
 
 import { MyOrdersTemplate } from "./MyOrdersTemplate";
 
-const buildOrder = (overrides?: Partial<IOrder>): IOrder =>
+const buildOrder = (overrides?: Partial<OrderJSON>): OrderJSON =>
   ({
-    _id: { toString: () => "order-1" },
+    _id: "order-1",
     merchantUid: "merchant-1",
-    coupleInfoId: { toString: () => "couple-1" },
+    coupleInfoId: "couple-1",
     finalPrice: 9000,
     discountRate: 0,
     discountAmount: 0,
     payMethod: "CARD",
     orderStatus: "PENDING",
     product: {
-      productId: { toString: () => "product-1" },
+      productId: "product-1",
       title: "봄맞이 청첩장",
       thumbnail: "https://example.com/thumb.jpg",
       pricing: { originalPrice: 10000, discountedPrice: 9000 },
@@ -32,7 +32,7 @@ const buildOrder = (overrides?: Partial<IOrder>): IOrder =>
       selectedFeatures: [],
     },
     ...overrides,
-  }) as unknown as IOrder;
+  }) as unknown as OrderJSON;
 
 describe("MyOrdersTemplate", () => {
   it("주문이 없으면 빈 상태 메시지를 렌더링한다", () => {

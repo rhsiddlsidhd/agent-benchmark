@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { IOrder } from "@/server/models";
+import { OrderJSON } from "@/server/models";
 
 const { pushMock, setOrderMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
@@ -19,19 +19,19 @@ vi.mock("@/client/store", () => ({
 
 import { PaymentButton } from "./PaymentButton";
 
-const buildOrder = (): IOrder =>
+const buildOrder = (): OrderJSON =>
   ({
-    coupleInfoId: { toString: () => "couple-1" },
+    coupleInfoId: "couple-1",
     finalPrice: 9000,
     product: {
-      productId: { toString: () => "product-1" },
+      productId: "product-1",
       title: "봄맞이 청첩장",
       thumbnail: "https://example.com/thumb.jpg",
       pricing: { originalPrice: 10000, discountedPrice: 9000 },
       quantity: 1,
       selectedFeatures: [],
     },
-  }) as unknown as IOrder;
+  }) as unknown as OrderJSON;
 
 describe("PaymentButton (컨테이너)", () => {
   beforeEach(() => {
