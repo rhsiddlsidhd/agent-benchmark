@@ -255,10 +255,10 @@ describe("product.service", () => {
       const saved = await ProductModel.findOne({ title: input.title }).lean();
 
       const result = await updateProductService(saved!._id.toString(), {
-        subCategory: "vip",
+        subCategory: "first-birthday",
       });
 
-      expect(result?.subCategory).toBe("vip");
+      expect(result?.subCategory).toBe("first-birthday");
     });
 
     it("category 없이 맞지 않는 subCategory로 바꾸면 AppError(INTERNAL)를 던진다 (runValidators)", async () => {
@@ -390,10 +390,10 @@ describe("product.service", () => {
 
     it("title에 부분일치(대소문자 무시)하는 상품을 리턴한다", async () => {
       await createProductService(
-        buildProductInput({ title: "Spring Wedding Card", subCategory: "vip" }),
+        buildProductInput({ title: "Spring Wedding Card", subCategory: "first-birthday" }),
       );
       await createProductService(
-        buildProductInput({ title: "가을 청첩장", subCategory: "vip" }),
+        buildProductInput({ title: "가을 청첩장", subCategory: "first-birthday" }),
       );
 
       const result = await searchProductsService("wedding");
@@ -438,13 +438,15 @@ describe("product.service", () => {
 
     it("검색어 1글자는 title regex만 적용하고 라벨 역조회는 건너뛴다", async () => {
       await createProductService(
-        buildProductInput({ title: "가을맞이 청첩장", subCategory: "business" }),
+        // title에 "장"이 없어야 한다 — 기존 "가을맞이 청첩장"은 title에도 "장"이 있어 교체 필수
+        buildProductInput({ title: "가을맞이 카드", subCategory: "wedding" }),
       );
 
-      const result = await searchProductsService("비");
+      const result = await searchProductsService("장");
 
-      // "비"는 subCategoryLabels.business === "비즈니스"에 포함되지만
-      // 2글자 미만이라 라벨 역조회가 스킵된다. title("가을맞이 청첩장")에도 "비"가 없으므로 빈 배열이어야 한다.
+      // "장"은 subCategoryLabels.wedding === "청첩장"과 productCategoryLabels.invitation === "초대장"에
+      // 모두 포함되지만, 2글자 미만이라 라벨 역조회가 스킵된다.
+      // title("가을맞이 카드")에도 "장"이 없으므로 빈 배열이어야 한다.
       expect(result).toEqual([]);
     });
 

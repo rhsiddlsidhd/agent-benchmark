@@ -35,10 +35,45 @@ describe("ProductCatalog", () => {
         products={[buildProduct()]}
         category="invitation"
         premiumFeatures={[]}
+        initialSubCategory="all"
       />,
     );
 
     expect(screen.getByPlaceholderText("상품 검색...")).toBeInTheDocument();
     expect(screen.getByText("봄맞이 청첩장")).toBeInTheDocument();
+  });
+
+  it("initialSubCategory가 wedding이면 첫 렌더부터 wedding 상품만 보인다(flash 없음)", () => {
+    render(
+      <ProductCatalog
+        products={[
+          buildProduct({ title: "봄맞이 청첩장", subCategory: "wedding" }),
+          buildProduct({ title: "첫돌 축하 세트", subCategory: "first-birthday" }),
+        ]}
+        category="invitation"
+        premiumFeatures={[]}
+        initialSubCategory="wedding"
+      />,
+    );
+
+    expect(screen.getByText("봄맞이 청첩장")).toBeInTheDocument();
+    expect(screen.queryByText("첫돌 축하 세트")).not.toBeInTheDocument();
+  });
+
+  it("initialSubCategory가 first-birthday면 첫 렌더부터 first-birthday 상품만 보인다 — 하이픈 유실 회귀 방지", () => {
+    render(
+      <ProductCatalog
+        products={[
+          buildProduct({ title: "봄맞이 청첩장", subCategory: "wedding" }),
+          buildProduct({ title: "첫돌 축하 세트", subCategory: "first-birthday" }),
+        ]}
+        category="invitation"
+        premiumFeatures={[]}
+        initialSubCategory="first-birthday"
+      />,
+    );
+
+    expect(screen.getByText("첫돌 축하 세트")).toBeInTheDocument();
+    expect(screen.queryByText("봄맞이 청첩장")).not.toBeInTheDocument();
   });
 });

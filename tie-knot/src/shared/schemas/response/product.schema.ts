@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { PRODUCT_CATEGORIES } from "@/shared/utils";
 
 const isoDateString = z.string().refine((v) => !isNaN(Date.parse(v)), {
   message: "ISO date string이 아님",
@@ -13,7 +14,7 @@ export const productResponseSchema = z.object({
   previewUrl: z.string().optional(),
   theme: z.enum(["blossom", "default"]).optional(),
   price: z.number(),
-  category: z.enum(["invitation"]),
+  category: z.enum(PRODUCT_CATEGORIES),
   subCategory: z.string(),
   isPremium: z.boolean(),
   featureIds: z.array(z.string()),

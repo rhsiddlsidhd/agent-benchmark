@@ -1,13 +1,28 @@
 import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
 import { ProductCatalog } from "../_components";
 import { getAllProductsService } from "@/server/services";
-import { productCategoryLabels, isProductCategory } from "@/shared/utils";
+import {
+  productCategoryLabels,
+  isProductCategory,
+  isSubCategory,
+  SubCategory,
+} from "@/shared/utils";
 import { notFound } from "next/navigation";
+
+// searchParams.subCategory → 필터 초기값 계산. 어떤 입력에도 throw하지 않는다(무효/부재 → "all").
+function resolveInitialSubCategory(
+  subCategory: string | string[] | undefined,
+): SubCategory | "all" {
+  if (typeof subCategory !== "string") return "all";
+  return isSubCategory(subCategory) ? subCategory : "all";
+}
 
 export default async function ProductsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ category: string }>;
+  searchParams: Promise<{ subCategory?: string | string[] }>;
 }) {
   const { category } = await params;
 
@@ -15,6 +30,9 @@ export default async function ProductsPage({
   if (!isProductCategory(category)) {
     notFound();
   }
+
+  const { subCategory } = await searchParams;
+  const initialSubCategory = resolveInitialSubCategory(subCategory);
 
   const products = await getAllProductsService(category);
   const currentCategoryLabel = productCategoryLabels[category];
@@ -34,7 +52,11 @@ export default async function ProductsPage({
               찾아보세요
             </TypographyMuted>
           </div>
-          <ProductCatalog products={products} category={category} />
+          <ProductCatalog
+            products={products}
+            category={category}
+            initialSubCategory={initialSubCategory}
+          />
         </div>
       </div>
     </main>
