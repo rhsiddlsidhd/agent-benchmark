@@ -7,6 +7,7 @@ export * from "./request/login.schema";
 export * from "./request/order.schema";
 export * from "./request/premiumFeature.schema";
 export * from "./request/product.schema";
+export * from "./request/productSearch.schema";
 export * from "./request/pw.schema";
 export * from "./request/pwConfirm.schema";
 export * from "./request/register.schema";

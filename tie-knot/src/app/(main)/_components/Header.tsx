@@ -2,8 +2,9 @@ import { AuthButtons } from "./AuthButtons";
 import { MobileNav } from "@/client/components/organisms";
 import Link from "next/link";
 import React from "react";
+import { Search } from "lucide-react";
 import { MAIN_NAV_ITEMS, routes } from "@/shared/constants";
-import { TypographyH4 } from "@/client/components/atoms";
+import { Button, TypographyH4 } from "@/client/components/atoms";
 const Header = () => {
   return (
     <header className="bg-background/80 border-border sticky top-0 right-0 left-0 z-50 w-full border-b backdrop-blur-md">
@@ -33,6 +34,11 @@ const Header = () => {
 
         {/* Auth / Action Buttons */}
         <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="icon" aria-label="상품 검색">
+            <Link href={routes.search}>
+              <Search className="h-5 w-5" strokeWidth={1.5} />
+            </Link>
+          </Button>
           <AuthButtons />
         </div>
       </div>

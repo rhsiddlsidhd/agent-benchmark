@@ -4,6 +4,8 @@ import {
   isSubCategory,
   getCategoryOptions,
   getSubCategoryOptions,
+  findProductCategoriesByTerm,
+  findSubCategoriesByTerm,
 } from "./category";
 
 describe("isProductCategory", () => {
@@ -57,5 +59,58 @@ describe("getSubCategoryOptions", () => {
       { value: "vip", label: "VIP" },
       { value: "business", label: "비즈니스" },
     ]);
+  });
+});
+
+describe("findProductCategoriesByTerm", () => {
+  it("라벨에 부분일치하면 해당 카테고리 key를 리턴한다", () => {
+    expect(findProductCategoriesByTerm("초대")).toEqual(["invitation"]);
+  });
+
+  it("enum key에 부분일치해도 매칭한다 (영문 입력 대응)", () => {
+    expect(findProductCategoriesByTerm("invit")).toEqual(["invitation"]);
+  });
+
+  it("대소문자를 무시한다", () => {
+    expect(findProductCategoriesByTerm("INVIT")).toEqual(["invitation"]);
+  });
+
+  it("2글자 미만이면 빈 배열을 리턴한다 (오탐 방지)", () => {
+    expect(findProductCategoriesByTerm("초")).toEqual([]);
+    expect(findProductCategoriesByTerm("i")).toEqual([]);
+  });
+
+  it("빈 문자열이면 빈 배열을 리턴한다", () => {
+    expect(findProductCategoriesByTerm("")).toEqual([]);
+  });
+
+  it("어떤 라벨/key와도 안 겹치면 빈 배열을 리턴한다", () => {
+    expect(findProductCategoriesByTerm("웨딩드레스")).toEqual([]);
+  });
+});
+
+describe("findSubCategoriesByTerm", () => {
+  it("라벨에 부분일치하면 해당 서브카테고리 key를 리턴한다 (부분일치 — '돌잔' -> '돌잔치')", () => {
+    expect(findSubCategoriesByTerm("돌잔")).toEqual(["first-birthday"]);
+  });
+
+  it("완전히 일치하는 라벨도 매칭한다", () => {
+    expect(findSubCategoriesByTerm("청첩장")).toEqual(["wedding"]);
+  });
+
+  it("대소문자를 무시한다 (VIP 라벨)", () => {
+    expect(findSubCategoriesByTerm("vip")).toEqual(["vip"]);
+  });
+
+  it("enum key에 부분일치해도 매칭한다", () => {
+    expect(findSubCategoriesByTerm("wedd")).toEqual(["wedding"]);
+  });
+
+  it("2글자 미만이면 빈 배열을 리턴한다", () => {
+    expect(findSubCategoriesByTerm("비")).toEqual([]);
+  });
+
+  it("어떤 라벨/key와도 안 겹치면 빈 배열을 리턴한다", () => {
+    expect(findSubCategoriesByTerm("웨딩드레스")).toEqual([]);
   });
 });
