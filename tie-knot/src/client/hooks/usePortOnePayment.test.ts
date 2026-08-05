@@ -18,7 +18,22 @@ vi.mock("sonner", () => ({
   toast: { error: vi.fn() },
 }));
 
+// paymentStatus가 order.store로 이전됨(OrderSummary와 공유 목적) — 실제 zustand
+// create로 대체 구현해 hook의 selector 구독이 실제로 재렌더를 트리거하게 한다.
+vi.mock("@/client/store", async () => {
+  const { create } = await import("zustand");
+  const useOrderStore = create<{
+    paymentStatus: string;
+    setPaymentStatus: (status: string) => void;
+  }>((set) => ({
+    paymentStatus: "IDLE",
+    setPaymentStatus: (status) => set({ paymentStatus: status }),
+  }));
+  return { useOrderStore };
+});
+
 import { completePayment } from "@/server/actions";
+import { useOrderStore } from "@/client/store";
 import { usePortOnePayment } from "./usePortOnePayment";
 
 const orderData: CreateOrderResult = {
@@ -37,6 +52,7 @@ const orderData: CreateOrderResult = {
 describe("usePortOnePayment", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useOrderStore.setState({ paymentStatus: "IDLE" });
     process.env.NEXT_PUBLIC_POST_ONE_STORE_ID = "store-1";
     process.env.NEXT_PUBLIC_POST_ONE_CHANNELKEY = "channel-1";
   });
