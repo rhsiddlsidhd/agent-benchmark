@@ -3,14 +3,16 @@
 import { useProducts, usePremiumFeature } from "@/client/hooks";
 import { ProductCatalog as ProductCatalogView } from "@/client/components/organisms";
 import { Product } from "@/server/services";
-import { ProductCategory } from "@/shared/utils";
+import { ProductCategory, SubCategory } from "@/shared/utils";
 
 export function ProductCatalog({
   products,
   category,
+  initialSubCategory,
 }: {
   products: Product[];
   category: ProductCategory;
+  initialSubCategory: SubCategory | "all";
 }) {
   const data = useProducts(category, products);
   const { premiumFeatures } = usePremiumFeature();
@@ -20,6 +22,7 @@ export function ProductCatalog({
       products={data}
       category={category}
       premiumFeatures={premiumFeatures}
+      initialSubCategory={initialSubCategory}
     />
   );
 }
