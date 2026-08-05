@@ -1,0 +1,22 @@
+{
+  "endpoint": "category-taxonomy-source (REQ-1/REQ-2 — 값 원본 ↔ 파싱게이트 ↔ DB 쓰기게이트 ↔ 응답스키마)",
+  "scope": "backend-impl-subcat / worktree feat-subcategory-navigation-section--backend / commit d115f03",
+  "criteria_applied": ["#2 케이스·문자열 값 일치", "#7 옵셔널/레거시 필드 처리", "#4 (validator 무수정 확인)"],
+  "criteria_not_applicable": ["#1 응답 래핑(신규 엔드포인트 0)", "#3 경로↔링크(frontend 담당)", "#5 훅 매핑(신규 훅 0)", "#6 비동기(전부 동기)"],
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "PASS",
+      "reason": "생산자(category.ts SUB_CATEGORY_MAP)와 4개 소비자(subCategoryLabels/isSubCategory, product.model.ts validator, request·response zod schema)를 동시 대조. 'first-birthday' 하이픈이 SUB_CATEGORY_MAP(L5)과 subCategoryLabels key(L18) 양쪽에서 ASCII 0x2d로 바이트 단위 동일함을 od -c로 확인. subCategoryLabels의 Record<SubCategory,string> 어노테이션이 SubCategory(=SUB_CATEGORY_MAP 파생)와의 정합을 컴파일타임에 강제하므로 isSubCategory()의 판정집합과 SUB_CATEGORY_MAP이 구조적으로 어긋날 수 없음. response/product.schema.ts는 category 한 줄만 z.enum(PRODUCT_CATEGORIES)로 교체되고 인접줄 subCategory: z.string()은 무변경(레거시 값 응답파싱 보호 유지). product.model.ts validator 및 allowed?. optional chaining 무수정. tsc --noEmit 클린, 62 tests 통과, LABEL_MATCH_MIN_LENGTH=1 뮤테이션 시 재설계 테스트 3건이 실제로 실패해 vacuous 아님을 독립 확인.",
+      "at": "2026-08-05T16:16:00+09:00"
+    }
+  ],
+  "redoCount": 0,
+  "forcedPass": false,
+  "notes": [
+    "라인번호 이동: import 1줄 추가로 response/product.schema.ts의 category는 L16→L17, subCategory는 L17→L18로 밀렸다. 계약문서의 'L16만 변경'은 변경 전 기준이며 실제 변경 대상 필드는 정확히 category 하나뿐임을 diff로 확인했다.",
+    "레거시 값 소비처 폴백 확인(#7): ProductCard.tsx:76 ??, ProductSummary.tsx:63 ??, ProductTableRow.tsx:39 || — subCategoryLabels 조회가 undefined여도 raw 값으로 폴백되어 화면이 깨지지 않는다.",
+    "교차검증 미도달 구간: 경계 ①(URL 링크) / ②(prop 3층) / ③(initialValue 주입)은 frontend-impl 산출물 도착 후 별도 판정. 본 판정은 값 원본 측만 커버한다.",
+    "통합 순서 리스크(결함 아님): frontend 워크트리는 아직 REQ-1 미반영 상태(category.ts에 vip/business 잔존)다. 01_ui_flow.md §6.2-2의 'REQ-1 → REQ-3' 선행 의존대로, subCategoryIcons의 Record<SubCategory, LucideIcon>는 backend 브랜치 병합 이후에만 정상 컴파일된다. 병합 순서를 backend 우선으로 유지할 것."
+  ]
+}

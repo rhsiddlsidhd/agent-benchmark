@@ -1,0 +1,35 @@
+{
+  "branch": "feat/subcategory-navigation-section",
+  "summary": "Home에 서브카테고리(청첩장/돌잔치) 진입 섹션 신설 + VIP/비즈니스 서브카테고리 제거 + category.ts 값-원본/타입-파생 리팩토링",
+  "background": [
+    "dev DB 확인 완료(2026-08-05): products 컬렉션 2건, 전부 subCategory=wedding. vip/business 문서 0건 — enum에서 제거해도 마이그레이션 이슈 없음.",
+    "기존 인프라 조사 결과: subCategory 필터는 `src/client/context/productFilter`의 클라이언트 전용 useReducer state(ProductFilterState/ProductFilterAction)로만 존재하고 URL과 동기화되지 않는다(`ProductFilters.tsx` 확인). `/products/[category]` page.tsx는 현재 searchParams를 읽지 않는다.",
+    "`/api/products/search`(Phase2 신설)는 자유 텍스트 `q` 하나만 받고 title/category라벨/subCategory라벨에 대해 부분일치 $or 매칭한다 — 구조화된 subCategory 파라미터가 아니라 라벨 텍스트 매칭이라, 새 섹션의 '해당 서브카테고리로 바로 이동' 딥링크 용도로 재사용하면 오탐 위험(상품명에 그 단어가 우연히 들어간 경우 등)이 있어 권장하지 않음 — api-designer가 이 조사 결과를 참고해 `/products/[category]`쪽에 subCategory 쿼리 파라미터를 추가하는 방향으로 설계할 것을 제안(강제 아님, 더 나은 대안 있으면 그걸로)."
+  ],
+  "items": [
+    {
+      "id": "REQ-1",
+      "description": "category.ts를 값-배열이 원본이고 타입은 그 배열에서 파생되는 구조로 리팩토링(PRODUCT_CATEGORIES/SUB_CATEGORY_MAP as const → ProductCategory/SubCategory 파생). SubCategory에서 vip/business 제거, wedding/first-birthday 2개만 유지.",
+      "acceptance": "src/shared/utils/category.ts에 PRODUCT_CATEGORIES(as const 배열)와 SUB_CATEGORY_MAP(as const satisfies)이 값 원본으로 존재하고 ProductCategory/SubCategory 타입이 그 값에서 typeof/인덱스 접근으로 파생된다. SubCategory 유니온에 vip/business가 없다. productCategoryLabels/subCategoryLabels는 Record 형태 그대로 유지(라벨 매핑 안 깨짐).",
+      "passes": true
+    },
+    {
+      "id": "REQ-2",
+      "description": "product.model.ts의 category mongoose enum과 product.schema.ts의 category zod enum이 PRODUCT_CATEGORIES를 import해서 그대로 참조하도록 교체(값 재입력 금지).",
+      "acceptance": "두 파일 모두 \"invitation\" 문자열 리터럴을 직접 타이핑하지 않고 PRODUCT_CATEGORIES를 참조. 기존 product 생성/검증 동작(테스트)에 회귀 없음.",
+      "passes": true
+    },
+    {
+      "id": "REQ-3",
+      "description": "Home 페이지에 서브카테고리 진입 섹션 신설 — 2x2 고정 그리드가 아니라 가로 스크롤 아이콘 리스트, 아이콘은 lucide-react Heart(청첩장/wedding)/Cake(돌잔치/first-birthday). SUB_CATEGORY_MAP 기반으로 동적 렌더(하드코딩 나열 금지) — 서브카테고리가 늘어도 컴포넌트 수정 없이 반영되게.",
+      "acceptance": "새 섹션이 SUB_CATEGORY_MAP(invitation)을 순회해 렌더, 가로 스크롤 컨테이너(overflow-x-auto 등), 각 항목 클릭 시 해당 서브카테고리 상품 목록으로 이동.",
+      "passes": true
+    },
+    {
+      "id": "REQ-4",
+      "description": "새 섹션의 링크를 클릭하면 해당 서브카테고리로 사전 필터링된 상품 목록 화면에 도달한다 — background에 적은 조사 결과 참고해 설계(자유 텍스트 search 재사용 금지, /products/[category] 쪽 확장 권장).",
+      "acceptance": "청첩장 항목 클릭 → 상품 목록 페이지 진입 시 subCategory=wedding으로 이미 필터링된 상태(추가 클릭 없이). 돌잔치도 동일.",
+      "passes": true
+    }
+  ]
+}
