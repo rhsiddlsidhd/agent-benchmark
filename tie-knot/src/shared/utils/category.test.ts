@@ -25,7 +25,7 @@ describe("isProductCategory", () => {
 describe("isSubCategory", () => {
   it("invitation의 서브 카테고리는 유효하다", () => {
     expect(isSubCategory("wedding")).toBe(true);
-    expect(isSubCategory("vip")).toBe(true);
+    expect(isSubCategory("first-birthday")).toBe(true);
   });
 
   it("business-card 전용이었던 서브 카테고리(store/creator)는 더 이상 유효하지 않다", () => {
@@ -50,14 +50,12 @@ describe("getCategoryOptions", () => {
 });
 
 describe("getSubCategoryOptions", () => {
-  it("invitation의 서브 카테고리 4개를 label과 함께 리턴한다", () => {
+  it("invitation의 서브 카테고리 2개를 label과 함께 리턴한다", () => {
     const options = getSubCategoryOptions("invitation");
 
     expect(options).toEqual([
       { value: "wedding", label: "청첩장" },
       { value: "first-birthday", label: "돌잔치" },
-      { value: "vip", label: "VIP" },
-      { value: "business", label: "비즈니스" },
     ]);
   });
 });
@@ -98,16 +96,16 @@ describe("findSubCategoriesByTerm", () => {
     expect(findSubCategoriesByTerm("청첩장")).toEqual(["wedding"]);
   });
 
-  it("대소문자를 무시한다 (VIP 라벨)", () => {
-    expect(findSubCategoriesByTerm("vip")).toEqual(["vip"]);
+  it("대소문자를 무시한다 (enum key 대문자)", () => {
+    expect(findSubCategoriesByTerm("WEDD")).toEqual(["wedding"]);
   });
 
   it("enum key에 부분일치해도 매칭한다", () => {
     expect(findSubCategoriesByTerm("wedd")).toEqual(["wedding"]);
   });
 
-  it("2글자 미만이면 빈 배열을 리턴한다", () => {
-    expect(findSubCategoriesByTerm("비")).toEqual([]);
+  it("2글자 미만이면 빈 배열을 리턴한다 (가드 없으면 '청첩장'에 매칭됐을 '장')", () => {
+    expect(findSubCategoriesByTerm("장")).toEqual([]);
   });
 
   it("어떤 라벨/key와도 안 겹치면 빈 배열을 리턴한다", () => {

@@ -1,9 +1,13 @@
-export type ProductCategory = "invitation";
-export type SubCategory = "wedding" | "first-birthday" | "vip" | "business";
+// ---- 값이 원본 ----
+export const PRODUCT_CATEGORIES = ["invitation"] as const;
 
-export const SUB_CATEGORY_MAP: Record<ProductCategory, SubCategory[]> = {
-  "invitation": ["wedding", "first-birthday", "vip", "business"],
-};
+export const SUB_CATEGORY_MAP = {
+  invitation: ["wedding", "first-birthday"],
+} as const satisfies Record<ProductCategory, readonly string[]>;
+
+// ---- 타입은 파생 ----
+export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
+export type SubCategory = (typeof SUB_CATEGORY_MAP)[ProductCategory][number];
 
 export const productCategoryLabels: Record<ProductCategory, string> = {
   invitation: "초대장",
@@ -12,8 +16,6 @@ export const productCategoryLabels: Record<ProductCategory, string> = {
 export const subCategoryLabels: Record<SubCategory, string> = {
   wedding: "청첩장",
   "first-birthday": "돌잔치",
-  vip: "VIP",
-  business: "비즈니스",
 };
 
 export const isProductCategory = (value: string): value is ProductCategory => {

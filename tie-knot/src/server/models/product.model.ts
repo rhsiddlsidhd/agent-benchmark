@@ -3,6 +3,7 @@ import {
   ProductCategory,
   SubCategory,
   SUB_CATEGORY_MAP,
+  PRODUCT_CATEGORIES,
 } from "@/shared/utils";
 import { InvitationTheme } from "@/shared/constants";
 
@@ -84,7 +85,7 @@ const productSchema = new Schema<IProduct>(
     price: { type: Number, required: true },
     category: {
       type: String,
-      enum: ["invitation"],
+      enum: PRODUCT_CATEGORIES,
       required: true,
     },
     subCategory: {
