@@ -9,21 +9,16 @@ vi.mock("@/client/components/organisms", () => ({
   StartActionCTA: () => <div>cta</div>,
 }));
 
-vi.mock("./Footer", () => ({
-  Footer: () => <footer>footer</footer>,
-}));
-
 import { HomeTemplate } from "./HomeTemplate";
 
 const buildProduct = (): Product => ({ title: "봄맞이 청첩장" }) as Product;
 
 describe("HomeTemplate", () => {
-  it("hero와 cta, footer는 항상 렌더링한다", () => {
+  it("hero와 cta는 항상 렌더링한다", () => {
     render(<HomeTemplate invitation={[]} product={null} infoId={undefined} />);
 
     expect(screen.getByText("hero")).toBeInTheDocument();
     expect(screen.getByText("cta")).toBeInTheDocument();
-    expect(screen.getByText("footer")).toBeInTheDocument();
   });
 
   it("invitation이 있으면 추천 템플릿 섹션을 렌더링한다", () => {
