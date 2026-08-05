@@ -121,4 +121,18 @@ describe("ProductCard", () => {
 
     expect(screen.getByRole("heading", { name: "여름 청첩장" })).toBeInTheDocument();
   });
+
+  it("rank 미전달 시 순위 배지를 렌더링하지 않는다", () => {
+    render(<ProductCard product={buildProduct()} />);
+
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+    expect(screen.queryByText(/인기 \d+위/)).not.toBeInTheDocument();
+  });
+
+  it("rank={1} 전달 시 순위 배지와 sr-only 텍스트를 렌더링한다", () => {
+    render(<ProductCard product={buildProduct()} rank={1} />);
+
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("인기 1위")).toBeInTheDocument();
+  });
 });

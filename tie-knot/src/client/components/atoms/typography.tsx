@@ -28,9 +28,14 @@ export function TypographyH1({ children, className }: TypographyProps) {
  * - 크기: 3xl (30px) | 굵기: semibold | 하단 구분선 있음
  * - 사용: <TypographyH2>섹션 이름</TypographyH2>
  */
-export function TypographyH2({ children, className }: TypographyProps) {
+export function TypographyH2({
+  children,
+  className,
+  id,
+}: TypographyProps & { id?: string }) {
   return (
     <h2
+      id={id}
       className={cn(
         "scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0",
         className,
