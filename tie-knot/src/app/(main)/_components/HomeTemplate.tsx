@@ -1,6 +1,7 @@
 import { StartActionCTA, EcommerceHero, LiveDemoSection, TemplateCarouselGroup } from "@/client/components/organisms";
 import { Product } from "@/server/services";
 import { TypographyH2, TypographyP } from "@/client/components/atoms";
+import { SubCategoryNavSection } from "./SubCategoryNavSection";
 
 interface HomeTemplateProps {
   invitation: Product[];
@@ -12,6 +13,8 @@ const HomeTemplate = ({ invitation, product, infoId }: HomeTemplateProps) => {
   return (
     <div className="flex flex-col">
       <EcommerceHero />
+
+      <SubCategoryNavSection category="invitation" />
 
       {/* 추천 템플릿 섹션: 데이터가 있을 경우에만 렌더링 */}
       {invitation.length > 0 && (
