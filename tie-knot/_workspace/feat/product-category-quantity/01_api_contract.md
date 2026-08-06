@@ -512,7 +512,7 @@ Phase3에서 확인할 항목을 미리 고정한다.
 | # | 쟁점 | 현재 확정안 | 상태 |
 |---|---|---|---|
 | 1 | mongoose `images` required 여부 (db-migrator Q1) | DB엔 required 걸지 않고 `default: []`만. 조건부 required는 zod에서만 | **합의 완료.** db-migrator가 근거 보강: mongoose 배열 path의 `required`는 빈 배열 `[]`도 통과시켜서 어차피 "1장 이상"을 집행 못 한다 → zod가 유일한 집행 지점 |
-| 2 | 복합 인덱스 (db-migrator Q3) | `{ deletedAt: 1, category: 1, isFeatured: -1, priority: -1, createdAt: -1 }` — ESR 순서 타당하나 **이번 PR 스코프 아웃** | db-migrator가 `01_db_schema.md §5-2`로 리더 이관. 근거: 현재 `productSchema`에 인덱스가 `_id` 외 0개(기존 부채)고, 성능 변경을 기능 PR에 섞으면 회귀 원인 분리가 안 됨. 또 저 인덱스는 category 지정 호출만 커버(전체 목록은 여전히 in-memory sort) → 둘 다 커버하려면 2개, 데이터 규모 보고 판단할 일. **API 계약 블로킹 아님** |
+| 2 | 복합 인덱스 (db-migrator Q3) | `{ deletedAt: 1, category: 1, isFeatured: -1, priority: -1, createdAt: -1 }` — ESR 순서 타당하나 **이번 PR 스코프 아웃** | db-migrator가 `01_db_schema.md §5-2`로 리더 이관. 근거: 현재 `productSchema`에 인덱스가 `_id` 외 0개(기존 부채)고, 성능 변경을 기능 PR에 섞으면 회귀 원인 분리가 안 됨. 또 저 인덱스는 category 지정 호출만 커버(전체 목록은 여전히 in-memory sort) → 둘 다 커버하려면 2개, 데이터 규모 보고 판단할 일. ✅ **리더 판정: 스코프 아웃 확정.** |
 | 3 | `uploadProductImage` 폴더 인자 값 | `"images"` 제안 | backend-impl이 `src/server/lib/cloudinary/upload.ts` 시그니처 확인 후 확정. **계약 블로킹 아님** |
 | 4 | 이미지 삭제 시 Cloudinary 원본 정리 | 안 함(`currentImages`에서 빼면 참조만 끊김) | **스코프 아웃** — 별도 항목으로 TODO 등록 권장 |
 | 5 | 상품 목록 페이지네이션 | 도입 안 함(배열 그대로) | **스코프 아웃**. 카테고리 확장으로 문서 수가 늘면 재검토 필요 — 리더 판단 요청 |
