@@ -12,19 +12,19 @@
       "id": "REQ-1",
       "description": "좋아요 수 기준 내림차순 정렬 + Top N 조회를 지원하는 조회 경로 신설(기존 getAllProductsService 확장 또는 신규 함수 — Phase1 설계팀이 결정). 좋아요 1개 이상인 상품만 후보로 삼는다.",
       "acceptance": "좋아요 수 내림차순으로 정렬된 상품 목록을 최대 8개까지 가져올 수 있다. 좋아요 0개 상품은 결과에 포함되지 않는다. deletedAt:null 등 기존 조회 조건(soft delete 등) 유지.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "REQ-2",
       "description": "Home에 '인기 상품' 섹션 신설 — 가로 스크롤 캐러셀, Hero 바로 다음이 아니라 SubCategoryNavSection 다음(background 참고)에 배치. 좋아요 1개 이상인 상품이 3개 미만이면 섹션 자체를 숨긴다.",
       "acceptance": "좋아요 1개 이상 상품이 3개 미만이면 섹션이 DOM에 렌더되지 않는다(신뢰도 낮은 '인기' 표시 방지). 3개 이상이면 최대 8개까지 가로 스크롤로 노출.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "REQ-3",
       "description": "ProductCard에 optional 'rank' prop 추가 — 값이 있을 때만 순위 배지(1/2/3...) 렌더. prop을 안 넘기는 기존 소비처(ProductGrid, 검색결과)는 배지 없이 기존 그대로 동작해야 한다.",
       "acceptance": "rank prop 미전달 시 배지 렌더 없음, 기존 ProductGrid/검색결과 화면 무회귀. rank 전달 시 카드에 순위 숫자가 보인다.",
-      "passes": false
+      "passes": true
     }
   ]
 }
