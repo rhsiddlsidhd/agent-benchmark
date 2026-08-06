@@ -5,6 +5,7 @@ import { generateUid } from "@/shared/utils";
 import { dbConnect } from "@/server/lib/mongodb";
 import { AppError } from "@/shared/types";
 import { COUPLE_INFO_DEADLINE_DAYS } from "@/shared/constants";
+import { getProductQuantityBoundsService } from "./product.service";
 
 const assertObjectIdLike = (id: string, label: string): void => {
   if (!mongoose.isObjectIdOrHexString(id)) {
@@ -21,6 +22,27 @@ export const createOrderService = async (
   assertObjectIdLike(data.userId, "사용자 ID");
   assertObjectIdLike(data.product.productId, "상품 ID");
   data.product.selectedFeatures.forEach((f) => assertObjectIdLike(f.featureId, "옵션 ID"));
+
+  // REQ-5: 클라이언트가 보낸 수량을 신뢰하지 않고 DB에서 minQuantity/maxQuantity를
+  // 다시 읽어 범위를 검증한다(요청 본문에는 이 두 값이 애초에 실리지 않는다).
+  const bounds = await getProductQuantityBoundsService(data.product.productId);
+  if (!bounds) {
+    throw new AppError("NOT_FOUND", "상품을 찾을 수 없습니다.");
+  }
+  const { minQuantity, maxQuantity } = bounds;
+  const quantity = data.product.quantity;
+  if (!Number.isInteger(quantity) || quantity < minQuantity) {
+    throw new AppError(
+      "VALIDATION",
+      `이 상품은 최소 ${minQuantity}개부터 주문할 수 있습니다.`,
+    );
+  }
+  if (maxQuantity !== 0 && quantity > maxQuantity) {
+    throw new AppError(
+      "VALIDATION",
+      `이 상품은 최대 ${maxQuantity}개까지 주문할 수 있습니다.`,
+    );
+  }
 
   const merchantUid = generateUid("ORDER");
 

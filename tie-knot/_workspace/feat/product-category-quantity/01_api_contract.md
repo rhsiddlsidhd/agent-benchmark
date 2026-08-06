@@ -14,7 +14,7 @@
 | # | 경로/함수 | 메서드 | 채널 | 인증 | 응답 성격 | 이번 변경 |
 |---|---|---|---|---|---|---|
 | 1 | `createProduct` | (Server Action) | A | 필요 (ADMIN) | 즉시 | 요청에 `images`/`minQuantity`/`maxQuantity` 추가 |
-| 2 | `updateProduct` | (Server Action) | A | 필요 (ADMIN) | 즉시 | 위와 동일 + `currentImages` |
+| 2 | `updateProduct` | (Server Action) | A | 필요 (ADMIN) | 즉시 | 위와 동일 + `currentImages` / **REQ-7** null 리턴 검사 → `NOT_FOUND` |
 | 3 | `createOrder` | (Server Action) | A | 필요 (로그인) | 즉시 | **REQ-5** 수량 범위 검증 추가 |
 | 4 | `/api/products` | GET | B | 불필요 | 즉시 | 응답에 3필드 추가 |
 | 5 | `/api/products/search` | GET | B | 불필요 | 즉시 | 응답에 3필드 추가 |
@@ -186,7 +186,39 @@ images = [...images.existing, ...uploadedNewImageUrls]
 ```ts
 { success: true, data: { message: "상품이 성공적으로 수정되었습니다." } }
 ```
-에러 매핑은 §2와 동일.
+에러 매핑은 §2와 동일 + 아래 `NOT_FOUND` 1행 추가.
+
+### ★REQ-7★ `updateProductService`의 `null` 리턴을 반드시 검사한다
+
+**현재 `updateProduct.ts:67`은 서비스 리턴값을 버리고 무조건 `success: true`를 돌려준다.** 수정이 실제로 일어나지 않아도 어드민에게는 "수정 완료"가 뜬다. 카테고리가 `invitation` 하나뿐일 땐 도달 불가능했지만 **REQ-1이 카테고리를 5개로 늘리면서 처음 열리는 경로**다(기존 부채가 아니라 이번 피처가 만든 신규 리스크).
+
+**메커니즘**: `product.model.ts:142`가 `discriminatorKey: "category"`라, mongoose는 discriminator 모델의 쿼리에 판별 조건을 강제 주입한다 — `node_modules/mongoose/lib/query.js:3347-3348`:
+```js
+if (schema && schema.discriminatorMapping && !schema.discriminatorMapping.isRoot) {
+  query._conditions[schema.discriminatorMapping.key] = schema.discriminatorMapping.value;
+}
+```
+따라서 `favor` 상품을 `invitation`으로 바꾸려 하면:
+1. `getWritableProductModel("invitation")` → `InvitationProductModel` 선택 (`product.service.ts:25-26`) — **바뀐 category 기준**
+2. 쿼리에 `category: "invitation"` 자동 주입
+3. 대상 문서는 아직 `category: "favor"` → **매칭 실패 → `null`**
+4. 액션이 검사 없이 `success: true` → **무증상 데이터 불일치**
+
+**확정 조치 (리더 판정: 최소조치)**
+```ts
+const updated = await updateProductService(productId, { ... });
+if (!updated) {
+  throw new AppError("NOT_FOUND", "상품을 찾을 수 없습니다.");
+}
+```
+- try 블록 **안**에서 throw한다 — 기존 `catch (e) { return actionError(e); }`가 받아 `{ success:false, error }`로 번역한다(`ERROR_HANDLING.md` §채널 A: 핵심 로직은 throw만 한다).
+- `updateProductService`는 `isObjectIdOrHexString` 실패 시에도 `null`을 리턴하므로(`product.service.ts:238-240`) 이 검사가 잘못된 productId까지 같이 커버한다.
+
+| 조건 | category | fieldErrors | message |
+|---|---|---|---|
+| 대상 문서 없음 / 카테고리 변경으로 매칭 실패 / 잘못된 productId | `NOT_FOUND` | 없음 | `"상품을 찾을 수 없습니다."` |
+
+**스코프 경계**: 카테고리 변경이 **성공하게** 만드는 건 이번 스코프가 아니다(리더 판정 — 완전 해결책인 delete+recreate 또는 폼에서 category 잠금은 별건). 이번 목표는 **"실패를 조용히 삼키지 않는 것"까지**다. 즉 REQ-7 적용 후에도 카테고리 변경 시도는 여전히 실패하며, 다만 `NOT_FOUND` 에러로 명시적으로 실패한다.
 
 ---
 
@@ -501,9 +533,11 @@ Phase3에서 확인할 항목을 미리 고정한다.
 | 13 | 빈 File 엔트리 필터 | 액션에서 `newFiles`를 `size > 0`으로 필터. 안 하면 빈 file input이 "이미지 있음"으로 오판됨 |
 | 14 | `maxQuantity === 0` 처리 | 상한 검증 스킵(주문) + 상한 없는 stepper(UI). "0개까지"로 해석하는 코드 0건 |
 | 15 | 카테고리 원본 | `category.ts` 단일 원본. model/schema/route에 카테고리 문자열 재하드코딩 0건 |
-| 16 | 라벨 map 동기화 | `productCategoryLabels`/`subCategoryLabels`에 **신규 4카테고리 + 신규 14서브카테고리**(최종 5 / 16) 전부 존재. 검색 역조회가 여기 의존 |
+| 16 | 라벨 map 동기화 | `productCategoryLabels`/`subCategoryLabels`에 **신규 4카테고리 + 신규 14서브카테고리**(최종 5 / **16 — invitation 기존 2개 포함**) 전부 존재. 신규 14개만 채우면 라벨 누락으로 조용히 깨짐. 검색 역조회(`findSubCategoriesByTerm`)와 타입가드(`isProductCategory`/`isSubCategory`)가 여기 의존. `src/app/(main)/_constants/subCategoryIcons.ts` 키 동기화도 필요(ui-designer §5, 누락 시 빌드 실패) |
 | 17 | `Number("")` 사고 | 액션에서 빈 값 → `undefined` 처리. `minQuantity: 0`으로 파싱되는 경로 0건 |
 | 18 | 채널 준수 | 주문/상품 mutation은 전부 채널 A. 클라이언트 raw `fetch` 0건. `/api/order/create`는 DISABLED 유지 |
+| 19 | **REQ-7** 무증상 성공 제거 | `updateProduct`가 `updateProductService`의 `null`을 검사해 `AppError("NOT_FOUND")` throw. **리턴값을 버리는 코드 0건.** `success: true`가 실제 DB 변경 없이 나가는 경로 0건 |
+| 20 | REQ-7 회귀 테스트 | **test-suite 요청**: 기존 category와 **다른** category로 `updateProduct`를 호출하는 케이스 필요. 같은 category로만 테스트하면 이 결함이 드러나지 않는다(기대값은 "변경 성공"이 아니라 **`NOT_FOUND` 반환**) |
 
 ---
 
@@ -517,7 +551,8 @@ Phase3에서 확인할 항목을 미리 고정한다.
 | 4 | 이미지 삭제 시 Cloudinary 원본 정리 | 안 함(`currentImages`에서 빼면 참조만 끊김) | **스코프 아웃** — 별도 항목으로 TODO 등록 권장 |
 | 5 | 상품 목록 페이지네이션 | 도입 안 함(배열 그대로) | **스코프 아웃**. 카테고리 확장으로 문서 수가 늘면 재검토 필요 — 리더 판단 요청 |
 | 6 | `updateProduct`의 `thumbnail` required 부채 | 기존 `productSchema`가 `thumbnail: File(size>0)` required라 수정 시에도 썸네일 재업로드가 강제되는 구조. `images`는 `existing` 합산으로 이 부채를 반복하지 않게 설계했으나, thumbnail 자체는 손대지 않음 | ✅ **리더 판정: 스코프 아웃 확정.** 이번 피처(quantity/카테고리)와 무관한 기존 버그라 리더가 최종보고 때 `TODO.md` 버그수정 섹션에 별도 등록. **backend-impl은 이번 PR에서 thumbnail을 건드리지 않는다** |
-| 7 | REQ-1 서브카테고리 개수 표기 오류 | 라인업은 정확하나 개수가 13이 아니라 **14** | ✅ **해소됨.** `00_requirements.json`이 이미 14개로 수정 완료(db-migrator 최초 지적 시 반영). §1-3의 "개수 정정" 노트는 이력 참고용으로만 남김 |
+| 7 | REQ-1 서브카테고리 개수 표기 오류 | 라인업은 정확하나 개수가 13이 아니라 **14** | ✅ **해소됨.** `00_requirements.json`이 이미 14개로 수정 완료(db-migrator 최초 지적 시 반영). §1-3의 "개수" 노트는 이력 참고용 |
+| 8 | 카테고리 변경 시 `updateProduct`가 조용히 성공 응답 | `updateProductService`의 `null` 리턴을 검사해 `AppError("NOT_FOUND")` (§3 ★REQ-7★) | ✅ **리더 판정: 최소조치 채택 → `REQ-7`로 승격.** 완전 해결(카테고리 변경 차단/폼 잠금)은 이번 PR엔 무거워 기각, 스코프 아웃은 무증상 데이터 불일치를 안고 가는 거라 기각. **이번 목표는 "실패를 명시적으로 알리는 것"까지** |
 
 ---
 

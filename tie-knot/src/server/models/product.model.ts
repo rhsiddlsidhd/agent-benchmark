@@ -107,8 +107,12 @@ const productSchema = new Schema<IProduct>(
               .lean();
             category = existing?.category;
           }
-          const allowed = SUB_CATEGORY_MAP[category as ProductCategory];
-          return allowed?.includes(value as SubCategory) ?? false;
+          // 카테고리가 5종으로 늘면서 SUB_CATEGORY_MAP 인덱싱 결과가 카테고리별로 다른
+          // 리터럴 튜플 타입의 union이 된다 — 명시적으로 readonly string[]로 넓혀야
+          // .includes()가 "not assignable to parameter of type 'never'"로 막히지 않는다.
+          const allowed: readonly string[] | undefined =
+            SUB_CATEGORY_MAP[category as ProductCategory];
+          return allowed?.includes(value) ?? false;
         },
         message: (props: { value: string }) =>
           `'${props.value}'는 해당 카테고리에서 허용되지 않는 subCategory입니다.`,

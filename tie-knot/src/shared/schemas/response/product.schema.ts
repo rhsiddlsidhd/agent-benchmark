@@ -33,6 +33,11 @@ export const productResponseSchema = z.object({
   createdAt: isoDateString,
   updatedAt: isoDateString,
   deletedAt: isoDateString.nullable(),
+
+  // ── 신규 (REQ-2) — 셋 다 non-optional. transformProduct 정규화가 보장한다. ──
+  images: z.array(z.string()),
+  minQuantity: z.number(),
+  maxQuantity: z.number(),
 });
 
 export const productsResponseSchema = z.array(productResponseSchema);

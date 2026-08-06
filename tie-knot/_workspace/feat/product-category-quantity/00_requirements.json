@@ -37,6 +37,12 @@
       "description": "createOrder 액션에서 주문 수량(order.product.quantity, ProductSnapShot 내부 — top-level Order.quantity 아님, FormData 키 productQuantity)이 대상 Product의 minQuantity~maxQuantity 범위 안인지 검증(maxQuantity===0이면 상한 검증 스킵), 범위 밖이면 AppError",
       "acceptance": "범위 밖 quantity로 주문 시도 시 주문 생성 거부되고 적절한 에러 반환, 범위 안이면 정상 생성",
       "passes": false
+    },
+    {
+      "id": "REQ-7",
+      "description": "updateProduct.ts가 updateProductService의 null 리턴을 검사하지 않아 조용히 실패하는 기존 버그 수정 — Product는 discriminatorKey:'category'라 mongoose가 discriminator 모델 쿼리에 category 판별조건을 강제 주입한다(node_modules/mongoose/lib/query.js:3347-3348). 상품 수정 요청의 category를 원래 값과 다르게 바꾸면(예: favor→invitation) getWritableProductModel이 바뀐 category 기준으로 모델을 선택해 대상 문서(원래 category)와 안 맞아 매칭 실패→null 반환→updateProduct.ts:67이 검사 없이 success:true를 리턴한다(api-designer 발견, REQ-1이 카테고리를 5개로 늘리면서 처음 도달 가능해진 신규 리스크 — 기존 부채 아님). 리더 판정: 최소조치 채택 — updateProductService 결과가 null이면 AppError('NOT_FOUND')로 처리(완전 해결책인 category 변경 자체 차단/폼 잠금은 이번 스코프 아웃)",
+      "acceptance": "category를 다른 카테고리로 바꾸는 updateProduct 요청이 대상 문서를 못 찾으면 success:true가 아니라 NOT_FOUND 에러를 반환한다(무증상 실패 제거). 카테고리 변경 자체가 되게 만드는 건 이번 스코프 아님 — '실패를 명시적으로 알리는 것'까지만",
+      "passes": false
     }
   ]
 }

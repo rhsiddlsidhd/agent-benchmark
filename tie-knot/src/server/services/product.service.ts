@@ -50,10 +50,35 @@ const transformProduct = (product: LeanProduct, userId?: string): ProductJSON =>
   };
 };
 
+// REQ-5(주문 수량 검증) 전용 — 클라이언트가 보낸 minQuantity/maxQuantity를 신뢰하지 않고
+// order.service가 이 함수로 DB를 재조회한다. .lean() + select라 여기도 default가
+// 안 채워지므로 transformProduct와 동일한 레거시 폴백(?? 1 / ?? 1)을 적용한다.
+export const getProductQuantityBoundsService = async (
+  productId: string,
+): Promise<{ minQuantity: number; maxQuantity: number } | null> => {
+  await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(productId)) {
+    return null;
+  }
+
+  const product = await ProductModel.findOne({ _id: productId, deletedAt: null })
+    .select("minQuantity maxQuantity")
+    .lean();
+
+  if (!product) return null;
+
+  return {
+    minQuantity: product.minQuantity ?? 1,
+    maxQuantity: product.maxQuantity ?? 1,
+  };
+};
+
 // 상품생성
 export const createProductService = async (
-  data: Omit<ProductDto, "thumbnail"> & {
+  data: Omit<ProductDto, "thumbnail" | "images"> & {
     thumbnail: string;
+    images: string[];
     authorId: string;
     previewUrl?: string;
   },
@@ -233,8 +258,9 @@ export const getPopularProductsService = async (
 // 상품 업데이트
 export const updateProductService = async (
   productId: string,
-  data: Partial<Omit<ProductDto, "thumbnail">> & {
+  data: Partial<Omit<ProductDto, "thumbnail" | "images">> & {
     thumbnail?: string;
+    images?: string[];
     previewUrl?: string;
     isPremium?: boolean;
     featureIds?: string[];

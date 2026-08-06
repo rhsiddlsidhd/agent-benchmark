@@ -24,6 +24,9 @@ const buildValidProduct = (overrides?: Record<string, unknown>) => ({
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   deletedAt: null as string | null,
+  images: [] as string[],
+  minQuantity: 1,
+  maxQuantity: 0,
   ...overrides,
 });
 
@@ -141,6 +144,54 @@ describe("productResponseSchema", () => {
     delete (data as { previewUrl?: unknown }).previewUrl;
 
     const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(true);
+  });
+
+  // ── REQ-2: images/minQuantity/maxQuantity — 셋 다 non-optional 계약(§8 #3) ──
+  it("images 필드가 없으면 실패한다 (optional 아님)", () => {
+    const data = buildValidProduct();
+    delete (data as { images?: unknown }).images;
+
+    const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(false);
+  });
+
+  it("minQuantity 필드가 없으면 실패한다 (optional 아님)", () => {
+    const data = buildValidProduct();
+    delete (data as { minQuantity?: unknown }).minQuantity;
+
+    const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(false);
+  });
+
+  it("maxQuantity 필드가 없으면 실패한다 (optional 아님)", () => {
+    const data = buildValidProduct();
+    delete (data as { maxQuantity?: unknown }).maxQuantity;
+
+    const result = productResponseSchema.safeParse(data);
+
+    expect(result.success).toBe(false);
+  });
+
+  it("images는 문자열 배열이어야 한다", () => {
+    const result = productResponseSchema.safeParse(
+      buildValidProduct({ images: [123] }),
+    );
+
+    expect(result.success).toBe(false);
+  });
+
+  it("images/minQuantity/maxQuantity가 정상 값이면 통과한다", () => {
+    const result = productResponseSchema.safeParse(
+      buildValidProduct({
+        images: ["https://example.com/a.jpg", "https://example.com/b.jpg"],
+        minQuantity: 2,
+        maxQuantity: 10,
+      }),
+    );
 
     expect(result.success).toBe(true);
   });
