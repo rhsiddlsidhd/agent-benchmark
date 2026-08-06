@@ -96,14 +96,16 @@ function classify(rawPath) {
 }
 
 // 변수에 담긴 뒤 useSWR/apiRequest에 전달되는 경우 (예: `const swrKey = ... \`/api/x\` ...`)
-// — 같은 파일 안에서 그 변수를 대입하는 줄을 찾아 문자열 리터럴을 역추적한다.
+// — 같은 파일 안에서 그 변수를 대입하는 문(statement)을 찾아 문자열 리터럴을 역추적한다.
+// 대입문이 세미콜론까지 여러 줄에 걸치는 경우(삼항연산자 줄바꿈 등)를 놓치지 않도록
+// 줄 단위([^\n]*)가 아니라 다음 세미콜론까지([\s\S]*?;)를 탐색 범위로 잡는다.
 function resolveIdentifier(content, ident) {
-  const lineRe = new RegExp(
-    `\\b${ident.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\b\\s*=[^\\n]*`,
+  const assignRe = new RegExp(
+    `\\b${ident.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\b\\s*=([\\s\\S]*?);`,
   );
-  const lineMatch = content.match(lineRe);
-  if (!lineMatch) return null;
-  const literalMatch = lineMatch[0].match(new RegExp(STRING_LITERAL));
+  const assignMatch = content.match(assignRe);
+  if (!assignMatch) return null;
+  const literalMatch = assignMatch[1].match(new RegExp(STRING_LITERAL));
   return literalMatch ? stripQuotes(literalMatch[0]) : null;
 }
 

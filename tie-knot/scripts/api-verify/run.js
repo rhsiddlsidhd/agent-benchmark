@@ -13,8 +13,8 @@ const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 
 async function getCookieHeaderSafe() {
   try {
-    const { getCookieHeader } = require("../lighthouse-audit/get-auth-cookie");
-    return await getCookieHeader("user", { baseUrl: BASE_URL });
+    const { getCookieHeader } = require("./auth");
+    return await getCookieHeader("user");
   } catch (e) {
     console.warn(`[login] 로그인 실패, 인증 없이 진행: ${e.message}`);
     return null;
@@ -51,7 +51,7 @@ async function runCheck(check, cookieHeader, dataSchemas) {
   }
 
   const dataSchema = dataSchemas[check.schemaKey];
-  const envelope = envelopeFor(dataSchema);
+  const envelope = await envelopeFor(dataSchema);
   const parsed = envelope.safeParse(json);
 
   if (!parsed.success) {
@@ -76,7 +76,7 @@ async function runCheck(check, cookieHeader, dataSchemas) {
       httpStatus,
       elapsedMs,
       result: "API_ERROR",
-      detail: `${parsed.data.error.code} ${parsed.data.error.message}`,
+      detail: `${parsed.data.error.category} ${parsed.data.error.message}`,
     };
   }
 
