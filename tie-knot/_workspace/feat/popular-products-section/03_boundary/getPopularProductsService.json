@@ -1,0 +1,42 @@
+{
+  "endpoint": "getPopularProductsService (서비스 직접 호출 — 채널 A/B 경계 없음)",
+  "owner": "backend-impl",
+  "branch": "feat/popular-products-section--backend",
+  "commit": "4043898",
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "PASS",
+      "at": "2026-08-06T08:25:00+09:00",
+      "checked": {
+        "01_db_schema_9_checklist": {
+          "product.model.ts 무수정": "PASS — git hash 5d6e7428… baseline 일치",
+          "getAllProductsService 무수정": "PASS — diff 0줄, 시그니처/정렬 그대로",
+          "sort({likes:-1}) 미사용": "PASS — aggregation 사용",
+          "$expr+$size 미사용": "PASS — \"likes.0\":{$exists:true} 사용. 테스트가 likes 필드 없는 레거시 문서를 raw insertOne으로 심어 제외 확인 — $expr였다면 Location17124로 전체 실패했을 케이스를 실제로 커버",
+          "$ifNull 유지": "PASS — 주석 포함 유지",
+          "$unset likesCount": "PASS — 파이프라인 존재 + 테스트가 not.toHaveProperty('likesCount')로 응답 shape 오염 부재 검증",
+          "$sort/$limit 인접": "PASS — 사이 스테이지 없음",
+          "tie-break 5단": "PASS — likesCount→isFeatured→priority→createdAt→_id 전부 유지, 축약 없음",
+          "base ProductModel + 배열 리터럴": "PASS — ProductModel.aggregate, 파이프라인 함수 내부 리터럴, 모듈 상수 아님",
+          "dbConnect 선행 / limit 클램프 / 제네릭": "PASS — await dbConnect() 최상단, Math.min(Math.max(Math.trunc(limit),1),50), aggregate<LeanProduct>() (as 캐스팅 없음)",
+          "lean() 미사용": "PASS",
+          "시딩 4건 이상 + 동점": "PASS — A(3)/C(2,featured)/B(2)/D(1) 4건, 동점 1쌍",
+          "좋아요0 + soft-deleted 혼입": "PASS — E(0개), F(좋아요5개인데 soft-deleted) 둘 다 제외 검증"
+        },
+        "기준1_응답래핑": "PASS — envelope 없음이 정상(채널 경계 미통과). routeSuccess/actionError 미등장 확인",
+        "기준2_케이스변환": "PASS — likesCount(내부)/isLiked/discountedPrice/subCategory 전부 camelCase, snake_case 0건",
+        "기준5_생산자소비자매핑": "FAIL — 별도 유닛 home-integration.json으로 분리. 서비스 자체는 정합하나 프로덕션 소비처 0건",
+        "기준7_옵셔널": "PASS — userId optional, 미전달 시 isLiked=false 테스트로 검증",
+        "신규 route.ts": "PASS — 12개 baseline 유지, 신설 0개",
+        "에러계약": "PASS — AppError('INTERNAL', ...) 래핑, 빈 결과를 NOT_FOUND로 던지지 않음(테스트로 확인)",
+        "status 필터": "PASS — deletedAt:null만, status 미사용"
+      },
+      "tests": "통합 병합 상태에서 product.service.test.ts 포함 72개 전부 통과",
+      "note": "_id tie-break는 설계 §2-4가 직접 테스트 불가를 명시(제거해도 이번엔 같은 순서가 나옴)하므로 코드 존재로만 판정."
+    }
+  ],
+  "redoCount": 0,
+  "forcedPass": false,
+  "finalVerdict": "PASS"
+}

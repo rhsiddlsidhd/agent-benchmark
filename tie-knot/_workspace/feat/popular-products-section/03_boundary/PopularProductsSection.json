@@ -1,0 +1,28 @@
+{
+  "endpoint": "PopularProductsSection (신규 컴포넌트) ↔ getPopularProductsService 응답 shape",
+  "owner": "frontend-impl",
+  "branch": "feat/popular-products-section--frontend",
+  "commit": "6de65d3",
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "PASS",
+      "at": "2026-08-06T08:25:00+09:00",
+      "checked": {
+        "shape_교차비교": "PASS — props { products: Product[] }, Product = @/server/services의 ProductJSON. backend 리턴 타입 Promise<ProductJSON[]>와 동일 타입 원본을 참조하므로 구조적 일치",
+        "신규응답필드_미참조": "PASS — grep 결과 product.rank / product.likeCount / product.likesCount 참조 0건. 순위는 index+1로 UI 파생",
+        "재정렬_재slice_금지": "PASS — products.map만, sort/slice 없음. 서버 배열 순서를 그대로 순위로 사용",
+        "게이트_단일화": "PASS — products.length < POPULAR_PRODUCTS_MIN_ITEMS → return null 이 이 파일 11행 한 곳뿐. HomeTemplate은 조건 없이 한 줄 렌더(이중 게이트 없음). 설계 §4.1의 REDO 조건 미해당",
+        "상수_단일정의": "PASS — 리터럴 3/8 하드코딩 0건, @/shared/constants 배럴 경유 import",
+        "480px캡_하드룰": "PASS — sm:/md:/lg:/xl: 접두사 0건(grep). w-[45%] shrink-0 퍼센트 폭, flex gap-4 overflow-x-auto",
+        "캐러셀_미재사용": "PASS — TemplateCarouselGroup/atoms/carousel 미import, embla 미도입, use client 없음",
+        "배럴_미등재": "PASS — _components/index 등재 없이 HomeTemplate이 ./PopularProductsSection 상대경로 import",
+        "접근성": "PASS — section aria-labelledby=popular-products-heading ↔ TypographyH2 id 연결 성립"
+      },
+      "tests": "PopularProductsSection.test.tsx 4케이스 전부 통과 — 3개 렌더 / 2개 시 container 비어있음(REQ-2 수용기준) / 8개 + '인기 1위' / overflow-x-auto"
+    }
+  ],
+  "redoCount": 0,
+  "forcedPass": false,
+  "finalVerdict": "PASS"
+}

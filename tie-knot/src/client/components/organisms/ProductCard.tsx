@@ -8,7 +8,7 @@ import { TypographyMuted } from "../atoms/typography";
 import { CloudImage } from "../molecules/CloudImage";
 import { routes } from "@/shared/constants";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, rank }: { product: Product; rank?: number }) {
   const finalPrice =
     product.discount?.value > 0
       ? calculatePrice(product.price, product.discount)
@@ -45,6 +45,14 @@ export function ProductCard({ product }: { product: Product }) {
         {/* Top badges */}
         <div className="absolute top-3 right-3 left-3 flex items-start justify-between">
           <div className="flex flex-col gap-1.5">
+            {typeof rank === "number" && (
+              <Badge className="border-transparent bg-neutral-900/85 shadow-sm backdrop-blur-sm">
+                <TypographyMuted className="text-[10px] font-bold text-white">
+                  {rank}
+                  <span className="sr-only">인기 {rank}위</span>
+                </TypographyMuted>
+              </Badge>
+            )}
             {product.isPremium && (
               <Badge className="border-transparent bg-amber-400/95 tracking-widest uppercase shadow-sm backdrop-blur-sm">
                 <Sparkles className="h-2.5 w-2.5 text-amber-950" />

@@ -1,0 +1,31 @@
+{
+  "endpoint": "ProductCard rank prop (REQ-3) ↔ 기존 소비처 무회귀",
+  "owner": "frontend-impl",
+  "branch": "feat/popular-products-section--frontend",
+  "commit": "6de65d3",
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "PASS",
+      "at": "2026-08-06T08:25:00+09:00",
+      "checked": {
+        "optional_선언": "PASS — { product, rank }: { product: Product; rank?: number }",
+        "기준7_옵셔널처리": "PASS — typeof rank === 'number' 사용. {rank && ...} truthy 체크가 아니므로 rank=0이 '0'으로 새어나가는 함정 회피(설계 §5.2 명시 요구사항)",
+        "기존소비처_무회귀": "PASS — git hash 대조로 확인. ProductGrid.tsx=2cfb51a7…, TemplateCarouselGroup.tsx=d921adf7… 둘 다 baseline과 동일 = rank 미전달 유지. 검색결과(ProductSearch)는 ProductGrid 경유라 별도 소비처 아님",
+        "배지_배치": "PASS — 배지 컬럼 div.flex.flex-col.gap-1.5의 첫 번째 자식(isPremium/isFeatured보다 위). 우측 할인 배지 영역 무수정",
+        "마크업_일치": "PASS — Badge + TypographyMuted 형제 패턴 유지, bg-neutral-900/85 중립 다크(amber/white/rose와 미충돌), sr-only '인기 N위' 포함",
+        "스코프밖_준수": "PASS — CloudImage priority={true} 무수정(리더 확정 스코프 밖)",
+        "반응형접두사": "PASS — 추가된 배지 블록에 sm:/md:/lg:/xl: 0건"
+      },
+      "sideEffect": {
+        "file": "src/client/components/atoms/typography.tsx",
+        "change": "TypographyH2에 id?: string passthrough 추가",
+        "verdict": "허용 — 설계 §5.1이 aria-labelledby 연결용 id=popular-products-heading을 요구했는데 기존 컴포넌트가 id를 안 받아 불가피. TypographyProps 인터페이스 자체를 넓히지 않고 TypographyProps & { id?: string }로 H2에만 국한해 blast radius 최소화. id는 optional이라 나머지 소비처 7곳(SubCategoryNavSection/HomeTemplate/EcommerceHero/StartActionCTA/ProductFeatures/Pricing/TemplateCarouselGroup) 전부 무회귀 — 전수 확인함"
+      },
+      "tests": "ProductCard.test.tsx +2케이스 통과 — rank 미전달 시 배지 부재 / rank=1 시 '1'+'인기 1위' 노출. 기존 assertion 무회귀"
+    }
+  ],
+  "redoCount": 0,
+  "forcedPass": false,
+  "finalVerdict": "PASS"
+}

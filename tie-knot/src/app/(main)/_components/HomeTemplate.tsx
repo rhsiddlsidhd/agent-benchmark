@@ -2,19 +2,23 @@ import { StartActionCTA, EcommerceHero, LiveDemoSection, TemplateCarouselGroup }
 import { Product } from "@/server/services";
 import { TypographyH2, TypographyP } from "@/client/components/atoms";
 import { SubCategoryNavSection } from "./SubCategoryNavSection";
+import { PopularProductsSection } from "./PopularProductsSection";
 
 interface HomeTemplateProps {
   invitation: Product[];
   product: Product | null;
   infoId: string | undefined;
+  popularProducts: Product[];
 }
 
-const HomeTemplate = ({ invitation, product, infoId }: HomeTemplateProps) => {
+const HomeTemplate = ({ invitation, product, infoId, popularProducts }: HomeTemplateProps) => {
   return (
     <div className="flex flex-col">
       <EcommerceHero />
 
       <SubCategoryNavSection category="invitation" />
+
+      <PopularProductsSection products={popularProducts} />
 
       {/* 추천 템플릿 섹션: 데이터가 있을 경우에만 렌더링 */}
       {invitation.length > 0 && (
