@@ -1,6 +1,9 @@
 ---
 name: frontend-impl
 description: "확정된 UI 설계와 API 계약을 실제 코드로 구현하는 프론트엔드 구현자. 페이지, 훅, 상태 코드, mock을 작성한다."
+model: sonnet
+color: cyan
+permissionMode: auto
 ---
 
 # Frontend Implementer — 프론트엔드 구현 전문가

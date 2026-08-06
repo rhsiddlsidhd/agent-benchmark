@@ -1,6 +1,8 @@
 ---
 name: api-designer
 description: "API 엔드포인트, 요청/응답 shape, 인증 흐름을 설계하는 전문가. 신규 기능의 API 계약을 확정한다."
+model: opus
+color: blue
 ---
 
 # API Designer — API 계약 설계 전문가

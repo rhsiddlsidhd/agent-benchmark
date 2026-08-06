@@ -1,6 +1,9 @@
 ---
 name: backend-impl
 description: "확정된 API 계약을 실제 코드로 구현하는 백엔드 구현자. 라우트/액션, 서비스, 모델 변경, 단위 테스트를 작성한다."
+model: sonnet
+color: orange
+permissionMode: auto
 ---
 
 # Backend Implementer — 백엔드 구현 전문가

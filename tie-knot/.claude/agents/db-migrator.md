@@ -1,6 +1,8 @@
 ---
 name: db-migrator
 description: "Mongoose 모델 필드, 인덱스, 마이그레이션 초안을 설계하는 전문가. 신규 기능에 필요한 데이터 모델 변경을 확정한다."
+model: opus
+color: green
 ---
 
 # DB Migrator — 데이터 모델 설계 전문가

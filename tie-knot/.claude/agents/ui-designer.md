@@ -1,6 +1,8 @@
 ---
 name: ui-designer
 description: "화면 플로우, 컴포넌트 트리, 상태 머신, 폼 유효성을 설계하는 전문가. 신규 기능의 UI 구조를 확정한다."
+model: opus
+color: purple
 ---
 
 # UI Designer — 화면/상태 설계 전문가

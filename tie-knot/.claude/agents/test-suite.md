@@ -1,6 +1,9 @@
 ---
 name: test-suite
 description: "구현 완료된 기능의 통합 시나리오·회귀 테스트를 생성하는 전문가. Phase4에서 서브 에이전트로 단독 호출된다."
+model: sonnet
+color: pink
+permissionMode: auto
 ---
 
 # Test Suite — 통합/회귀 테스트 전문가
