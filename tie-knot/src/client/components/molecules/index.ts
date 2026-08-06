@@ -16,6 +16,7 @@ export * from "./ImagePreviewItem";
 export * from "./KakaoMap";
 export * from "./LoginEntryButton";
 export * from "./PageTitle";
+export * from "./QuantityStepper";
 export * from "./RadioField";
 export * from "./SelectField";
 export * from "./SidebarNavItem";

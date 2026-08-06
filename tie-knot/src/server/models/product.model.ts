@@ -49,6 +49,9 @@ export interface ProductDB {
   status: Status;
   // 스키마가 default: null이라 모든 문서에 항상 존재한다 — optional이 아니라 nullable.
   deletedAt: Date | null;
+  images: string[];
+  minQuantity: number;
+  maxQuantity: number;
 }
 
 export interface IProduct extends ProductDB {
@@ -134,6 +137,9 @@ const productSchema = new Schema<IProduct>(
       default: [],
     },
     deletedAt: { type: Date, default: null },
+    images: { type: [String], default: [] },
+    minQuantity: { type: Number, required: true, default: 1, min: 1 },
+    maxQuantity: { type: Number, required: true, default: 0, min: 0 },
   },
   {
     timestamps: true,

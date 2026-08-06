@@ -40,6 +40,13 @@ const transformProduct = (product: LeanProduct, userId?: string): ProductJSON =>
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     deletedAt: deletedAt ? deletedAt.toISOString() : null,
+    // .lean()이라 mongoose default가 레거시 문서엔 안 채워진다 — 여기서 정규화한다.
+    // maxQuantity 폴백은 0(무제한)이 아니라 1(고정) — 레거시 문서는 전부 invitation이고
+    // invitation의 정답은 (1,1)이다. 0으로 폴백하면 레거시 상세가 무제한 stepper로
+    // 렌더돼 REQ-4 회귀를 일으킨다(01_db_schema.md §7-3).
+    images: rest.images ?? [],
+    minQuantity: rest.minQuantity ?? 1,
+    maxQuantity: rest.maxQuantity ?? 1,
   };
 };
 
