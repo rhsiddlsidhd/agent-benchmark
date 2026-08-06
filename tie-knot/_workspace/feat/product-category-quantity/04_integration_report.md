@@ -46,6 +46,12 @@ REDO 0회, 강제 PASS 0건, `MANUAL_INTERVENTION_REQUIRED` 없음. 독립 `tsc 
 - Cloudinary 이미지 원본 정리(삭제 시) — 참조만 끊기고 원본은 안 지워짐
 - 갤러리 이미지 순서 편집 — "기존 뒤에 신규 append"만 지원
 
+## Phase4에서 새로 발견한 버그 (미수정, 후속 트랙)
+
+**존재하지 않는 productId + non-invitation category로 `updateProduct` 호출 시 `NOT_FOUND`가 아니라 `INTERNAL`(500)** — test-suite 발견, 5/5 재현. `product.model.ts`의 `subCategory` 비동기 validator가 대상 문서를 못 찾으면 category를 못 읽어 무조건 검증 실패로 떨어지는 게 원인으로 추정됨. REQ-1이 discriminator 없는 카테고리 4종(favor/accessory/guestbook/ceremony)을 늘리면서 새로 열린 경로. REQ-7 acceptance(다른 category로 존재하는 문서를 수정 시도 → NOT_FOUND) 자체는 이 버그와 무관하게 정상 동작 확인됨 — 별개 결함이다.
+
+**수정 안 한 이유**: mongoose validator 재설계가 필요해 "최소조치"급이 아님(REQ-7과 달리 3~4줄로 안 끝남). 데이터 무결성 문제(REQ-7처럼 "성공했다고 거짓 응답")가 아니라 에러코드 오분류(500 vs 404) 수준이라 REQ-7보다 심각도 낮음 — 사용자에게는 어쨌든 실패로 보인다. PR 블로커 아님, TODO.md 버그수정 섹션에 리더가 별도 등록.
+
 ## 잔여 발견 사항 (차단 아님, 후속 판단 필요)
 
 1. **"NaN원" 표시** — `ProductOptions`에서 수량 입력을 비우면 총 상품 금액이 일시적으로 "NaN원"으로 표시됨(blur 시 clamp되어 서버로는 안 나감, 설계상 허용된 중간상태). `Number.isNaN` 가드 권장.
