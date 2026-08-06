@@ -1,0 +1,69 @@
+{
+  "endpoint": "backend unit — createProduct / updateProduct / createOrder(REQ-5) / category+model+schema(REQ-1,2,3) / REQ-7",
+  "owner": "backend-impl",
+  "worktree": "/home/claude/tie-knot--product-category-quantity-backend/tie-knot",
+  "commit": "571503a",
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "PASS",
+      "at": "2026-08-06T10:15:00Z",
+      "checked": {
+        "api_contract_s8": {
+          "1_list_wrapping": "PASS — routeSuccess(products), products는 배열. route.ts 2개 모두 이번 diff에 없음(미변경)",
+          "2_field_case": "PASS — images/minQuantity/maxQuantity 전부 camelCase. snake_case 0건",
+          "3_response_non_optional": "PASS — response/product.schema.ts:36-40 3필드 non-optional. 클라이언트 폴백 0건(클라 파일 변경은 admin 테스트 픽스처 2개뿐)",
+          "4_legacy_fallback_location": "PASS — product.service.ts:47-49 transformProduct에 images??[] / minQuantity??1 / maxQuantity??1. maxQuantity가 ??0이 아님(REQ-4 회귀 방지 확인)",
+          "5_req5_error_category": "PASS — order.service.ts VALIDATION 2건, NOT_FOUND 1건. 신규 카테고리 0건",
+          "6_req5_fieldErrors": "PASS — AppError를 fieldErrors 없이 생성, boundary.ts:52가 e.fieldErrors(undefined) 전달",
+          "7_req5_data_source": "PASS — getProductQuantityBoundsService(product.service.ts:56-75)로 DB 재조회. 요청 본문에 min/maxQuantity 없음",
+          "8_quantity_key_path": "PASS — createOrder.ts:54 formData.get('productQuantity') → data.product.quantity",
+          "9_currentImages_key": "PASS — createProduct.ts:43 / updateProduct.ts:43 formData.getAll('currentImages') → DTO images.existing",
+          "10_images_asymmetry": "의도된 비대칭 — 불일치 판정 안 함",
+          "11_lean_default_trap": "PASS — transformProduct와 getProductQuantityBoundsService 양쪽 모두 ??1 폴백",
+          "12_legacy_fixture_test": "PASS — product.service.test.ts:161(정규화) / :210(bounds 폴백), order.service.test.ts:184(레거시 문서 주문)",
+          "13_empty_file_filter": "PASS — 두 액션 모두 .filter(f=>f.size>0)",
+          "14_max_zero_unlimited": "PASS — order.service.ts maxQuantity!==0 조건부 상한검증, zod refine도 0 예외 처리",
+          "15_category_single_source": "PASS — model:91 enum PRODUCT_CATEGORIES, schema:8 z.enum(PRODUCT_CATEGORIES). 카테고리 문자열 재하드코딩 grep 결과 0건",
+          "16_label_map_sync": "PASS — productCategoryLabels 5개, subCategoryLabels 16개, subCategoryIcons 16개. lucide-react 아이콘 16개 export 전부 실재 확인",
+          "17_number_empty_string": "PASS — parseOptionalNumber(raw ? Number(raw) : undefined) 두 액션 모두",
+          "18_channel_compliance": "PASS — /api/order/create DISABLED 유지(route.ts:48), report:api에서 미사용 라우트로 확인. 클라이언트 raw fetch 0건",
+          "19_req7_silent_success": "PASS — updateProduct.ts:97-99 !updated이면 AppError('NOT_FOUND') throw, try 안이라 actionError→toErrorPayload가 category 보존(boundary.ts:47-53, NOT_FOUND는 ERROR_SAFE_MESSAGES 대상 아니라 원문 유지)",
+          "20_req7_regression_test": "PASS — updateProduct.test.ts:125-141 NOT_FOUND 케이스 + :176/:192 다른 category(favor/candle) 호출 케이스"
+        },
+        "seven_criteria": {
+          "1_wrapping": "PASS", "2_case": "PASS", "3_route_link": "PASS — /products/[category] 동적 라우트가 확장된 5종을 isProductCategory로 그대로 수용",
+          "4_state_transition": "N/A(백엔드 단독)", "5_api_hook_mapping": "PASS — 신규 라우트 0개, 기존 매핑 변동 없음",
+          "6_sync_async": "PASS — createOrder 즉시 응답 shape 변경 없음", "7_optional_handling": "PASS"
+        },
+        "independent_verification": {
+          "tsc_noEmit": "exit 0",
+          "vitest_changed_units": "6 files / 98 tests passed (category, request+response schema, createProduct, updateProduct, upload)",
+          "vitest_db_services": "2 files / 83 tests passed (product.service, order.service)",
+          "report_api": "라우트 변경 0건 확인"
+        },
+        "scope_guard": {
+          "OrderSummary.tsx": "diff 미포함 — 준수",
+          "thumbnail_debt": "미변경 — 준수(§9 #6)"
+        }
+      },
+      "advisories": [
+        "order.service.ts 하한 분기에 계약 §4에 없는 !Number.isInteger(quantity) 가드가 추가됨. 비정수 수량이 '최소 N개부터' 문구로 나가 메시지가 약간 어긋나지만 createOrderSchema+UI stepper상 도달 불가 경로라 FIX 아님",
+        "invitation 상품 수정 시 폼이 currentImages를 안 보내면 images:[]로 덮어써짐 — frontend §6 #6 이행에 의존. frontend 유닛 도착 시 교차 재확인 대상",
+        "워크트리에 package-lock.json이 uncommitted modified 상태 — 병합 diff에 섞이지 않도록 리더 확인 필요 [해소: backend-impl이 git checkout으로 원복, 워크트리 클린. 커밋 571503a 불변]"
+      ],
+      "pendingCrossCheck": [
+        {
+          "id": "invitation-currentImages-overwrite",
+          "detail": "updateProduct.ts:85가 images를 통째로 덮어쓰므로, 수정 폼이 currentImages hidden input을 보내지 않으면 invitation 상품은 zod refine을 통과해 무증상으로 images:[]가 된다(물리상품은 VALIDATION으로 막힘)",
+          "resolveWhen": "frontend-impl REQ-6 유닛 도착 시 ProductEditDialog/ProductRegistrationForm의 currentImages hidden input 렌더 여부와 교차 대조",
+          "status": "RESOLVED",
+          "resolvedAt": "2026-08-06T14:35:00Z",
+          "resolution": "frontend 796476f 확인 결과 두 폼 모두 이미지 갤러리/currentImages hidden input이 카테고리 조건 블록 밖에 있어 invitation 수정 시에도 기존 URL이 재전송된다. 무증상 덮어쓰기 없음"
+        }
+      ]
+    }
+  ],
+  "redoCount": 0,
+  "forcedPass": false
+}
