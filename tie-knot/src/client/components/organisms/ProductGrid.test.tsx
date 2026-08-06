@@ -52,4 +52,20 @@ describe("ProductGrid", () => {
 
     expect(screen.getByText("상품을 준비 중에 있습니다")).toBeInTheDocument();
   });
+
+  // feat/popular-products-section 회귀: ProductGrid는 ProductCard에 rank를
+  // 넘기지 않는 기존 소비처 2곳(01_ui_flow.md §5.2) 중 하나다. rank가
+  // optional이라도 카드 내부에서 실수로 index 기반 rank를 흘려보내면 검색
+  // 결과/카탈로그 그리드에도 순위 배지가 잘못 붙는다 — 그 무회귀를 확인한다.
+  it("rank를 넘기지 않으므로 카드에 순위 배지가 렌더되지 않는다 (ProductCard rank 추가 무회귀)", () => {
+    render(
+      <ProductGrid
+        data={[buildProduct(), buildProduct({ _id: "product-2", title: "두 번째 상품" })]}
+        state={initialFilterState}
+      />,
+    );
+
+    expect(screen.queryByText(/^인기 \d+위$/)).not.toBeInTheDocument();
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+  });
 });
