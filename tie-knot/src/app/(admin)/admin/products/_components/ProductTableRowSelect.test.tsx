@@ -40,6 +40,9 @@ const buildProduct = (overrides?: Partial<Product>): Product => ({
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   deletedAt: null,
+  images: [],
+  minQuantity: 1,
+  maxQuantity: 0,
   ...overrides,
 });
 

@@ -49,6 +49,9 @@ export interface ProductDB {
   status: Status;
   // 스키마가 default: null이라 모든 문서에 항상 존재한다 — optional이 아니라 nullable.
   deletedAt: Date | null;
+  images: string[];
+  minQuantity: number;
+  maxQuantity: number;
 }
 
 export interface IProduct extends ProductDB {
@@ -104,8 +107,12 @@ const productSchema = new Schema<IProduct>(
               .lean();
             category = existing?.category;
           }
-          const allowed = SUB_CATEGORY_MAP[category as ProductCategory];
-          return allowed?.includes(value as SubCategory) ?? false;
+          // 카테고리가 5종으로 늘면서 SUB_CATEGORY_MAP 인덱싱 결과가 카테고리별로 다른
+          // 리터럴 튜플 타입의 union이 된다 — 명시적으로 readonly string[]로 넓혀야
+          // .includes()가 "not assignable to parameter of type 'never'"로 막히지 않는다.
+          const allowed: readonly string[] | undefined =
+            SUB_CATEGORY_MAP[category as ProductCategory];
+          return allowed?.includes(value) ?? false;
         },
         message: (props: { value: string }) =>
           `'${props.value}'는 해당 카테고리에서 허용되지 않는 subCategory입니다.`,
@@ -134,6 +141,9 @@ const productSchema = new Schema<IProduct>(
       default: [],
     },
     deletedAt: { type: Date, default: null },
+    images: { type: [String], default: [] },
+    minQuantity: { type: Number, required: true, default: 1, min: 1 },
+    maxQuantity: { type: Number, required: true, default: 0, min: 0 },
   },
   {
     timestamps: true,

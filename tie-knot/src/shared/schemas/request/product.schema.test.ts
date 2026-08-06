@@ -186,4 +186,113 @@ describe("productSchema", () => {
       expect(result.error.issues[0].path).toEqual(["featureIds"]);
     }
   });
+
+  // ── REQ-2/REQ-3: images/minQuantity/maxQuantity ──────────────────────
+  describe("images/minQuantity/maxQuantity", () => {
+    it("images/minQuantity/maxQuantity를 생략해도 통과한다 (default: {existing:[],newFiles:[]}/1/0, invitation)", () => {
+      const result = productSchema.safeParse(buildValidInput());
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.images).toEqual({ existing: [], newFiles: [] });
+        expect(result.data.minQuantity).toBe(1);
+        expect(result.data.maxQuantity).toBe(0);
+      }
+    });
+
+    it("invitation은 images 없이 통과한다 (previewUrl이 대신함)", () => {
+      const result = productSchema.safeParse(
+        buildValidInput({ category: "invitation", subCategory: "wedding" }),
+      );
+
+      expect(result.success).toBe(true);
+    });
+
+    it("물리 상품(favor 등)은 images가 비어있으면 실패한다", () => {
+      const result = productSchema.safeParse(
+        buildValidInput({ category: "favor", subCategory: "candle" }),
+      );
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toBe("상세 이미지를 1장 이상 등록해주세요.");
+        expect(result.error.issues[0].path).toEqual(["images"]);
+      }
+    });
+
+    it("물리 상품은 existing URL만 있어도(수정 흐름, 신규 파일 없음) 통과한다", () => {
+      const result = productSchema.safeParse(
+        buildValidInput({
+          category: "favor",
+          subCategory: "candle",
+          images: { existing: ["https://example.com/a.jpg"], newFiles: [] },
+        }),
+      );
+
+      expect(result.success).toBe(true);
+    });
+
+    it("물리 상품은 newFiles만 있어도(신규 등록) 통과한다", () => {
+      const result = productSchema.safeParse(
+        buildValidInput({
+          category: "accessory",
+          subCategory: "ring-pillow",
+          images: {
+            existing: [],
+            newFiles: [new File(["x"], "a.jpg", { type: "image/jpeg" })],
+          },
+        }),
+      );
+
+      expect(result.success).toBe(true);
+    });
+
+    it("maxQuantity가 minQuantity보다 작으면 실패한다", () => {
+      const result = productSchema.safeParse(
+        buildValidInput({ minQuantity: 5, maxQuantity: 3 }),
+      );
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toBe(
+          "최대 구매 수량은 최소 구매 수량보다 크거나 같아야 합니다.",
+        );
+        expect(result.error.issues[0].path).toEqual(["maxQuantity"]);
+      }
+    });
+
+    it("maxQuantity가 minQuantity 이상이면 통과한다", () => {
+      const result = productSchema.safeParse(
+        buildValidInput({ minQuantity: 3, maxQuantity: 5 }),
+      );
+
+      expect(result.success).toBe(true);
+    });
+
+    it("maxQuantity가 0(무제한)이면 minQuantity와 무관하게 통과한다", () => {
+      const result = productSchema.safeParse(
+        buildValidInput({ minQuantity: 5, maxQuantity: 0 }),
+      );
+
+      expect(result.success).toBe(true);
+    });
+
+    it("minQuantity가 0이면 실패한다 (1 이상)", () => {
+      const result = productSchema.safeParse(buildValidInput({ minQuantity: 0 }));
+
+      expect(result.success).toBe(false);
+    });
+
+    it("minQuantity가 정수가 아니면 실패한다", () => {
+      const result = productSchema.safeParse(buildValidInput({ minQuantity: 1.5 }));
+
+      expect(result.success).toBe(false);
+    });
+
+    it("maxQuantity가 음수면 실패한다", () => {
+      const result = productSchema.safeParse(buildValidInput({ maxQuantity: -1 }));
+
+      expect(result.success).toBe(false);
+    });
+  });
 });

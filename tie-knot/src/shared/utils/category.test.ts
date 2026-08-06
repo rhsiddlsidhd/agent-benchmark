@@ -13,6 +13,13 @@ describe("isProductCategory", () => {
     expect(isProductCategory("invitation")).toBe(true);
   });
 
+  it("신규 4개 카테고리(favor/accessory/guestbook/ceremony)도 유효하다 (REQ-1)", () => {
+    expect(isProductCategory("favor")).toBe(true);
+    expect(isProductCategory("accessory")).toBe(true);
+    expect(isProductCategory("guestbook")).toBe(true);
+    expect(isProductCategory("ceremony")).toBe(true);
+  });
+
   it("business-card는 더 이상 유효한 카테고리가 아니다 (레거시 제거)", () => {
     expect(isProductCategory("business-card")).toBe(false);
   });
@@ -28,6 +35,29 @@ describe("isSubCategory", () => {
     expect(isSubCategory("first-birthday")).toBe(true);
   });
 
+  it("신규 14개 서브카테고리가 전부 유효하다 (REQ-1, 라벨맵 누락 시 여기서 false로 조용히 깨짐)", () => {
+    const newSubCategories = [
+      "candle",
+      "diffuser",
+      "soap",
+      "magnet",
+      "handkerchief",
+      "ring-pillow",
+      "welcome-board",
+      "polaroid-frame",
+      "book",
+      "stamp",
+      "candle-holder",
+      "escort-card",
+      "program-book",
+      "aisle-runner",
+    ];
+
+    newSubCategories.forEach((value) => {
+      expect(isSubCategory(value)).toBe(true);
+    });
+  });
+
   it("business-card 전용이었던 서브 카테고리(store/creator)는 더 이상 유효하지 않다", () => {
     expect(isSubCategory("store")).toBe(false);
     expect(isSubCategory("creator")).toBe(false);
@@ -35,17 +65,23 @@ describe("isSubCategory", () => {
 });
 
 describe("getCategoryOptions", () => {
-  it("invitation 하나만 리턴한다", () => {
+  it("카테고리 5개(신규 4개 포함)를 리턴한다", () => {
     const options = getCategoryOptions();
 
-    expect(options).toEqual([{ value: "invitation", label: "초대장" }]);
+    expect(options).toEqual([
+      { value: "invitation", label: "초대장" },
+      { value: "favor", label: "답례품" },
+      { value: "accessory", label: "웨딩소품" },
+      { value: "guestbook", label: "방명록 굿즈" },
+      { value: "ceremony", label: "예식 용품" },
+    ]);
   });
 
   it("includeAll이면 전체 옵션이 맨 앞에 추가된다", () => {
     const options = getCategoryOptions(true);
 
     expect(options[0]).toEqual({ value: "all", label: "전체" });
-    expect(options).toHaveLength(2);
+    expect(options).toHaveLength(6);
   });
 });
 
@@ -56,6 +92,29 @@ describe("getSubCategoryOptions", () => {
     expect(options).toEqual([
       { value: "wedding", label: "청첩장" },
       { value: "first-birthday", label: "돌잔치" },
+    ]);
+  });
+
+  it("favor의 서브 카테고리 5개를 label과 함께 리턴한다", () => {
+    const options = getSubCategoryOptions("favor");
+
+    expect(options).toEqual([
+      { value: "candle", label: "캔들" },
+      { value: "diffuser", label: "디퓨저" },
+      { value: "soap", label: "비누" },
+      { value: "magnet", label: "마그넷" },
+      { value: "handkerchief", label: "손수건" },
+    ]);
+  });
+
+  it("ceremony의 서브 카테고리 4개를 label과 함께 리턴한다", () => {
+    const options = getSubCategoryOptions("ceremony");
+
+    expect(options).toEqual([
+      { value: "candle-holder", label: "캔들홀더" },
+      { value: "escort-card", label: "에스코트 카드" },
+      { value: "program-book", label: "예식 순서지" },
+      { value: "aisle-runner", label: "아일 러너" },
     ]);
   });
 });
@@ -85,6 +144,11 @@ describe("findProductCategoriesByTerm", () => {
   it("어떤 라벨/key와도 안 겹치면 빈 배열을 리턴한다", () => {
     expect(findProductCategoriesByTerm("웨딩드레스")).toEqual([]);
   });
+
+  it("신규 카테고리 라벨도 역조회된다 (REQ-1, /api/products/search 접점)", () => {
+    expect(findProductCategoriesByTerm("답례")).toEqual(["favor"]);
+    expect(findProductCategoriesByTerm("ceremony")).toEqual(["ceremony"]);
+  });
 });
 
 describe("findSubCategoriesByTerm", () => {
@@ -110,5 +174,9 @@ describe("findSubCategoriesByTerm", () => {
 
   it("어떤 라벨/key와도 안 겹치면 빈 배열을 리턴한다", () => {
     expect(findSubCategoriesByTerm("웨딩드레스")).toEqual([]);
+  });
+
+  it("신규 서브카테고리 라벨도 역조회된다 (REQ-1)", () => {
+    expect(findSubCategoriesByTerm("캔들")).toEqual(["candle", "candle-holder"]);
   });
 });

@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import { ProductDto } from "@/shared/schemas";
 
-type CreateProductServiceInput = Omit<ProductDto, "thumbnail"> & {
+type CreateProductServiceInput = Omit<ProductDto, "thumbnail" | "images"> & {
   thumbnail: string;
+  images: string[];
   authorId: string;
   previewUrl?: string;
 };
@@ -20,5 +21,8 @@ export const buildProductInput = (
   isFeatured: false,
   priority: 0,
   thumbnail: "https://example.com/thumbnail.jpg",
+  images: [],
+  minQuantity: 1,
+  maxQuantity: 0,
   ...overrides,
 });

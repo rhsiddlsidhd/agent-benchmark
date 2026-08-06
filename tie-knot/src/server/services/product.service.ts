@@ -40,13 +40,45 @@ const transformProduct = (product: LeanProduct, userId?: string): ProductJSON =>
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     deletedAt: deletedAt ? deletedAt.toISOString() : null,
+    // .lean()이라 mongoose default가 레거시 문서엔 안 채워진다 — 여기서 정규화한다.
+    // maxQuantity 폴백은 0(무제한)이 아니라 1(고정) — 레거시 문서는 전부 invitation이고
+    // invitation의 정답은 (1,1)이다. 0으로 폴백하면 레거시 상세가 무제한 stepper로
+    // 렌더돼 REQ-4 회귀를 일으킨다(01_db_schema.md §7-3).
+    images: rest.images ?? [],
+    minQuantity: rest.minQuantity ?? 1,
+    maxQuantity: rest.maxQuantity ?? 1,
+  };
+};
+
+// REQ-5(주문 수량 검증) 전용 — 클라이언트가 보낸 minQuantity/maxQuantity를 신뢰하지 않고
+// order.service가 이 함수로 DB를 재조회한다. .lean() + select라 여기도 default가
+// 안 채워지므로 transformProduct와 동일한 레거시 폴백(?? 1 / ?? 1)을 적용한다.
+export const getProductQuantityBoundsService = async (
+  productId: string,
+): Promise<{ minQuantity: number; maxQuantity: number } | null> => {
+  await dbConnect();
+
+  if (!mongoose.isObjectIdOrHexString(productId)) {
+    return null;
+  }
+
+  const product = await ProductModel.findOne({ _id: productId, deletedAt: null })
+    .select("minQuantity maxQuantity")
+    .lean();
+
+  if (!product) return null;
+
+  return {
+    minQuantity: product.minQuantity ?? 1,
+    maxQuantity: product.maxQuantity ?? 1,
   };
 };
 
 // 상품생성
 export const createProductService = async (
-  data: Omit<ProductDto, "thumbnail"> & {
+  data: Omit<ProductDto, "thumbnail" | "images"> & {
     thumbnail: string;
+    images: string[];
     authorId: string;
     previewUrl?: string;
   },
@@ -226,8 +258,9 @@ export const getPopularProductsService = async (
 // 상품 업데이트
 export const updateProductService = async (
   productId: string,
-  data: Partial<Omit<ProductDto, "thumbnail">> & {
+  data: Partial<Omit<ProductDto, "thumbnail" | "images">> & {
     thumbnail?: string;
+    images?: string[];
     previewUrl?: string;
     isPremium?: boolean;
     featureIds?: string[];
