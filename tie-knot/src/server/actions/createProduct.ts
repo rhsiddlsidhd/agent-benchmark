@@ -10,6 +10,11 @@ import { routes } from "@/shared/constants";
 import { revalidatePath } from "next/cache";
 import { validateAndFlatten } from "@/shared/utils";
 
+// 빈 문자열/null이면 undefined를 넘겨 zod .default()가 동작하게 한다 —
+// Number(null)===0 / Number("")===0으로 파싱되면 min(1) 검증에 걸린다.
+const parseOptionalNumber = (raw: FormDataEntryValue | null): number | undefined =>
+  raw ? Number(raw) : undefined;
+
 export const createProduct = async (
   _prev: unknown,
   formData: FormData,
@@ -33,6 +38,13 @@ export const createProduct = async (
       value: Number(formData.get("discount.value")),
     },
     thumbnail: thumbnailFile,
+    images: {
+      // create 흐름에선 currentImages가 항상 빈 배열이다(유지할 기존 이미지가 없음).
+      existing: formData.getAll("currentImages") as string[],
+      newFiles: (formData.getAll("images") as File[]).filter((f) => f.size > 0),
+    },
+    minQuantity: parseOptionalNumber(formData.get("minQuantity")),
+    maxQuantity: parseOptionalNumber(formData.get("maxQuantity")),
   };
 
   const parsed = validateAndFlatten(productSchema, data);
@@ -60,8 +72,16 @@ export const createProduct = async (
       previewUrl = await uploadProductImage(previewFile, "preview");
     }
 
+    const uploadedImageUrls = (
+      await Promise.all(
+        parsed.data.images.newFiles.map((file) => uploadProductImage(file, "images")),
+      )
+    ).filter((url): url is string => Boolean(url));
+    const images = [...parsed.data.images.existing, ...uploadedImageUrls];
+
     await createProductService({
       ...parsed.data,
+      images,
       authorId: userId,
       thumbnail: thumbnailUrl,
       previewUrl,
