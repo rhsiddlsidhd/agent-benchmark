@@ -5,15 +5,15 @@ import { useActionState, useEffect, useState } from "react";
 import { UploadCloud, X } from "lucide-react";
 import { updateProduct } from "@/server/actions";
 import { Product } from "@/server/services";
-import { Alert, SelectField, Spinner, CloudImage } from "@/client/components/molecules";
+import { Alert, ImageField, SelectField, Spinner, CloudImage } from "@/client/components/molecules";
 import { Input, Button, Textarea, Switch, Checkbox, Label, TypographyH4, TypographyMuted } from "@/client/components/atoms";
 
 
 
-import { usePremiumFeature } from "@/client/hooks";
+import { usePremiumFeature, useImageList, type ImageItem } from "@/client/hooks";
 
 
-import { getCategoryOptions, getSubCategoryOptions, ProductCategory, SubCategory } from "@/shared/utils";
+import { getCategoryOptions, getFieldError, getSubCategoryOptions, ProductCategory, SubCategory } from "@/shared/utils";
 import { getInvitationThemeOptions, InvitationTheme } from "@/shared/constants";
 import { toast } from "sonner";
 import { useAdminModalStore } from "@/client/store";
@@ -39,6 +39,24 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>(product.category as ProductCategory);
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | "">(product.subCategory as SubCategory);
   const [selectedTheme, setSelectedTheme] = useState<InvitationTheme>(product.theme ?? "default");
+
+  const images = useImageList(product.images);
+  const [minQuantity, setMinQuantity] = useState<number>(product.minQuantity);
+  const [isUnlimitedMax, setIsUnlimitedMax] = useState(product.maxQuantity === 0);
+  // 무제한 Input이 마운트될 때 쓸 defaultValue — 최초엔 기존 상품 값(product.maxQuantity)을
+  // 보존하고, 체크박스를 다시 해제할 때만 minQuantity 기반 제안값으로 갱신한다.
+  const [maxQuantityDefault, setMaxQuantityDefault] = useState(
+    product.maxQuantity > 0 ? product.maxQuantity : 1,
+  );
+
+  const handleMinQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setMinQuantity(raw === "" ? NaN : Number(raw));
+  };
+
+  const imagesError = getFieldError(state, "images");
+  const minQuantityError = getFieldError(state, "minQuantity");
+  const maxQuantityError = getFieldError(state, "maxQuantity");
 
   useEffect(() => {
     if (state && state.success) {
@@ -221,18 +239,20 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
           </SelectField>
         </div>
 
-        <div className="flex-1">
-          <SelectField
-            id="edit-theme"
-            name="theme"
-            defaultValue={selectedTheme}
-            onValueChange={(value) => setSelectedTheme(value as InvitationTheme)}
-            placeholder="테마를 선택하세요"
-            data={getInvitationThemeOptions()}
-          >
-            테마
-          </SelectField>
-        </div>
+        {selectedCategory === "invitation" && (
+          <div className="flex-1">
+            <SelectField
+              id="edit-theme"
+              name="theme"
+              defaultValue={selectedTheme}
+              onValueChange={(value) => setSelectedTheme(value as InvitationTheme)}
+              placeholder="테마를 선택하세요"
+              data={getInvitationThemeOptions()}
+            >
+              테마
+            </SelectField>
+          </div>
+        )}
 
         <div className="col-span-2">
           <SelectField
@@ -265,6 +285,101 @@ export function ProductEditDialog({ product }: ProductEditDialogProps) {
           {error && error["description"] && (
             <Alert type="error" className="mt-2">{error["description"][0]}</Alert>
           )}
+        </div>
+
+        <div className="col-span-2">
+          <Label htmlFor="edit-images-upload">
+            상세 이미지{selectedCategory !== "invitation" && " *"}
+          </Label>
+          <ImageField
+            id="edit-images-upload"
+            items={images.items}
+            onAdd={images.add}
+            onRemove={images.remove}
+          />
+          <input
+            type="file"
+            name="images"
+            multiple
+            className="hidden"
+            ref={(input) => {
+              if (input) {
+                const dataTransfer = new DataTransfer();
+                images.items
+                  .filter(
+                    (item): item is Extract<ImageItem, { type: "new" }> =>
+                      item.type === "new",
+                  )
+                  .forEach((item) => dataTransfer.items.add(item.file));
+                input.files = dataTransfer.files;
+              }
+            }}
+          />
+          {images.items
+            .filter(
+              (item): item is Extract<ImageItem, { type: "existing" }> =>
+                item.type === "existing",
+            )
+            .map((item) => (
+              <input
+                key={item.id}
+                type="hidden"
+                name="currentImages"
+                value={item.originalUrl}
+              />
+            ))}
+          {imagesError && <Alert type="error" className="mt-2">{imagesError}</Alert>}
+        </div>
+
+        <div>
+          <Label htmlFor="edit-minQuantity">최소 구매 수량 *</Label>
+          <Input
+            id="edit-minQuantity"
+            name="minQuantity"
+            type="number"
+            min={1}
+            step={1}
+            required
+            value={Number.isNaN(minQuantity) ? "" : minQuantity}
+            onChange={handleMinQuantityChange}
+          />
+          {minQuantityError && <Alert type="error" className="mt-2">{minQuantityError}</Alert>}
+        </div>
+
+        <div>
+          <Label htmlFor="edit-maxQuantity">최대 구매 수량 *</Label>
+          {isUnlimitedMax ? (
+            <>
+              <Input id="edit-maxQuantity-display" type="number" disabled placeholder="무제한" />
+              <input type="hidden" name="maxQuantity" value="0" />
+            </>
+          ) : (
+            <Input
+              id="edit-maxQuantity"
+              name="maxQuantity"
+              type="number"
+              min={1}
+              step={1}
+              required
+              defaultValue={maxQuantityDefault}
+            />
+          )}
+          <div className="flex items-center gap-2 pt-1">
+            <Checkbox
+              id="edit-isUnlimitedMax"
+              checked={isUnlimitedMax}
+              onCheckedChange={(checked) => {
+                setIsUnlimitedMax(!!checked);
+                if (!checked) {
+                  setMaxQuantityDefault(Number.isNaN(minQuantity) ? 1 : Math.max(1, minQuantity));
+                }
+              }}
+            />
+            <Label htmlFor="edit-isUnlimitedMax" className="cursor-pointer text-sm font-normal">
+              무제한
+            </Label>
+          </div>
+          {maxQuantityError && <Alert type="error" className="mt-2">{maxQuantityError}</Alert>}
         </div>
 
         <div className="border-border flex items-center justify-between rounded-lg border p-4">
