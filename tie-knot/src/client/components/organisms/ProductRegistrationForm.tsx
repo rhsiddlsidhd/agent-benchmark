@@ -11,9 +11,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Butto
 import { useImageList, type ImageItem } from "@/client/hooks";
 
 
-import { getCategoryOptions, getSubCategoryOptions, ProductCategory } from "@/shared/utils";
+import { getCategoryOptions, getSubCategoryOptions } from "@/shared/utils";
 import { getFieldError } from "@/shared/utils";
-import { getInvitationThemeOptions } from "@/shared/constants";
+import { getInvitationThemeOptions, ProductCategory } from "@/shared/constants";
 import { APIResponse } from "@/shared/types";
 
 interface ProductRegistrationFormProps {

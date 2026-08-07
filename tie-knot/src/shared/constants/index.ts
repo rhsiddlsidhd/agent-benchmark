@@ -5,6 +5,7 @@ export * from "./page";
 export * from "./payment";
 export * from "./price";
 export * from "./product";
+export * from "./product-category";
 export * from "./routes";
 export * from "./sidebar";
 export * from "./subway";

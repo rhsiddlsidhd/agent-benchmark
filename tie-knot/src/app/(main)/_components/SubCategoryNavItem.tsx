@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { TypographySmall } from "@/client/components/atoms";
-import { routes } from "@/shared/constants";
-import { subCategoryLabels, type ProductCategory, type SubCategory } from "@/shared/utils";
+import { routes, subCategoryLabels, type ProductCategory, type SubCategory } from "@/shared/constants";
 import { subCategoryIcons } from "../_constants";
 
 interface SubCategoryNavItemProps {
@@ -11,7 +10,7 @@ interface SubCategoryNavItemProps {
 
 export function SubCategoryNavItem({ category, subCategory }: SubCategoryNavItemProps) {
   const Icon = subCategoryIcons[subCategory];
-
+  
   return (
     <Link
       href={routes.products.byCategory(category, subCategory)}

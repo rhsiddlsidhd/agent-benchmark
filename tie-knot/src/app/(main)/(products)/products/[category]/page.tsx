@@ -1,12 +1,8 @@
 import { TypographyH1, TypographyMuted } from "@/client/components/atoms";
 import { ProductCatalog } from "../_components";
 import { getAllProductsService } from "@/server/services";
-import {
-  productCategoryLabels,
-  isProductCategory,
-  isSubCategory,
-  SubCategory,
-} from "@/shared/utils";
+import { isProductCategory, isSubCategory } from "@/shared/utils";
+import { productCategoryLabels, SubCategory } from "@/shared/constants";
 import { notFound } from "next/navigation";
 
 // searchParams.subCategory → 필터 초기값 계산. 어떤 입력에도 throw하지 않는다(무효/부재 → "all").

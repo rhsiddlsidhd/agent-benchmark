@@ -28,12 +28,7 @@ export const PREMIUM_FEATURE_KEYS = [
   "SAVE_GUESTBOOK",
 ] as const;
 
-// 2. 타입을 배열로부터 추출
-export type ProductSortType = (typeof PRODUCT_SORT_KEYS)[number];
-export type ProductPriceType = (typeof PRODUCT_PRICE_KEYS)[number];
-export type PremiumFeatureType = (typeof PREMIUM_FEATURE_KEYS)[number];
-
-// 3. 각 키에 대응하는 라벨 정의 (Record 활용으로 누락 방지)
+// 2. 각 키에 대응하는 라벨 정의 (Record 활용으로 누락 방지)
 export const PRODUCT_SORT_OPTIONS: Record<ProductSortType, string> = {
   ALL: "모두",
   POPULAR: "인기순",
@@ -58,3 +53,8 @@ export const PREMIUM_FEATURE_LABELS: Record<PremiumFeatureType, string> = {
   SAVE_MOBILE_INVITATION: "💌 영원히 간직하는 청첩장",
   SAVE_GUESTBOOK: "📝 방명록 추억 저장",
 };
+
+// 3. 타입은 배열로부터 파생
+export type ProductSortType = (typeof PRODUCT_SORT_KEYS)[number];
+export type ProductPriceType = (typeof PRODUCT_PRICE_KEYS)[number];
+export type PremiumFeatureType = (typeof PREMIUM_FEATURE_KEYS)[number];

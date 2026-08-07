@@ -1,5 +1,5 @@
 import { TypographyH2 } from "@/client/components/atoms";
-import { SUB_CATEGORY_MAP, type ProductCategory } from "@/shared/utils";
+import { SUB_CATEGORY_MAP, type ProductCategory } from "@/shared/constants";
 import { SubCategoryNavItem } from "./SubCategoryNavItem";
 
 interface SubCategoryNavSectionProps {

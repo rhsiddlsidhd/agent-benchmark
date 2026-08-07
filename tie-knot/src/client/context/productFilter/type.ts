@@ -1,5 +1,4 @@
-import { SubCategory } from "@/shared/utils";
-import { ProductPriceType, ProductSortType } from "@/shared/constants";
+import { SubCategory, ProductPriceType, ProductSortType } from "@/shared/constants";
 
 export type ProductFilterState = {
   keyword: string;

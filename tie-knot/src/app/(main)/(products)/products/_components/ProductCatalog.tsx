@@ -3,7 +3,7 @@
 import { useProducts, usePremiumFeature } from "@/client/hooks";
 import { ProductCatalog as ProductCatalogView } from "@/client/components/organisms";
 import { Product } from "@/server/services";
-import { ProductCategory, SubCategory } from "@/shared/utils";
+import { ProductCategory, SubCategory } from "@/shared/constants";
 
 export function ProductCatalog({
   products,

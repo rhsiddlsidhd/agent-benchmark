@@ -4,7 +4,7 @@ import { Product } from "@/server/services";
 import { CloudImage } from "@/client/components/molecules";
 import { ProductTableRowAction } from "./ProductTableRowAction";
 import { ProductTableRowSelect } from "./ProductTableRowSelect";
-import { productCategoryLabels, subCategoryLabels, ProductCategory, SubCategory } from "@/shared/utils";
+import { productCategoryLabels, subCategoryLabels, ProductCategory, SubCategory } from "@/shared/constants";
 
 export interface ProductTableRowProps {
   product: Product;
