@@ -6,6 +6,7 @@
 @theme {
   --font-NotoSansKR: "NotoSansKR";
   --font-NotoSerif: "NotoSerif";
+  --breakpoint-xs: 400px;
 }
 
 @theme inline {

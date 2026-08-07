@@ -13,10 +13,10 @@ interface HomeTemplateProps {
 
 const HomeTemplate = ({ invitation, product, infoId, popularProducts }: HomeTemplateProps) => {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col ">
       <EcommerceHero />
 
-      <SubCategoryNavSection category="invitation" />
+      <SubCategoryNavSection />
 
       <PopularProductsSection products={popularProducts} />
 

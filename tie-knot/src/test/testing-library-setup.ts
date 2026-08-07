@@ -69,6 +69,23 @@ if (typeof window !== "undefined") {
       IntersectionObserverMock as unknown as typeof IntersectionObserver;
   }
 
+  // jsdom이 matchMedia를 구현하지 않아, embla-carousel(OptionsHandler의 반응형
+  // breakpoint 옵션 병합)이 마운트 즉시 "undefined is not a function"으로 던진다 —
+  // atoms/carousel.tsx(Carousel)를 렌더하는 컴포넌트를 테스트할 때 처음 드러남.
+  if (typeof window.matchMedia === "undefined") {
+    window.matchMedia = (query: string) =>
+      ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      }) as unknown as MediaQueryList;
+  }
+
   // jsdom의 HTMLInputElement.files setter는 진짜 FileList 브랜드 체크를 하기 때문에
   // 위 DataTransferMock이 만든 배열을 대입하면 "not of type 'FileList'"로 던진다 —
   // 테스트 환경에서만 이 setter를 느슨하게 바꿔 배열도 그대로 받아들이게 한다.
