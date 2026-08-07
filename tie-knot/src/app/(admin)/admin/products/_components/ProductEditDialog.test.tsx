@@ -11,6 +11,12 @@ vi.mock("@/client/hooks", () => ({
     premiumFeatures: [],
     loading: false,
   }),
+  useImageList: () => ({
+    items: [] as unknown[],
+    add: vi.fn(),
+    remove: vi.fn(),
+    getPayload: () => ({ existing: [] as string[], newFiles: [] as File[] }),
+  }),
 }));
 
 import { Product } from "@/server/services";
@@ -37,6 +43,9 @@ const buildProduct = (overrides?: Partial<Product>): Product => ({
   theme: "default",
   isLiked: false,
   discountedPrice: 9900,
+  images: [],
+  minQuantity: 1,
+  maxQuantity: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   deletedAt: null,

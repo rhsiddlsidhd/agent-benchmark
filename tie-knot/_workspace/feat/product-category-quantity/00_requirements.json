@@ -1,0 +1,48 @@
+{
+  "branch": "feat/product-category-quantity",
+  "summary": "상품 카테고리 라인업 확장(답례품/웨딩소품/방명록굿즈/예식용품) + quantity 옵션화(Product.minQuantity/maxQuantity, images 필드) + 주문수량 검증",
+  "items": [
+    {
+      "id": "REQ-1",
+      "description": "category.ts의 PRODUCT_CATEGORIES/SUB_CATEGORY_MAP에 favor(candle,diffuser,soap,magnet,handkerchief), accessory(ring-pillow,welcome-board,polaroid-frame), guestbook(book,stamp), ceremony(candle-holder,escort-card,program-book,aisle-runner) 서브카테고리 추가",
+      "acceptance": "PRODUCT_CATEGORIES/SUB_CATEGORY_MAP에 4개 카테고리+신규 서브카테고리 14개(favor 5 + accessory 3 + guestbook 2 + ceremony 4, 13→14 정정)가 반영되고, product.model.ts(enum: PRODUCT_CATEGORIES)와 product.schema.ts(z.enum(PRODUCT_CATEGORIES))가 별도 수정 없이 이 원본을 그대로 import해 검증 통과. 주의: subCategoryLabels는 신규 14개뿐 아니라 invitation 기존 서브카테고리(2개)까지 합쳐 총 16개를 전부 채워야 함 — 14개만 채우면 라벨 누락으로 조용히 깨짐(db-migrator §1-4). productCategoryLabels/subCategoryLabels 둘 다 안 채우면 isProductCategory/isSubCategory 타입가드가 false를 반환해 카테고리 뱃지·라우트검증까지 깨짐(ui-designer §5). src/app/(main)/_constants/subCategoryIcons.ts도 키 동기화 필요(안 하면 빌드 실패, ui-designer §5)",
+      "passes": true
+    },
+    {
+      "id": "REQ-2",
+      "description": "Product 스키마(ProductDB)에 images: string[](optional, default []), minQuantity: number(required, default 1, min 1), maxQuantity: number(required, default 0=무제한) 필드 추가",
+      "acceptance": "product.model.ts에 세 필드 반영. 읽기 경로가 .lean() 위주라 mongoose default가 레거시 invitation 문서엔 안 채워지므로, product.service.ts의 transformProduct에서 images ?? [], minQuantity ?? 1, maxQuantity ?? 1(0 아님 — REQ-4 회귀 방지, ui-designer/db-migrator 합의) 정규화가 반드시 포함되어야 acceptance 충족. 백필 스크립트는 여전히 불필요(정규화로 대체)",
+      "passes": true
+    },
+    {
+      "id": "REQ-3",
+      "description": "product.schema.ts(zod)에 조건부 검증 추가: category !== 'invitation'이면 images required(isPremium/featureIds superRefine과 같은 패턴), maxQuantity !== 0이면 maxQuantity >= minQuantity 검증",
+      "acceptance": "invitation 카테고리는 images 없이 통과, 물리상품 4종은 images 없으면 validation error, maxQuantity>0인데 minQuantity보다 작으면 validation error",
+      "passes": true
+    },
+    {
+      "id": "REQ-4",
+      "description": "ProductOptions.tsx의 quantity 하드코딩(const quantity = 1, 87번째 줄 근처) 제거하고 product.minQuantity/maxQuantity 기반 렌더 규칙 적용: min===max===1이면 수량 UI disabled 고정('1개'), 그 외엔 [min,max] stepper(max===0이면 상한 없는 stepper)",
+      "acceptance": "invitation 상품 상세페이지는 기존과 동일하게 수량 고정 표시(회귀 없음), 물리상품 상세페이지는 product 데이터에 따라 stepper 범위가 다르게 렌더(신규 QuantityStepper 컴포넌트, category 분기 없이 min/max 두 값으로만 fixed/open/range 모드 파생). 회귀 방지 필수 수반: ProductOptions의 totalPrice useMemo가 quantity를 곱하지 않는 기존 버그 수정(안 고치면 화면 표시금액↔결제금액 불일치), handlePurchase useCallback deps에 quantity 추가(누락 시 stale 수량 주문)",
+      "passes": true
+    },
+    {
+      "id": "REQ-6",
+      "description": "상품 등록/수정 폼에서 invitation 전용 필드(theme select, previewUrl 업로드 카드)를 selectedCategory==='invitation'일 때만 렌더 — 카테고리 4종 확장 후 답례품/방명록 등 등록화면에 무관한 invitation 전용 필드가 그대로 노출되는 문제 방지 (ui-designer §5 권장, 리더 승인)",
+      "acceptance": "invitation 외 카테고리 선택 시 theme select/previewUrl 업로드 카드 미노출, invitation 선택 시 기존과 동일하게 노출",
+      "passes": true
+    },
+    {
+      "id": "REQ-5",
+      "description": "createOrder 액션에서 주문 수량(order.product.quantity, ProductSnapShot 내부 — top-level Order.quantity 아님, FormData 키 productQuantity)이 대상 Product의 minQuantity~maxQuantity 범위 안인지 검증(maxQuantity===0이면 상한 검증 스킵), 범위 밖이면 AppError",
+      "acceptance": "범위 밖 quantity로 주문 시도 시 주문 생성 거부되고 적절한 에러 반환, 범위 안이면 정상 생성",
+      "passes": true
+    },
+    {
+      "id": "REQ-7",
+      "description": "updateProduct.ts가 updateProductService의 null 리턴을 검사하지 않아 조용히 실패하는 기존 버그 수정 — Product는 discriminatorKey:'category'라 mongoose가 discriminator 모델 쿼리에 category 판별조건을 강제 주입한다(node_modules/mongoose/lib/query.js:3347-3348). 상품 수정 요청의 category를 원래 값과 다르게 바꾸면(예: favor→invitation) getWritableProductModel이 바뀐 category 기준으로 모델을 선택해 대상 문서(원래 category)와 안 맞아 매칭 실패→null 반환→updateProduct.ts:67이 검사 없이 success:true를 리턴한다(api-designer 발견, REQ-1이 카테고리를 5개로 늘리면서 처음 도달 가능해진 신규 리스크 — 기존 부채 아님). 리더 판정: 최소조치 채택 — updateProductService 결과가 null이면 AppError('NOT_FOUND')로 처리(완전 해결책인 category 변경 자체 차단/폼 잠금은 이번 스코프 아웃)",
+      "acceptance": "category를 다른 카테고리로 바꾸는 updateProduct 요청이 대상 문서를 못 찾으면 success:true가 아니라 NOT_FOUND 에러를 반환한다(무증상 실패 제거). 카테고리 변경 자체가 되게 만드는 건 이번 스코프 아님 — '실패를 명시적으로 알리는 것'까지만",
+      "passes": true
+    }
+  ]
+}

@@ -121,4 +121,82 @@ describe("updateProduct", () => {
       data: { message: "상품이 성공적으로 수정되었습니다." },
     });
   });
+
+  // ── REQ-7: updateProductService의 null 리턴(discriminator 모델 category 불일치 등)을
+  // 검사 없이 넘기면 무증상 success:true가 나갔던 기존 버그 ──
+  it("updateProductService가 null을 리턴하면 NOT_FOUND를 리턴한다 (조용한 실패 제거)", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({
+      role: "ADMIN",
+      email: "a@b.com",
+      userId: "admin-1",
+    });
+    vi.mocked(uploadProductImage).mockResolvedValue("https://example.com/thumb.jpg");
+    vi.mocked(updateProductService).mockResolvedValue(null);
+
+    const result = await updateProduct(PRODUCT_ID, undefined, buildValidFormData());
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        category: "NOT_FOUND",
+        message: "상품을 찾을 수 없습니다.",
+        fieldErrors: undefined,
+      },
+    });
+  });
+
+  it("minQuantity/maxQuantity를 보내면 숫자로 파싱해 전달한다", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({
+      role: "ADMIN",
+      email: "a@b.com",
+      userId: "admin-1",
+    });
+    vi.mocked(uploadProductImage).mockResolvedValue("https://example.com/thumb.jpg");
+    vi.mocked(updateProductService).mockResolvedValue(true as never);
+
+    const formData = buildValidFormData({ minQuantity: "2", maxQuantity: "8" });
+
+    await updateProduct(PRODUCT_ID, undefined, formData);
+
+    expect(updateProductService).toHaveBeenCalledWith(
+      PRODUCT_ID,
+      expect.objectContaining({ minQuantity: 2, maxQuantity: 8 }),
+    );
+  });
+
+  it("이미지를 전혀 건드리지 않아도(currentImages만 전송) 통과한다", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({
+      role: "ADMIN",
+      email: "a@b.com",
+      userId: "admin-1",
+    });
+    vi.mocked(uploadProductImage).mockResolvedValue("https://example.com/thumb.jpg");
+    vi.mocked(updateProductService).mockResolvedValue(true as never);
+
+    const formData = buildValidFormData({ category: "favor", subCategory: "candle" });
+    formData.append("currentImages", "https://example.com/existing1.jpg");
+    formData.append("currentImages", "https://example.com/existing2.jpg");
+
+    const result = await updateProduct(PRODUCT_ID, undefined, formData);
+
+    expect(result.success).toBe(true);
+    expect(updateProductService).toHaveBeenCalledWith(
+      PRODUCT_ID,
+      expect.objectContaining({
+        images: ["https://example.com/existing1.jpg", "https://example.com/existing2.jpg"],
+      }),
+    );
+  });
+
+  it("물리 상품인데 currentImages도 신규 파일도 없으면 VALIDATION을 리턴한다", async () => {
+    const formData = buildValidFormData({ category: "favor", subCategory: "candle" });
+
+    const result = await updateProduct(PRODUCT_ID, undefined, formData);
+
+    expect(result).toEqual({
+      success: false,
+      error: { category: "VALIDATION", message: "입력값을 확인해주세요", fieldErrors: expect.any(Object) },
+    });
+    expect(updateProductService).not.toHaveBeenCalled();
+  });
 });

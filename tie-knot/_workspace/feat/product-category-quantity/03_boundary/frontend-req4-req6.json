@@ -1,0 +1,103 @@
+{
+  "endpoint": "frontend units — REQ-4(ProductOptions+QuantityStepper) / REQ-6(등록·수정 폼 조건부 렌더 + images·quantity 필드)",
+  "owner": "frontend-impl",
+  "worktree": "/home/claude/tie-knot--product-category-quantity-frontend/tie-knot",
+  "commits": ["52c7ac2", "796476f"],
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "FIX",
+      "at": "2026-08-06T14:35:00Z",
+      "summary": "컴포넌트 단위 §6 16항목은 전부 정합. 그러나 backend 브랜치와 합친 통합 트리가 컴파일되지 않는다 — frontend가 backend 파일 2개를 자기 워크트리에 복제하면서 병합 충돌 1건 + 중복키 빌드에러 6건 발생. 각 워크트리 단독 typecheck로는 절대 드러나지 않는 경계면 결함.",
+      "ui_flow_s6": {
+        "1_no_hardcoded_quantity": "PASS — ProductOptions.tsx에 const quantity=1 없음",
+        "2_no_category_branch": "PASS — deriveQuantityMode(:23-27) 입력이 minQuantity/maxQuantity 두 숫자뿐, product.category 참조 0건",
+        "3_initial_minQuantity": "PASS — :46 useState(product.minQuantity)",
+        "4_deps_quantity": "PASS — totalPrice useMemo deps :110, handlePurchase useCallback deps :130 둘 다 quantity 포함",
+        "5_total_matches_payment": "PASS(구조 대조) — :103 discountedPrice*quantity+optionSum 과 :124 CheckoutItem.finalPrice 동일 식. 옵션가 수량 미곱(합의 E) 준수",
+        "6_form_input_names": "PASS — 두 폼 모두 images/currentImages/minQuantity/maxQuantity. existingImages 0건",
+        "7_images_dto_assembly": "PASS — 서버 액션이 조립(백엔드 PASS 완료), 폼은 currentImages/images 키로 정확히 공급",
+        "8_maxQuantity_single_render": "PASS — 등록폼 :511-526 / 수정폼 :351-366 삼항 분기. unlimited 쪽 표시용 Input에는 name 속성 자체가 없고(id=maxQuantity-display) hidden만 name 보유 → 어느 상태에서도 name=maxQuantity 정확히 1개",
+        "9_fieldErrors_keys": "PASS — 등록폼 :102-104 / 수정폼 :57-59 getFieldError(state, 'images'|'minQuantity'|'maxQuantity'). zod refine path와 일치",
+        "10_no_quantity_fieldError": "PASS — getFieldError(state,'quantity') 전 코드 0건",
+        "11_no_category_filter_on_banner": "PASS — CheckoutForm/payment 파일이 diff에 없음(무변경)",
+        "12_label_maps": "N/A — backend 소관(571503a에서 PASS)",
+        "13_invitation_fixed_render": "PASS — mode==='fixed'면 stepper 미렌더, aria-disabled '1개' 텍스트(:175-181)",
+        "14_soft_max_comment": "PASS — :15-18 UNLIMITED_SOFT_MAX=99 + 'DB/서버 제약이 아니라 순수 UI 편의 상한' 주석",
+        "15_req6_conditional": "PASS — 등록폼 theme :170 / previewUrl 카드 :382-429가 selectedCategory==='invitation' 조건. previewUrl 카드 안에 name='previewUrl' hidden file input과 DataTransfer ref(:414-425)가 통째로 포함돼 함께 언마운트됨. 수정폼 theme :242 동일 조건(previewUrl 카드는 설계상 등록폼 전용)",
+        "16_orderSummary_excluded": "PASS — diff 미포함"
+      },
+      "state_machine_cross_check": {
+        "s3-1_mode_derivation": "PASS — 설계 3분기(fixed/open/range)와 :23-27 구현 일치, 평가 순서까지 동일",
+        "s3-2_quantity_transitions": "PASS — 마운트 min, -/+ clamp, 입력중 미clamp, blur에서 NaN|<min→min / >upper→upper (QuantityStepper :51-54가 설계표와 정확히 일치)",
+        "s3-3_derived_values": "PASS — 3행 전부 반영",
+        "s3-4_maxQuantity_form_machine": "PASS — isUnlimitedMax 초기값 등록폼 true / 수정폼 product.maxQuantity===0, 전이 4행 일치"
+      },
+      "pendingCrossCheck_resolved": {
+        "id": "invitation-currentImages-overwrite",
+        "result": "RESOLVED — 두 폼 모두 이미지 갤러리와 currentImages hidden input이 카테고리 조건 블록 밖에 있다(등록폼 :431-483, 수정폼 :290-332). invitation 수정 시에도 기존 URL이 전부 재전송되므로 images:[] 무증상 덮어쓰기 발생하지 않음"
+      },
+      "integration_findings": [
+        {
+          "id": "INT-1",
+          "severity": "FIX",
+          "type": "merge conflict",
+          "file": "tie-knot/src/server/services/product.service.ts",
+          "detail": "backend는 transformProduct 폴백 + getProductQuantityBoundsService(REQ-5 핵심) + createProductService/updateProductService 시그니처(images 분리)를 넣었고, frontend는 같은 파일에 transformProduct 폴백만 넣었다. 3-way 병합 시 transformProduct 직후 지점에서 CONTENT CONFLICT 발생(실측). 충돌 마커가 getProductQuantityBoundsService 전체를 감싸므로 frontend 쪽(빈 블록)으로 잘못 해소하면 REQ-5 DB 재조회 함수가 통째로 사라진다",
+          "resolution": "HEAD(backend) 쪽 전부 채택, frontend 쪽 빈 블록 삭제. 해소 후 통합 typecheck exit 0 확인함"
+        },
+        {
+          "id": "INT-2",
+          "severity": "FIX",
+          "type": "duplicate object keys (build break)",
+          "files": [
+            "tie-knot/src/app/(admin)/admin/products/_components/ProductEditDialog.test.tsx",
+            "tie-knot/src/app/(admin)/admin/products/_components/ProductTableRowSelect.test.tsx"
+          ],
+          "detail": "양쪽 브랜치가 buildProduct 픽스처에 동일한 images/minQuantity/maxQuantity 3줄을 서로 다른 위치에 넣었다(backend는 deletedAt 뒤, frontend는 discountedPrice 뒤). git이 양쪽 삽입을 모두 보존해 중복 키가 되고 TS1117 6건으로 병합 트리 빌드가 깨진다. 자동병합이 조용히 성공하므로 충돌로도 안 잡힌다",
+          "resolution": "중복 3줄 각 1세트씩 제거. 제거 후 통합 typecheck exit 0 확인함"
+        }
+      ],
+      "integration_verification": {
+        "method": "분리 워크트리(detached HEAD @42143f5)에 backend 브랜치 → frontend 브랜치 순차 병합 후 실측",
+        "reverified_against_real_target": "backend가 리더에 의해 표준 브랜치에 이미 병합됨(165c29c, 진짜 merge commit). 실제 병합 대상이 바뀌었으므로 feat/product-category-quantity@165c29c에 frontend 브랜치를 병합해 재실측 — merge-base가 여전히 42143f5라 결과 동일: product.service.ts CONTENT CONFLICT 1건 + 두 픽스처 파일에 'images: [],' 2회 중복 재현. 따라서 frontend가 병합해야 할 대상은 backend 브랜치가 아니라 feat/product-category-quantity(165c29c)다",
+        "merge_backend": "clean",
+        "merge_frontend": "CONFLICT 1건 (INT-1)",
+        "tsc_after_naive_resolution": "exit 2 — TS1117 × 6 (INT-2)",
+        "tsc_after_both_fixes": "exit 0",
+        "vitest_after_both_fixes": "대상 10개 파일 전부 pass (병렬 실행 시 3개 파일이 JWT_SECRET 미설정으로 import 실패 — 개별 실행 시 전부 pass, 시뮬레이션 워크트리에 env 소스가 없어 생긴 아티팩트이며 기존 부채와 동일 성격)"
+      },
+      "advisories": [
+        "QuantityStepper가 입력을 비우면 quantity=NaN이 되고(설계 §3-2가 허용한 중간상태) ProductOptions의 totalPrice가 NaN이 되어 '총 상품 금액'에 'NaN원'이 표시된다(formatPriceWithComma가 NaN을 그대로 toLocaleString). blur clamp가 있어 서버로는 안 나가지만 표시 결함이라 Number.isNaN 가드 권장. 테스트 커버리지도 없음",
+        "등록폼 maxQuantity가 uncontrolled(defaultValue)라 minQuantity를 나중에 올려도 max 입력값이 따라오지 않는다. 서버 zod refine이 잡아 maxQuantity 인라인 에러로 표시되므로 무증상은 아님 — 설계 §4-1(서버가 원본) 준수라 FIX 아님",
+        "frontend 워크트리에 package-lock.json이 uncommitted modified 상태"
+      ]
+    },
+    {
+      "round": 2,
+      "verdict": "PASS",
+      "at": "2026-08-07T00:05:00Z",
+      "target": "병합 커밋 9d38d43 (feat/product-category-quantity@165c29c를 frontend 브랜치에 병합)",
+      "int_findings_resolution": {
+        "INT-1": "해소 확인 — product.service.ts가 표준 브랜치 버전과 byte-identical(diff -q IDENTICAL). getProductQuantityBoundsService 생존, Omit<ProductDto,\"thumbnail\"|\"images\"> 시그니처 2곳 생존. --theirs가 병합 방향상 표준 브랜치(=backend)를 가리키므로 해소 방향도 정확",
+        "INT-2": "해소 확인 — 두 픽스처 파일 모두 images/minQuantity/maxQuantity 각 1회로 정리",
+        "model_ts": "확인 — const allowed: readonly string[] (backend 버전) 유지",
+        "conflict_markers": "전 소스 잔존 0건"
+      },
+      "post_merge_regression": {
+        "own_impl_survived": "ProductOptions useState(product.minQuantity) / UNLIMITED_SOFT_MAX=99 / QuantityStepper.tsx / 두 폼의 currentImages·maxQuantity input 전부 생존. ProductOptions의 'product.category' 매치 1건은 주석 텍스트뿐이며 실제 분기 코드 아님(§6 #2 유지)",
+        "merged_category_source": "category.ts 5카테고리 / subCategoryLabels 16개 — backend 원본이 정상 반영",
+        "scope_guard": "OrderSummary/checkout/payment 파일 최종 diff 미포함 유지"
+      },
+      "independent_verification": {
+        "tsc_noEmit": "exit 0 (병합 상태 프론트 워크트리)",
+        "vitest_full": "127 files / 720 tests 전부 pass (전체 스위트 직접 실행, 191s)",
+        "final_merge_feasibility": "git merge-base --is-ancestor 결과 165c29c가 frontend의 조상 → 표준 브랜치로의 최종 병합은 FAST-FORWARD, 충돌 발생 불가",
+        "ff_delivered_files": "표준 브랜치가 받게 될 12개 파일이 전부 프론트 산출물뿐 — 중복 복제했던 product.service.ts/product.model.ts는 표준 브랜치와 동일해져 diff에서 사라짐(중복 문제 완전 소거)"
+      }
+    }
+  ],
+  "redoCount": 0,
+  "forcedPass": false,
+  "finalVerdict": "PASS"
+}

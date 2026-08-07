@@ -30,4 +30,19 @@ describe("uploadProductImage", () => {
 
     expect(result).toBeUndefined();
   });
+
+  it("type이 'images'면 갤러리 폴더로 업로드하고 secure_url을 리턴한다 (REQ-2)", async () => {
+    const file = new File(["x"], "gallery.jpg", { type: "image/jpeg" });
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ secure_url: "https://cdn/gallery.jpg" }),
+    } as Response);
+
+    const result = await uploadProductImage(file, "images");
+
+    expect(result).toBe("https://cdn/gallery.jpg");
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    const sentFormData = requestInit?.body as FormData;
+    expect(sentFormData.get("folder")).toBe("products/images");
+  });
 });

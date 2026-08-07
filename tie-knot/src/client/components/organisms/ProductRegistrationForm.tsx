@@ -5,10 +5,10 @@ import { useState } from "react";
 import Image from "next/image";
 import { UploadCloud, X } from "lucide-react";
 import { PremiumFeature } from "@/server/services";
-import { Alert, SelectField } from "@/client/components/molecules";
+import { Alert, ImageField, SelectField } from "@/client/components/molecules";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Button, Textarea, Switch, Checkbox, Label, TypographyMuted, TypographyH4 } from "@/client/components/atoms";
 
-
+import { useImageList, type ImageItem } from "@/client/hooks";
 
 
 import { getCategoryOptions, getSubCategoryOptions, ProductCategory } from "@/shared/utils";
@@ -40,6 +40,12 @@ export function ProductRegistrationForm({
   const [previewPreview, setPreviewPreview] = useState<string | null>(null);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [discountType, setDiscountType] = useState<"rate" | "amount">("rate");
+
+  const images = useImageList();
+  // 등록 폼 초기값 1 — 서버 defaultValue와 일치.
+  const [minQuantity, setMinQuantity] = useState<number>(1);
+  // 등록 폼 초기값 true — mongoose default(maxQuantity: 0)와 일치.
+  const [isUnlimitedMax, setIsUnlimitedMax] = useState(true);
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -79,6 +85,11 @@ export function ProductRegistrationForm({
     );
   };
 
+  const handleMinQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setMinQuantity(raw === "" ? NaN : Number(raw));
+  };
+
   const titleError = getFieldError(state, "title");
   const descriptionError = getFieldError(state, "description");
   const categoryError = getFieldError(state, "category");
@@ -88,6 +99,9 @@ export function ProductRegistrationForm({
   const priorityError = getFieldError(state, "priority");
   const thumbnailError = getFieldError(state, "thumbnail");
   const featureIdsError = getFieldError(state, "featureIds");
+  const imagesError = getFieldError(state, "images");
+  const minQuantityError = getFieldError(state, "minQuantity");
+  const maxQuantityError = getFieldError(state, "maxQuantity");
 
   return (
     <form action={action} className="space-y-6">
@@ -153,16 +167,18 @@ export function ProductRegistrationForm({
                   서브 카테고리
                 </SelectField>
 
-                <SelectField
-                  id="theme"
-                  name="theme"
-                  defaultValue="default"
-                  placeholder="테마를 선택하세요"
-                  data={getInvitationThemeOptions()}
-                  error={themeError}
-                >
-                  테마
-                </SelectField>
+                {selectedCategory === "invitation" && (
+                  <SelectField
+                    id="theme"
+                    name="theme"
+                    defaultValue="default"
+                    placeholder="테마를 선택하세요"
+                    data={getInvitationThemeOptions()}
+                    error={themeError}
+                  >
+                    테마
+                  </SelectField>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -361,50 +377,164 @@ export function ProductRegistrationForm({
             </CardContent>
           </Card>
 
-          {/* 미리보기 URL */}
+          {/* 미리보기 URL — invitation 전용(REQ-6). hidden file input(DataTransfer ref)까지
+              통째로 조건부 렌더한다 — ref가 살아있으면 언마운트 후에도 파일이 전송될 수 있다. */}
+          {selectedCategory === "invitation" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>미리보기 이미지</CardTitle>
+                <CardDescription>상품 상세 페이지에 표시될 미리보기 이미지입니다.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {previewPreview ? (
+                    <div className="border-border relative aspect-video w-full overflow-hidden rounded-lg border">
+                      <Image src={previewPreview} alt="Preview" fill className="object-cover" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={handleRemovePreview}
+                        className="absolute top-2 right-2 h-6 w-6"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="preview-input"
+                      className="border-border bg-accent/20 hover:bg-accent/40 flex aspect-video w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors"
+                    >
+                      <UploadCloud className="text-muted-foreground mb-2 h-8 w-8" />
+                      <TypographyMuted className="mb-1">클릭하여 이미지 업로드</TypographyMuted>
+                      <TypographyMuted>선택사항</TypographyMuted>
+                    </label>
+                  )}
+                  <input id="preview-input" type="file" className="hidden" accept="image/*" onChange={handlePreviewUpload} />
+                  <input
+                    type="file"
+                    name="previewUrl"
+                    className="hidden"
+                    ref={(input) => {
+                      if (input && previewFile) {
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(previewFile);
+                        input.files = dataTransfer.files;
+                      }
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 상세 이미지 갤러리 */}
           <Card>
             <CardHeader>
-              <CardTitle>미리보기 이미지</CardTitle>
-              <CardDescription>상품 상세 페이지에 표시될 미리보기 이미지입니다.</CardDescription>
+              <CardTitle>
+                상세 이미지{selectedCategory !== "invitation" && " *"}
+              </CardTitle>
+              <CardDescription>
+                {selectedCategory === "invitation"
+                  ? "선택사항입니다. 등록하지 않아도 됩니다."
+                  : "상품 상세 페이지에 표시될 이미지를 최소 1장 등록해주세요."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
+              <ImageField
+                id="images-upload"
+                items={images.items}
+                onAdd={images.add}
+                onRemove={images.remove}
+              />
+              <input
+                type="file"
+                name="images"
+                multiple
+                className="hidden"
+                ref={(input) => {
+                  if (input) {
+                    const dataTransfer = new DataTransfer();
+                    images.items
+                      .filter(
+                        (item): item is Extract<ImageItem, { type: "new" }> =>
+                          item.type === "new",
+                      )
+                      .forEach((item) => dataTransfer.items.add(item.file));
+                    input.files = dataTransfer.files;
+                  }
+                }}
+              />
+              {images.items
+                .filter(
+                  (item): item is Extract<ImageItem, { type: "existing" }> =>
+                    item.type === "existing",
+                )
+                .map((item) => (
+                  <input
+                    key={item.id}
+                    type="hidden"
+                    name="currentImages"
+                    value={item.originalUrl}
+                  />
+                ))}
+              {imagesError && <Alert type="error" className="mt-2">{imagesError}</Alert>}
+            </CardContent>
+          </Card>
+
+          {/* 구매 수량 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>구매 수량</CardTitle>
+              <CardDescription>
+                고객이 한 번에 구매할 수 있는 수량 범위를 설정합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                {previewPreview ? (
-                  <div className="border-border relative aspect-video w-full overflow-hidden rounded-lg border">
-                    <Image src={previewPreview} alt="Preview" fill className="object-cover" />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={handleRemovePreview}
-                      className="absolute top-2 right-2 h-6 w-6"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <label
-                    htmlFor="preview-input"
-                    className="border-border bg-accent/20 hover:bg-accent/40 flex aspect-video w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors"
-                  >
-                    <UploadCloud className="text-muted-foreground mb-2 h-8 w-8" />
-                    <TypographyMuted className="mb-1">클릭하여 이미지 업로드</TypographyMuted>
-                    <TypographyMuted>선택사항</TypographyMuted>
-                  </label>
-                )}
-                <input id="preview-input" type="file" className="hidden" accept="image/*" onChange={handlePreviewUpload} />
-                <input
-                  type="file"
-                  name="previewUrl"
-                  className="hidden"
-                  ref={(input) => {
-                    if (input && previewFile) {
-                      const dataTransfer = new DataTransfer();
-                      dataTransfer.items.add(previewFile);
-                      input.files = dataTransfer.files;
-                    }
-                  }}
+                <Label htmlFor="minQuantity">최소 구매 수량 *</Label>
+                <Input
+                  id="minQuantity"
+                  name="minQuantity"
+                  type="number"
+                  min={1}
+                  step={1}
+                  required
+                  value={Number.isNaN(minQuantity) ? "" : minQuantity}
+                  onChange={handleMinQuantityChange}
                 />
+                {minQuantityError && <Alert type="error">{minQuantityError}</Alert>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxQuantity">최대 구매 수량 *</Label>
+                {isUnlimitedMax ? (
+                  <>
+                    <Input id="maxQuantity-display" type="number" disabled placeholder="무제한" />
+                    <input type="hidden" name="maxQuantity" value="0" />
+                  </>
+                ) : (
+                  <Input
+                    id="maxQuantity"
+                    name="maxQuantity"
+                    type="number"
+                    min={1}
+                    step={1}
+                    required
+                    defaultValue={Number.isNaN(minQuantity) ? 1 : Math.max(1, minQuantity)}
+                  />
+                )}
+                <div className="flex items-center gap-2 pt-1">
+                  <Checkbox
+                    id="isUnlimitedMax"
+                    checked={isUnlimitedMax}
+                    onCheckedChange={(checked) => setIsUnlimitedMax(!!checked)}
+                  />
+                  <Label htmlFor="isUnlimitedMax" className="cursor-pointer text-sm font-normal">
+                    무제한
+                  </Label>
+                </div>
+                {maxQuantityError && <Alert type="error">{maxQuantityError}</Alert>}
               </div>
             </CardContent>
           </Card>

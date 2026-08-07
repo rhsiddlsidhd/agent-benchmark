@@ -24,13 +24,18 @@ const uploadToCloudinary = async <T>(file: File, folder: string) => {
   return data;
 };
 
+const PRODUCT_IMAGE_FOLDERS = {
+  thumbnail: "products/thumbnails",
+  preview: "products/previews",
+  images: "products/images",
+} as const;
+
 export async function uploadProductImage(
   file: File,
-  type: "thumbnail" | "preview" = "thumbnail",
+  type: "thumbnail" | "preview" | "images" = "thumbnail",
 ): Promise<string | undefined> {
   try {
-    const folder =
-      type === "thumbnail" ? "products/thumbnails" : "products/previews";
+    const folder = PRODUCT_IMAGE_FOLDERS[type];
     const result = await uploadToCloudinary<CloudinaryResource>(file, folder);
     return result.secure_url;
   } catch (error) {
