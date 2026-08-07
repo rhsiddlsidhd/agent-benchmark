@@ -15,7 +15,7 @@ const page = async () => {
   const { email, name, phone } = user;
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl space-y-6">
       <div>
         <TypographyH1 className="text-left mb-2 text-3xl font-bold">프로필 관리</TypographyH1>
         <TypographyMuted>
