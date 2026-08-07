@@ -17,7 +17,7 @@ import {
   Route,
   type LucideIcon,
 } from "lucide-react";
-import type { SubCategory } from "@/shared/utils";
+import type { SubCategory } from "@/shared/constants";
 
 // Partial이 아니라 완전한 Record — 서브카테고리를 추가하고 아이콘을 안 채우면
 // subCategoryLabels와 동일하게 컴파일 에러로 잡힌다.

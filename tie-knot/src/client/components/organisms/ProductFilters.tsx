@@ -12,13 +12,11 @@ import { Dispatch, useState } from "react";
 import { ProductFilterState, ProductFilterAction } from "@/client/context/productFilter";
 import { Product, PremiumFeature } from "@/server/services";
 
+import { getSubCategoryOptions } from "@/shared/utils";
+
 import {
   SubCategory,
   ProductCategory,
-  getSubCategoryOptions,
-} from "@/shared/utils";
-
-import {
   PRODUCT_SORT_OPTIONS,
   PRODUCT_PRICE_OPTIONS,
   PREMIUM_FEATURE_LABELS,

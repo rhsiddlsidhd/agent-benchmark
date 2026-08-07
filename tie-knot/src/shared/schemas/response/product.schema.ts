@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { PRODUCT_CATEGORIES } from "@/shared/utils";
+import { PRODUCT_CATEGORIES } from "@/shared/constants";
 
 const isoDateString = z.string().refine((v) => !isNaN(Date.parse(v)), {
   message: "ISO date string이 아님",

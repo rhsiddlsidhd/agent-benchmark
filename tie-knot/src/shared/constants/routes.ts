@@ -1,4 +1,4 @@
-import type { SubCategory } from "@/shared/utils";
+import type { SubCategory } from "./product-category";
 
 export const routes = {
   home: "/",

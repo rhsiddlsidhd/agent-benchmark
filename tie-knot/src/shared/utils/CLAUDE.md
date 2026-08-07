@@ -23,7 +23,7 @@ src/shared/utils/
 ## Gotchas
 
 - 진단용 `console.error` 호출은 "side-effect 없음" 원칙 위반으로 안 친다(service/util 파일들 공통).
-- `category.ts`의 `ProductCategory`는 카테고리 타입의 단일 소스다 — 새 카테고리를 추가할 땐 여기부터 넓힌다. `src/server/models/product.model.ts`가 이 타입을 그대로 re-export하고, `products/[category]` route의 `generateStaticParams()`/카테고리 검증(`isProductCategory`)이 전부 이 타입을 기준으로 삼으므로 여기 안 넓히면 하위가 다 어긋난다(`src/app/(main)/(products)/products/CLAUDE.md` 참고).
+
 
 ## 관련 문서
 
