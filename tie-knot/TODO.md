@@ -37,6 +37,9 @@
 - [ ] **`updateProduct`의 `thumbnail` required 기존 부채** (2026-08-07 재확인, PR #95 스코프아웃) — `productSchema`가 `thumbnail`을 `File(size>0)` required로 잡아서 상품 수정 시마다 썸네일 재업로드가 강제된다. `images` 필드는 `existing` 합산 설계로 이 문제를 안 만들었지만 `thumbnail` 자체는 그대로.
 - [ ] **존재하지 않는 productId + non-invitation category로 `updateProduct` 호출 시 `NOT_FOUND` 아닌 `INTERNAL`(500) 반환** (2026-08-07 test-suite 발견, PR #95 스코프아웃) — `product.model.ts`의 `subCategory` 비동기 validator가 대상 문서를 못 찾으면 category를 못 읽어 무조건 검증 실패로 떨어지는 게 원인으로 추정(5/5 재현). 카테고리가 discriminator 없는 4종(favor/accessory/guestbook/ceremony)으로 늘어나며 새로 열린 경로. mongoose validator 재설계 필요해 최소조치로 안 됨 — 데이터 무결성 문제 아니라 에러코드 오분류 수준이라 우선순위 낮음.
 - [ ] **`test:coverage:diff`가 괄호 경로(라우트 그룹) 파일을 커버리지 게이트에서 조용히 누락** (2026-08-07 발견, PR #95) — `coverageInclude` 필터가 파일 경로를 글롭 패턴처럼 다뤄서 `src/app/(admin)/...`처럼 `(...)` 라우트 그룹이 든 경로가 매칭 실패로 커버리지 체크 대상에서 빠진다. 게이트 통과가 검사 완료를 보장하지 않는 상태 — `(admin)`/`(main)`/`(products)`/`(checkout)` 하위 전체 파일이 동일 영향권.
+- [ ] **상품 이미지 업로드가 Server Action 기본 body size limit(1MB)에 걸리는 잠복버그** (2026-08-07 발견, 목데이터 삽입 준비 중 논의) — `createProduct`/`updateProduct`가 `thumbnail`/`images`(신규 갤러리, PR #95)를 File 객체 그대로 FormData에 실어 Server Action으로 보내는데, `next.config.ts`에 `experimental.serverActions.bodySizeLimit` 오버라이드가 없어 Next.js 16 기본값 1MB 그대로 적용된다(`node_modules/next/dist/docs/01-app/02-guides/server-actions.md:83`). 실사진(수 MB급) 몇 장만 같이 올려도 걸릴 가능성 높음 — vitest 목업 File은 작아서 지금까지 안 걸렸을 뿐. 청첩장(couple-info) 폼이 이미 같은 문제로 클라이언트 직접업로드(signed, `/api/upload/signature`)로 우회한 전례가 있음.
+  - **참고**: `next-cloudinary`(v6.17.5) 패키지가 이미 설치돼있고 `CldUploadWidget`/`CldUploadButton`(Cloudinary 공식 모달형 업로드 UI, 드래그드롭/카메라/구글드라이브 소스 지원)을 제공하는데 `src/` 어디서도 안 씀 — 상품 이미지 업로드를 이걸로 전환하면 body limit 문제가 구조적으로 사라짐(서버가 파일 바이트를 안 거침). 단, 이번 PR(#95)에서 확정한 `images` 요청 계약(`{existing: string[], newFiles: File[]}`)을 `string[]`로 바꿔야 하는 규모 있는 변경이라 별도 설계 필요.
+  - 목데이터 삽입(위 "상품 카테고리별 확장" 항목의 실 데이터 검증 단계)은 당장 작은 플레이스홀더 이미지로 우회 가능 — 이 항목이 그 착수를 막지는 않음.
 
 ---
 
