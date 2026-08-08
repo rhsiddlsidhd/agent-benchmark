@@ -53,15 +53,6 @@ root layout을 통째로 대체하기 때문에 생기는 제약:
 - `_components`/`_types`/`_utils`/`_constants`/`_hooks`를 폴더 + `index.ts`(컴포넌트는 `index.tsx`) 배럴 형태 외의 방식으로 만들지 않는다 — 폴더 안 파일이 1개뿐이어도 예외 없이 이 형태를 유지한다. **배럴은 `page.tsx`/`layout.tsx`가 직접 소비하는 파일만 재export하면 된다** — 같은 폴더 안 다른 파일에서만 내부적으로 쓰이고 `page.tsx`/`layout.tsx`가 직접 import 안 하는 파일(예: `_components/Navigation.tsx`가 `_components/LocationSection.tsx` 내부에서만 쓰이는 경우)은 배럴에 안 올려도 된다 — 배럴 목적이 "그 라우트 밖에서 이 폴더에 뭐가 있는지 알려주는 것"이지 폴더 안 모든 파일을 강제로 노출하는 게 아니다.
 - **`page.tsx`/`layout.tsx`/`error.tsx`/`not-found.tsx`/`proxy.ts`는 `export default`를 쓴다** — Next.js가 강제하는 파일 컨벤션이다.
 
-### 라우트(URL) 세그먼트 네이밍
-
-새 라우트 세그먼트(폴더명)를 지을 때 아래 4가지를 따른다 — 기존 세그먼트를 지금 일괄 소급 변경하지는 않는다.
-
-- **소문자 + kebab-case 고정** — camelCase/snake_case 안 씀. 하이픈만 검색엔진이 단어 구분자로 인식한다.
-- **명사 위주, 동사는 관용적으로 굳은 것만 예외 허용** — REST 자원 경로는 명사가 기본(`products`, `my-orders`). "행위 자체가 화면"인 경우만 동사/동사구 예외 허용(`login`, `signup`, `search`, `products/new`).
-- **약어는 "어휘화(lexicalized)"된 것만 허용** — 기준: 비개발자가 줄임말인 줄 모를 만큼 이미 굳어졌는가. `id`/`api`/`url`/`info`/`faq`는 허용, `pw`/`addr`/`qty`류는 풀스펠링으로 짓는다(예: 새로 짓는다면 `change-pw`가 아니라 `change-password`).
-- **복수=컬렉션, 단수=단일 리소스** — 목록/여러 건 다루는 경로(`products`, `users`, `my-orders`)는 복수형, 설정·액션·단일 인스턴스 화면(`my-profile`, `payment`, `dashboard`, `settings`)은 단수형.
-
 ## References
 
 즉시 로드(`@import`) 아님 — 트리거 열 키워드에 해당하는 작업일 때만 해당 문서를 읽는다.
@@ -74,7 +65,7 @@ root layout을 통째로 대체하기 때문에 생기는 제약:
 | `CLAUDE.md` | `src/shared/types/`                | 승격된 타입 확인 시                       | 타입 컨벤션              |
 | `CLAUDE.md` | `src/client/components/`           | 컴포넌트 조직 구조 확인 시                | Atomic Design 조직 구조  |
 | `CLAUDE.md` | `src/client/components/templates/` | Templates(페이지 전체 배치) 세부 규칙 확인 시 | template 컨벤션      |
-| `CLAUDE.md` | `src/app/api/`                     | Route Handler 세부 규칙 확인 시           | Route Handler 컨벤션     |
 | `CLAUDE.md` | `src/server/actions/`              | Server Actions 확인 시                    | Server Action 컨벤션     |
 | `CLAUDE.md` | `src/server/`                      | 응답/에러 계약(Route Handler) 확인 시     | 성공/에러 응답 빌더 계약 |
 | `CLAUDE.md` | `src/client/`                      | 응답/에러 계약(Client fetch) 확인 시      | fetcher 계약             |
+| `ROUTE_NAMING.md` | `docs/`                       | 새 라우트 세그먼트(폴더) 이름 지을 때     | kebab-case/명사우선/약어 어휘화 기준/복수-단수 규칙 4가지 |

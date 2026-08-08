@@ -58,10 +58,10 @@ export default async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/find-id",
-    "/find-pw",
+    "/find-password",
     "/signup",
     "/login",
-    "/change-pw",
+    "/change-password",
     "/admin/:path*",
     "/my-orders/:path*",
     "/my-orders",

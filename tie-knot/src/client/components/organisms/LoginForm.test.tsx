@@ -19,7 +19,7 @@ describe("LoginForm", () => {
   it("비밀번호 찾기/회원가입/아이디 찾기 링크를 보여준다", () => {
     render(<LoginForm action={vi.fn()} pending={false} />);
 
-    expect(screen.getByRole("link", { name: "비밀번호 찾기" })).toHaveAttribute("href", "/find-pw");
+    expect(screen.getByRole("link", { name: "비밀번호 찾기" })).toHaveAttribute("href", "/find-password");
     expect(screen.getByRole("link", { name: "회원가입" })).toHaveAttribute("href", "/signup");
     expect(screen.getByRole("link", { name: "아이디 찾기" })).toHaveAttribute("href", "/find-id");
   });
