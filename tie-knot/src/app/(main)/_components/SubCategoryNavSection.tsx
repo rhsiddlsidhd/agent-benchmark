@@ -1,31 +1,45 @@
-import { TypographyH2 } from "@/client/components/atoms";
-import { SUB_CATEGORY_MAP, type ProductCategory } from "@/shared/constants";
+"use client";
+
+import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
+import {
+  TypographyH2,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/client/components/atoms";
+import { PRODUCT_CATEGORIES, SUB_CATEGORY_MAP, type ProductCategory } from "@/shared/constants";
 import { SubCategoryNavItem } from "./SubCategoryNavItem";
 
-interface SubCategoryNavSectionProps {
-  category: ProductCategory;
-}
+const categorizedSubCategories = PRODUCT_CATEGORIES.flatMap((category: ProductCategory) =>
+  SUB_CATEGORY_MAP[category].map((subCategory) => ({ category, subCategory })),
+);
 
-export function SubCategoryNavSection({ category }: SubCategoryNavSectionProps) {
-  const subCategories = SUB_CATEGORY_MAP[category];
-
-  if (!subCategories.length) return null;
-
+export function SubCategoryNavSection() {
   return (
     <section className="py-8">
       <div className="container mx-auto px-4">
         <TypographyH2 className="mb-4 border-none text-xl font-bold">
-          초대장, 무엇을 찾으세요?
+          카테고리 둘러보기
         </TypographyH2>
-        <nav aria-label="서브카테고리 바로가기">
-          <ul className="flex gap-4 overflow-x-auto">
-            {subCategories.map((subCategory) => (
-              <li key={subCategory}>
+        <Carousel
+          aria-label="서브카테고리 바로가기"
+          opts={{ align: "start", loop: false, dragFree: true }}
+          plugins={[WheelGesturesPlugin()]}
+        >
+          <CarouselContent>
+            {categorizedSubCategories.map(({ category, subCategory }) => (
+              <CarouselItem key={`${category}-${subCategory}`} className="basis-auto">
                 <SubCategoryNavItem category={category} subCategory={subCategory} />
-              </li>
+              </CarouselItem>
             ))}
-          </ul>
-        </nav>
+          </CarouselContent>
+          <div className="hidden md:block">
+            <CarouselPrevious className="-left-12" />
+            <CarouselNext className="-right-12" />
+          </div>
+        </Carousel>
       </div>
     </section>
   );

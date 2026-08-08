@@ -86,7 +86,7 @@ describe("HomeTemplate", () => {
     );
 
     const html = document.body.innerHTML;
-    const subCategoryNavIndex = html.indexOf("초대장, 무엇을 찾으세요?");
+    const subCategoryNavIndex = html.indexOf("카테고리 둘러보기");
     const popularSectionIndex = html.indexOf("인기 상품");
     const bestTemplateIndex = html.indexOf("초대장</div>");
 

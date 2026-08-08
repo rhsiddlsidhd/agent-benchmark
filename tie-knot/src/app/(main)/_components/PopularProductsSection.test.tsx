@@ -55,10 +55,11 @@ describe("PopularProductsSection", () => {
     expect(screen.getByText("인기 1위")).toBeInTheDocument();
   });
 
-  it("가로 스크롤 트랙이 overflow-x-auto 리스트로 렌더링된다", () => {
+  it("가로 스크롤 트랙이 캐러셀 region 랜드마크로 렌더링된다", () => {
     render(<PopularProductsSection products={buildProducts(3)} />);
 
-    const list = screen.getByRole("list");
-    expect(list).toHaveClass("overflow-x-auto");
+    expect(
+      screen.getByRole("region", { name: "인기 상품" }),
+    ).toBeInTheDocument();
   });
 });

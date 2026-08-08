@@ -3,8 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { SubCategoryNavSection } from "./SubCategoryNavSection";
 
 describe("SubCategoryNavSection", () => {
-  it("invitation 카테고리의 서브카테고리 전부를 링크로 렌더한다", () => {
-    render(<SubCategoryNavSection category="invitation" />);
+  it("전체 카테고리의 서브카테고리를 전부 링크로 렌더한다", () => {
+    render(<SubCategoryNavSection />);
 
     expect(screen.getByRole("link", { name: "청첩장" })).toHaveAttribute(
       "href",
@@ -14,13 +14,21 @@ describe("SubCategoryNavSection", () => {
       "href",
       "/products/invitation?subCategory=first-birthday",
     );
+    expect(screen.getByRole("link", { name: "캔들" })).toHaveAttribute(
+      "href",
+      "/products/favor?subCategory=candle",
+    );
+    expect(screen.getByRole("link", { name: "아일 러너" })).toHaveAttribute(
+      "href",
+      "/products/ceremony?subCategory=aisle-runner",
+    );
   });
 
-  it("가로 스크롤 리스트 랜드마크(nav)로 렌더한다", () => {
-    render(<SubCategoryNavSection category="invitation" />);
+  it("캐러셀 region 랜드마크로 렌더한다", () => {
+    render(<SubCategoryNavSection />);
 
     expect(
-      screen.getByRole("navigation", { name: "서브카테고리 바로가기" }),
+      screen.getByRole("region", { name: "서브카테고리 바로가기" }),
     ).toBeInTheDocument();
   });
 });
