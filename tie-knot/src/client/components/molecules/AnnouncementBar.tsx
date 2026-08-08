@@ -29,7 +29,7 @@ export const AnnouncementBar = ({
   const currentAnnouncement = items[activeIndex ?? currentIndex];
 
   return (
-    <div className="relative flex h-9 items-center justify-center overflow-hidden bg-slate-900 text-xs font-medium tracking-tight text-white">
+    <div className="relative flex min-h-9 items-center justify-center overflow-hidden bg-slate-900 text-xs font-medium tracking-tight text-white">
       <div className="container mx-auto flex items-center justify-center px-4">
         <AnimatePresence mode="wait">
           <motion.div

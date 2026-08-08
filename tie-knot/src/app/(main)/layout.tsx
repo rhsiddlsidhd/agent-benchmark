@@ -8,15 +8,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const activeAnnouncements = announcementData.filter((item) => item.isActive);
 
   return (
-    <div className="bg-muted/30 min-h-screen">
-      {/* 데스크탑에서도 모바일 폭을 연상케 하는 480px 캡 — 전단지처럼 꽉 찬 콘텐츠를
-          전제로 한 Home 개편 설계(TODO.md Phase 1) */}
-      <div className="bg-background mx-auto flex min-h-screen w-full max-w-[480px] flex-col shadow-sm">
-        <AnnouncementBar items={activeAnnouncements} />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </div>
+    <div className="bg-background flex min-h-screen w-full flex-col">
+      {/* 폭 제약 없음 — 각 라우트/섹션이 container/max-w-*로 자체 관리한다(과거 480px 모바일폭 캡 제거됨) */}
+      <AnnouncementBar items={activeAnnouncements} />
+      <Header />
+      <main className="flex-1">{children}</main>
+      <Footer />
       <Toaster />
     </div>
   );

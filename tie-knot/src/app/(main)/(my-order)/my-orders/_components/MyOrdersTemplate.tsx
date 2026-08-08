@@ -22,7 +22,7 @@ interface MyOrdersTemplateProps {
 
 const MyOrdersTemplate = ({ groupedOrders }: MyOrdersTemplateProps) => {
   return (
-    <div className="space-y-6">
+    <div className="max-w-3xl space-y-6">
       <div>
         <TypographyH1 className="text-left mb-2 text-3xl font-bold">주문 목록</TypographyH1>
         <TypographyMuted>
