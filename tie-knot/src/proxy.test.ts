@@ -79,15 +79,15 @@ describe("proxy", () => {
     });
   });
 
-  describe("/change-pw", () => {
+  describe("/change-password", () => {
     it("t 파라미터가 없으면 /로 리다이렉트한다", async () => {
-      const res = await proxy(buildRequest("/change-pw"));
+      const res = await proxy(buildRequest("/change-password"));
 
       expect(redirectsTo(res, "/")).toBe(true);
     });
 
     it("t 파라미터가 있으면 통과시킨다", async () => {
-      const res = await proxy(buildRequest("/change-pw?t=abc"));
+      const res = await proxy(buildRequest("/change-password?t=abc"));
 
       expect(isNext(res)).toBe(true);
     });

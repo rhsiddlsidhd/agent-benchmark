@@ -7,9 +7,10 @@ import { emailSchema } from "@/shared/schemas";
 import { APIResponse } from "@/shared/types";
 import { checkEmailDuplicate } from "@/server/services";
 import { actionError } from "@/server/boundary";
+import { routes } from "@/shared/constants";
 const createChangePWDomain = (token: string): string => {
   return process.env.NODE_ENV === "development"
-    ? `http://localhost:3000/change-pw?t=${encodeURIComponent(token)}`
+    ? `http://localhost:3000${routes.changePw}?t=${encodeURIComponent(token)}`
     : "";
 };
 

@@ -6,7 +6,7 @@ describe("FindIdForm", () => {
   it("성공 전에는 비밀번호 찾기/로그인 링크를 보여준다", () => {
     render(<FindIdForm action={vi.fn()} pending={false} state={null} />);
 
-    expect(screen.getByRole("link", { name: "비밀번호 찾기" })).toHaveAttribute("href", "/find-pw");
+    expect(screen.getByRole("link", { name: "비밀번호 찾기" })).toHaveAttribute("href", "/find-password");
     expect(screen.getByRole("link", { name: "로그인으로 돌아가기" })).toHaveAttribute(
       "href",
       "/login",
@@ -19,6 +19,6 @@ describe("FindIdForm", () => {
     );
 
     expect(screen.getByRole("link", { name: "로그인하기" })).toHaveAttribute("href", "/login");
-    expect(screen.getByRole("link", { name: "비밀번호 찾기" })).toHaveAttribute("href", "/find-pw");
+    expect(screen.getByRole("link", { name: "비밀번호 찾기" })).toHaveAttribute("href", "/find-password");
   });
 });
