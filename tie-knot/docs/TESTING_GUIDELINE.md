@@ -13,7 +13,7 @@
 - DB: `mongodb-memory-server` — 인메모리 mongod를 띄워 mongoose 쿼리를 실제로 실행한다. mongoose model을 `vi.mock`으로 대체하지 않는다. `dbConnect()`(`src/server/lib/mongodb/connect.ts`)는 `process.env.MONGO_TEST_URI`가 설정돼 있으면 그 URI로, 없으면 기존 Atlas SRV URI로 연결한다 — 운영 코드 경로는 그대로 두고 테스트에서만 memory server로 리다이렉트하는 오버라이드다.
 - path alias 해석: `vite-tsconfig-paths`
 - 컴포넌트 상호작용 시뮬레이션: `@testing-library/user-event`
-- 커버리지 대상 파일 스캔: `glob`(`vitest.config.ts`에서 `.test.ts(x)` 목록 → `coverage.include` 생성)
+- 커버리지 대상 파일 스캔: `scripts/tested-source-files.mjs`(`.test.ts(x)` 목록 → 대상 소스 경로 역산 → `vitest.config.ts`의 `coverage.include`와 `stryker.config.mjs`의 `mutate`가 공유)
 
 ## Structure
 
@@ -21,10 +21,10 @@
 src/
 ├── services/
 │   ├── auth.service.ts
-│   └── auth.service.test.ts     # colocate — 대상 파일 옆에 .test.ts
+│   └── auth.service.integration.test.ts  # colocate. DB에 붙으므로 .integration
 ├── actions/
 │   ├── createOrder.ts
-│   └── createOrder.test.ts
+│   └── createOrder.test.ts      # colocate — 대상 파일 옆에 .test.ts
 ├── schemas/request/
 │   ├── login.schema.ts
 │   └── login.schema.test.ts
@@ -47,6 +47,23 @@ src/
 
 ## Critical Convention
 
+### 파일 네이밍 = 실행 묶음
+
+- **테스트 파일명은 `*.test.ts(x)`가 기본이고, 실물 mongod(`mongodb-memory-server`)에 붙는 테스트만 `*.integration.test.ts(x)`로 짓는다.** 판정 기준은 이것 하나다 — mock을 얼마나 썼는지, RTL을 썼는지, 모듈 여러 개가 얽혔는지는 기준이 아니다. `grep -lE "dbConnect|clearCollections"`로 기계적으로 판정된다.
+- **파일 안에 DB 테스트가 하나라도 있으면 그 파일 전체가 integration이다** — vitest의 실행 단위는 `it`이 아니라 파일이라, 파일 하나가 통째로 한 묶음에 들어간다.
+- **실행을 가르지 않는 접미사는 붙이지 않는다.** `vitest.config.ts`의 `projects`가 이 접미사로 두 묶음을 나누므로 접미사가 곧 실행 셀렉터다 — 분류를 사람에게 설명하려는 라벨(`*.regression.test.ts` 등)을 새로 만들지 않는다. 설명은 파일 안 `describe`와 주석이 한다.
+- MSW나 `vi.mock`으로 네트워크만 가로챈 컴포넌트 테스트는 **unit 쪽**이다 — 테스트 분류 taxonomy가 아니라 "프로세스 밖 공유 자원을 쓰는가"가 기준이기 때문이다.
+
+### 두 실행 묶음
+
+| 묶음 | 대상 | mongod | 파일 병렬 |
+| --- | --- | --- | --- |
+| `unit` | `*.test.ts(x)` (integration 제외) | 안 띄움 | 병렬 |
+| `integration` | `*.integration.test.ts(x)` | 띄움 | 순차 |
+
+- 한쪽만 돌리려면 `npx vitest --project unit` / `--project integration`. 컴포넌트만 고치는 중이라면 `unit`만 돌려 mongod 기동을 건너뛴다.
+- **`unit` 묶음에는 더미 `MONGO_TEST_URI`를 주입한다** — `connect.ts`가 모듈 로드 시점에 이 값의 존재를 요구하는데(프로덕션 DB 오염 방지 가드), 배럴 캐스케이드로 그 모듈이 딸려 들어오는 것만으로 던지기 때문이다. 실제로 연결되지 않는 주소라 "테스트는 프로덕션 DB에 붙지 않는다"는 가드의 불변조건은 그대로 유지된다.
+
 ### 범위/순서
 
 - 1차 커버 범위는 순수 로직(`schemas/`의 zod 스키마, `utils/`)부터 시작한다 — DB 셋업 없이 vitest 자체(config, alias 해석)부터 검증할 수 있어서다. 그 다음 `services/`+`actions/`(결제 금액 검증, 소유권 재검증 등 리스크가 큰 로직)로 확장한다.
@@ -58,7 +75,7 @@ src/
 - DB가 걸린 로직은 `mongodb-memory-server`로 실제 mongoose 쿼리를 실행해 검증한다 — mongoose model을 `vi.mock`으로 대체하지 않는다. 이유: mock은 쿼리 정확성(필터 조건, `.lean()`/`.toJSON()` 결과 shape)을 검증하지 못하고, 구현 디테일에 묶인 mock은 리팩터마다 재작성해야 한다 — 계약(입출력)만 보는 통합 테스트가 리팩터에 더 강하다.
 - `mongodb-memory-server` 인스턴스는 vitest `globalSetup`(`src/test/setup/mongo-server.ts`)에서 테스트 스위트 전체당 1개만 띄운다 — 테스트 파일마다 새 인스턴스를 만들지 않는다. 이유: 파일마다 기동하면 스위트 전체 시간이 선형으로 늘어난다. 테스트 간 격리는 각 `beforeEach`에서 관련 컬렉션을 `deleteMany`로 비워 확보한다(`clearCollections`, `src/test/db.ts`).
 - **mongod 버전은 `mongo-server.ts`의 `MONGOD_VERSION`으로 고정한다** — 생략하면 `mongodb-memory-server` 패키지가 정한 기본 버전을 쓰므로, 패키지를 올릴 때 테스트가 도는 mongod 버전이 조용히 바뀐다. 운영(Atlas) 클러스터 버전을 올릴 때 이 값도 같이 맞춘다.
-- **이 격리는 테스트 파일들이 순차 실행될 때만 유효하다** — `vitest.config.ts`에 `fileParallelism: false`를 설정해 DB 테스트 파일들이 병렬이 아니라 순차로 돈다. 이유: 인스턴스를 스위트당 1개만 띄우는 설계상 여러 파일이 같은 DB를 공유하는데, vitest 기본값(파일 병렬 실행)에서는 파일 A의 `beforeEach`(`deleteMany`)가 파일 B가 막 써넣은 데이터를 지워버리는 크로스파일 오염이 생긴다 — 실제로 `coupleInfo`/`product`/`guestbook` service 테스트 3개를 처음 같이 추가했을 때 이 레이스로 무더기 실패가 재현됐다(파일 단독 실행은 통과, 전체 스위트 실행은 랜덤 실패).
+- **이 격리는 테스트 파일들이 순차 실행될 때만 유효하다** — `integration` 프로젝트에 `fileParallelism: false`를 설정해 DB 테스트 파일들이 병렬이 아니라 순차로 돈다. 이유: 인스턴스를 스위트당 1개만 띄우는 설계상 여러 파일이 같은 DB를 공유하는데, vitest 기본값(파일 병렬 실행)에서는 파일 A의 `beforeEach`(`deleteMany`)가 파일 B가 막 써넣은 데이터를 지워버리는 크로스파일 오염이 생긴다 — 실제로 `coupleInfo`/`product`/`guestbook` service 테스트 3개를 처음 같이 추가했을 때 이 레이스로 무더기 실패가 재현됐다(파일 단독 실행은 통과, 전체 스위트 실행은 랜덤 실패). **이 제약은 `integration` 묶음에만 걸린다** — 예전엔 설정이 하나뿐이라 DB를 안 쓰는 120개까지 같이 직렬로 묶여 있었고, 묶음을 나눈 뒤 전체 스위트가 616초에서 296초로 줄었다.
 - mongoose 테스트 데이터는 `src/test/factories/{도메인}.factory.ts`의 팩토리 함수(`buildUserInput(overrides?)` 등)로 만든다 — 매 테스트 파일에 객체 리터럴을 인라인으로 반복하지 않는다. 이유: 모델 스키마에 필수 필드가 추가되면 인라인 방식은 테스트 파일 전부 고쳐야 하지만 팩토리는 한 곳만 고치면 된다.
 - 팩토리와 헬퍼는 배럴 `@/test` 하나로만 import한다 — `@/test/db`나 `@/test/factories/product.factory` 같은 개별 경로로 찌르지 않는다(`src/CLAUDE.md` 배럴 전용 import 원칙).
 
@@ -115,7 +132,7 @@ src/
 
 ## Gotchas
 
-- `mongodb-memory-server`는 설치·연동 완료됐고 `connect.test.ts`로 실제 연결까지 검증했다. `coupleInfo`/`product`/`guestbook` service 테스트를 실제로 추가하며 `beforeEach`의 `clearCollections` 격리와 팩토리 패턴을 검증했는데, 이 과정에서 크로스파일 오염 문제가 드러나 `fileParallelism: false`로 고쳤다(위 "DB 테스트" 섹션 참고) — 파일 단독 실행은 통과하는데 전체 스위트 실행에서만 랜덤 실패하는 증상이었다.
+- `mongodb-memory-server`는 설치·연동 완료됐고 `connect.integration.test.ts`로 실제 연결까지 검증했다. `coupleInfo`/`product`/`guestbook` service 테스트를 실제로 추가하며 `beforeEach`의 `clearCollections` 격리와 팩토리 패턴을 검증했는데, 이 과정에서 크로스파일 오염 문제가 드러나 `fileParallelism: false`로 고쳤다(위 "DB 테스트" 섹션 참고) — 파일 단독 실행은 통과하는데 전체 스위트 실행에서만 랜덤 실패하는 증상이었다.
 - `.claude/hooks/pre-commit-check.sh`가 lint → `test:coverage` → `typecheck`(`next typegen && tsc --noEmit`) 순서로 커밋을 막는다 — `next build`는 여기 없다(TODO.md #12: SSG가 실제 Atlas DB에 붙어 로컬 커밋마다 DB를 건드리는 문제라 CI로 옮김, `next typegen`으로 라우트별 자동생성 타입만 먼저 만들어 `tsc --noEmit` 단독 실행 시 `next build`와 타입 체크 결과가 어긋나는 문제를 피한다). `test:coverage`는 `vitest.config.ts`의 `coverage.thresholds`(`perFile: true, lines: 80`)로 **테스트가 존재하는 파일 각각**의 line coverage 80% 미만이면 실패한다. 커버리지 %는 "테스트가 있다"는 사실만 강제하는 `.claude/hooks/tdd-gate.js` 훅(Write/Edit는 `file_path`를, Bash는 명령문에서 뽑은 쓰기 대상 경로를 같은 규칙에 태운다. 제외 목록은 루트 `test-scope-exclude.json` — `coverage.exclude`와 같은 파일을 공유한다)과 별개로 "그 테스트가 실제로 로직을 타는가"를 걸러내는 2차 게이트다 — 단, branch coverage는 아직 안 본다(line만), assertion이 의미있는지는 여전히 사람 리뷰 몫이다.
 - `coverage.include`는 `.test.ts(x)`가 실제로 존재하는 소스 파일 목록으로 `vitest.config.ts`가 매번 자동 스캔해서 채운다(`glob` 패키지, `src/**/*.test.{ts,tsx}` → `.test` 뗀 경로). 이유: `src/CLAUDE.md`의 배럴 전용 import 컨벤션 때문에 컴포넌트 하나만 import해도 배럴 연쇄(예: `@/components/atoms` → `sidebar.tsx` → `@/hooks` → `useAuth.ts`)로 무관한 파일이 대량으로 로드된다 — vitest 커버리지는 "직접 테스트한 파일"이 아니라 "테스트 실행 중 로드된 파일"을 리포트에 잡으므로, `include`로 명시하지 않으면 테스트 하나 추가할 때마다 무관한 레거시 파일들이 커버리지 미달로 같이 실패한다(`coverage.all: false`로는 못 막는다 — 그 파일들은 실제로 로드되므로 `all` 설정과 무관하게 리포트에 잡힌다).
 - 컴포넌트 테스트 컨벤션(위 "컴포넌트 테스트"/"컴포넌트 테스트 인프라 셋업" 섹션)은 `src/client/components/molecules/BaseSelect.tsx`(Radix Select 조합, 이 프로젝트 molecule 대표 사례)로 렌더링+상호작용 테스트를 실제로 작성해보며 검증했다 — `.env` 미로딩/cleanup 누락/jsdom Pointer Events 미구현 3가지를 실제로 겪고 고쳤다. 다만 `organisms`(여러 상호작용의 로컬 상태 오케스트레이션) 쪽은 아직 실제 작성된 테스트가 없어 그 부분 컨벤션은 미검증이다.
