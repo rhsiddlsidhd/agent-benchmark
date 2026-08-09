@@ -5,7 +5,7 @@
 - 작업 항목 1개 = worktree 1개 = branch 1개 (`docs/GIT.md` worktree 규칙)
 - 완료 → PR → `dev` merge → 로컬/원격 branch 삭제 → worktree remove
 - 클러스터(파일·주제 겹침)는 같은 worktree에서 순차 처리한다 — 의존성이 없어도 같은 파일이면 병렬로 나누지 않는다
-- TODO.md 갱신은 `docs/todo-section-taxonomy` 고정 브랜치에서만 한다. 작업 브랜치는 "미분류 인박스"에만 append (`AGENTS.md` Git 규칙)
+- TODO.md 갱신은 `docs/todo-section-taxonomy` 브랜치에서만 한다. 작업 브랜치는 "미분류 인박스"에만 append (`AGENTS.md` Git 규칙)
 
 ## 섹션 기준
 
@@ -79,7 +79,7 @@
 
 ## 미분류 인박스
 
-> 작업 브랜치는 **이 구역에만 append**한다. 정식 섹션으로의 분류·이동·완료 체크는 `docs/todo-section-taxonomy` 고정 브랜치에서만 한다.
+> 작업 브랜치는 **이 구역에만 append**한다. 정식 섹션으로의 분류·이동·완료 체크는 `docs/todo-section-taxonomy` 브랜치에서만 한다.
 > 항목 형식: `- [ ] (날짜, 발견 맥락) 증상 — 위치/근거`
 
 - [ ] (2026-08-08, TODO 운영 규칙 정립 중 발견) `.git/hooks/commit-msg`의 prefix 검사가 전역 `GIT.md` 택소노미와 어긋남 — 정규식이 `^(feat|fix|docs|refactor|chore|test): ` 라서 ① `docs(agents):` 같은 scope 표기가 거부되고(전역 규칙은 `{prefix}({scope}): {message}`를 허용) ② `perf`/`build`/`ci`/`revert` 4개 prefix가 아예 막힌다. 성능 개선 항목을 커밋하려면 규칙과 훅 중 하나를 반드시 어겨야 하는 상태.
