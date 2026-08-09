@@ -2,8 +2,7 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
-import { buildUser } from "@/test/factories/user.factory";
+import { buildUserInput, clearCollections } from "@/test";
 import { AppError } from "@/shared/types";
 import { UserModel } from "@/server/models";
 import {
@@ -26,7 +25,7 @@ describe("user.service", () => {
 
   describe("createUser", () => {
     it("유저를 생성한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
 
       const created = await createUser(input);
 
@@ -38,7 +37,7 @@ describe("user.service", () => {
 
   describe("checkEmailDuplicate", () => {
     it("이미 존재하는 이메일이면 true를 리턴한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       await UserModel.create(input);
 
       const result = await checkEmailDuplicate(input.email);
@@ -55,7 +54,7 @@ describe("user.service", () => {
 
   describe("getUserEmail", () => {
     it("name/phone이 일치하는 유저의 이메일을 리턴한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       await UserModel.create(input);
 
       const email = await getUserEmail({ name: input.name, phone: input.phone });
@@ -75,7 +74,7 @@ describe("user.service", () => {
 
   describe("getUserById", () => {
     it("id로 유저를 조회한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       const saved = await UserModel.create(input);
 
       const result = await getUserById(saved._id.toString());
@@ -93,7 +92,7 @@ describe("user.service", () => {
 
   describe("changePassword", () => {
     it("비밀번호를 해싱해 갱신하고 true를 리턴한다", async () => {
-      const input = buildUser({ password: "old-hashed" });
+      const input = buildUserInput({ password: "old-hashed" });
       await UserModel.create(input);
 
       const result = await changePassword(input.email, "new-plain-password");
@@ -111,7 +110,7 @@ describe("user.service", () => {
     });
 
     it("탈퇴(isDelete: true)한 유저는 갱신되지 않는다", async () => {
-      const input = buildUser({ isDelete: true });
+      const input = buildUserInput({ isDelete: true });
       await UserModel.create(input);
 
       const result = await changePassword(input.email, "new-password");

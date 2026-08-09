@@ -26,8 +26,8 @@ export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
     environment: "jsdom",
-    setupFiles: ["./src/test/testing-library-setup.ts"],
-    globalSetup: ["./src/test/setup.ts"],
+    setupFiles: ["./src/test/setup/jsdom-polyfill.ts"],
+    globalSetup: ["./src/test/setup/mongo-server.ts"],
     // mongodb-memory-server 인스턴스를 스위트 전체가 공유한다(docs/TESTING_GUIDELINE.md
     // DB 테스트 섹션) — 파일을 병렬로 돌리면 한 파일의 beforeEach(clearCollections)가
     // 다른 파일이 막 써넣은 데이터를 지워버리는 크로스파일 오염이 생긴다.

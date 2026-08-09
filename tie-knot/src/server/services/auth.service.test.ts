@@ -2,8 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
-import { buildUser } from "@/test/factories/user.factory";
+import { buildUserInput, clearCollections } from "@/test";
 import { AppError } from "@/shared/types";
 import { UserModel } from "@/server/models";
 import { encrypt } from "@/server/lib/jose";
@@ -36,7 +35,7 @@ describe("auth.service", () => {
 
   describe("getUser", () => {
     it("id로 존재하는 유저를 조회한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       const saved = await UserModel.create(input);
 
       const result = await getUser({ id: saved._id.toString() });
@@ -45,7 +44,7 @@ describe("auth.service", () => {
     });
 
     it("email로 존재하는 유저를 조회한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       await UserModel.create(input);
 
       const result = await getUser({ email: input.email });
@@ -68,7 +67,7 @@ describe("auth.service", () => {
     });
 
     it("isDelete가 true인 유저는 조회되지 않는다", async () => {
-      const input = buildUser({ isDelete: true });
+      const input = buildUserInput({ isDelete: true });
       await UserModel.create(input);
 
       const result = await getUser({ email: input.email });
@@ -87,7 +86,7 @@ describe("auth.service", () => {
     });
 
     it("token 쿠키가 유효하면 DB를 재조회해 세션을 리턴한다", async () => {
-      const input = buildUser({ role: "ADMIN" });
+      const input = buildUserInput({ role: "ADMIN" });
       const saved = await UserModel.create(input);
       const token = await encrypt({ id: saved._id.toString(), role: "ADMIN", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
@@ -120,7 +119,7 @@ describe("auth.service", () => {
     });
 
     it("유저 조회 자체가 실패하면(인프라 예외) null로 삼키지 않고 AppError(INTERNAL)를 던진다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       const saved = await UserModel.create(input);
       const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
@@ -140,7 +139,7 @@ describe("auth.service", () => {
 
   describe("requireAuth", () => {
     it("세션이 있으면 세션을 리턴한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       const saved = await UserModel.create(input);
       const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
@@ -167,7 +166,7 @@ describe("auth.service", () => {
     });
 
     it("세션이 있고 role 요구가 없으면 세션을 리턴한다", async () => {
-      const input = buildUser();
+      const input = buildUserInput();
       const saved = await UserModel.create(input);
       const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
@@ -179,7 +178,7 @@ describe("auth.service", () => {
     });
 
     it("role을 요구했는데 불일치하면 /로 redirect한다", async () => {
-      const input = buildUser({ role: "USER" });
+      const input = buildUserInput({ role: "USER" });
       const saved = await UserModel.create(input);
       const token = await encrypt({ id: saved._id.toString(), role: "USER", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });
@@ -189,7 +188,7 @@ describe("auth.service", () => {
     });
 
     it("role이 일치하면 세션을 리턴한다", async () => {
-      const input = buildUser({ role: "ADMIN" });
+      const input = buildUserInput({ role: "ADMIN" });
       const saved = await UserModel.create(input);
       const token = await encrypt({ id: saved._id.toString(), role: "ADMIN", type: "REFRESH" });
       vi.mocked(getCookie).mockResolvedValue({ name: "token", value: token });

@@ -11,8 +11,7 @@
 import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
-import { buildProductInput } from "@/test/factories/product.factory";
+import { buildProductInput, clearCollections } from "@/test";
 import { OrderModel, ProductModel } from "@/server/models";
 
 vi.mock("next/navigation", () => ({

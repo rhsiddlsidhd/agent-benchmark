@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
-import { buildGuestbookInput } from "@/test/factories/guestbook.factory";
+import { buildGuestbookInput, clearCollections } from "@/test";
 import { AppError } from "@/shared/types";
 import {
   createGuestbookService,

@@ -36,7 +36,7 @@ src/server/services/
 ## 트랜잭션
 
 - **언제 트랜잭션이 필요한가**: 서로 다른 컬렉션(또는 같은 컬렉션의 여러 문서)에 걸친 쓰기가 하나라도 실패하면 나머지 커밋 결과가 도메인 불변조건을 깨는 경우에만 쓴다 — 단일 문서 쓰기(`.create()`/`.save()`/update 하나)는 MongoDB 자체가 문서 단위 원자성을 보장하므로 트랜잭션이 필요 없다. 이 조건에 해당하는 지점: `payment.service.ts`의 `syncPayment` — PAID 확정 시 Payment 저장 + Order 상태 전이(`orderStatus`/`paymentId`) + Product `salesCount` 증가가 하나의 논리적 단위(FAILED 분기도 Payment 저장 + Order 상태 전이 2단계라 동일하게 해당) — 적용 완료, PAID/FAILED 두 분기 다 아래 패턴으로 트랜잭션 처리돼 있다.
-- **트랜잭션은 replica set에서만 동작한다**(MongoDB 자체 제약, standalone에선 "Transaction numbers are only allowed on a replica set member or mongos") — Atlas(운영)는 기본 replica set이라 문제없지만, 로컬 테스트는 `mongodb-memory-server`가 기본 standalone이라 막힌다. `src/test/setup.ts`가 단일 노드 replSet으로 이미 전환돼 있다(`docs/TESTING_GUIDELINE.md` 참고) — 이 전환 없이는 트랜잭션 관련 테스트 자체가 불가능했다.
+- **트랜잭션은 replica set에서만 동작한다**(MongoDB 자체 제약, standalone에선 "Transaction numbers are only allowed on a replica set member or mongos") — Atlas(운영)는 기본 replica set이라 문제없지만, 로컬 테스트는 `mongodb-memory-server`가 기본 standalone이라 막힌다. `src/test/setup/mongo-server.ts`가 단일 노드 replSet으로 이미 전환돼 있다(`docs/TESTING_GUIDELINE.md` 참고) — 이 전환 없이는 트랜잭션 관련 테스트 자체가 불가능했다.
 - **`mongoose.connection.transaction(fn)`을 쓴다** — `session.withTransaction()`의 mongoose 전용 wrapper로, 커밋/롤백을 자동 처리하고(성공 시 커밋, 함수가 throw하면 abort) 트랜잭션이 abort되면 그 안에서 `.save()`한 문서의 in-memory 변경사항도 원래 상태로 되돌린다(mongoose 공식 문서: "`Connection#transaction()` ... integrates Mongoose change tracking with transactions"). 두 갈래 패턴을 만들지 않는다 — 트랜잭션이 필요한 곳은 raw `session.startTransaction()`/`commitTransaction()`을 직접 안 쓰고 전부 이 함수 하나로 통일한다.
   ```ts
   await dbConnect();

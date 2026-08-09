@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
-import { buildCoupleInfoInput } from "@/test/factories/coupleInfo.factory";
+import { buildCoupleInfoInput, clearCollections } from "@/test";
 import { AppError } from "@/shared/types";
 import { CoupleInfoModel } from "@/server/models";
 import {
