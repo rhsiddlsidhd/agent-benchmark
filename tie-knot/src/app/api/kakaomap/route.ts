@@ -1,17 +1,34 @@
-export async function GET(req: Request) {
-  // const { address } = req.url;
-  const { searchParams } = new URL(req.url);
-  const address = searchParams.get("address");
-  const REST_API_KEY = process.env.KAKAO_REST_API_KEY;
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
+import { AppError } from "@/shared/types";
+import { KakaomapResponse } from "@/shared/schemas";
+import { NextRequest } from "next/server";
 
-  const response = await fetch(
-    `https://dapi.kakao.com/v2/local/search/address?query=${address}`,
-    {
-      headers: { Authorization: `KakaoAK ${REST_API_KEY}` },
-    },
-  );
+export const GET = async (
+  req: NextRequest,
+): Promise<APIRouteResponse<KakaomapResponse>> => {
+  try {
+    const { searchParams } = new URL(req.url);
+    const address = searchParams.get("address");
+    const REST_API_KEY = process.env.KAKAO_REST_API_KEY;
 
-  const data = await response.json();
+    const response = await fetch(
+      `https://dapi.kakao.com/v2/local/search/address?query=${address}`,
+      {
+        headers: { Authorization: `KakaoAK ${REST_API_KEY}` },
+      },
+    );
 
-  return Response.json(data);
-}
+    const data = await response.json();
+
+    if (!response.ok || data.errorType) {
+      throw new AppError(
+        "EXTERNAL_SERVICE",
+        data.message ?? "주소 검색에 실패했습니다.",
+      );
+    }
+
+    return routeSuccess(data);
+  } catch (error) {
+    return routeError(error);
+  }
+};

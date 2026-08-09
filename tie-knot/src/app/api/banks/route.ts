@@ -1,26 +1,12 @@
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
+import { BanksResponse } from "@/shared/schemas";
 
-/**
- * data
- * items: {bank:string, name:{ko:string}} [ ]
- */
-
-type BankName = {
-  ko: string;
-};
-
-export type Banks = {
-  bank: string;
-  name: BankName;
-}[];
-
-export const GET = async (): Promise<APIRouteResponse<Banks>> => {
+export const GET = async (): Promise<APIRouteResponse<BanksResponse>> => {
   try {
     const res = await fetch("https://api.portone.io/banks");
-    const data: Banks = await res.json();
-    return apiSuccess(data);
+    const { items }: { items: BanksResponse } = await res.json();
+    return routeSuccess(items);
   } catch (error) {
-    return handleRouteError(error);
+    return routeError(error);
   }
 };

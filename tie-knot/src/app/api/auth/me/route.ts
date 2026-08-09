@@ -1,15 +1,14 @@
-import { APIRouteResponse, apiSuccess } from "@/api/response";
-import { handleRouteError } from "@/api/error";
-import { getAuth } from "@/services/auth.service";
-import { AuthSession } from "@/types/auth";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
+import { getAuth } from "@/server/services";
+import { AuthSessionResponse } from "@/shared/schemas";
 
 export const GET = async (): Promise<
-  APIRouteResponse<AuthSession | null>
+  APIRouteResponse<AuthSessionResponse>
 > => {
   try {
     const session = await getAuth();
-    return apiSuccess(session);
+    return routeSuccess(session);
   } catch (e) {
-    return handleRouteError(e);
+    return routeError(e);
   }
 };

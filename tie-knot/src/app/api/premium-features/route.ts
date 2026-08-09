@@ -1,18 +1,15 @@
-import { apiSuccess, APIRouteResponse } from "@/api/response";
-import { handleRouteError } from "@/api/error";
-import {
-  getAllPremiumFeatureService,
-  PremiumFeature,
-} from "@/services/premiumFeature.service";
+import { APIRouteResponse, routeSuccess, routeError } from "@/server/boundary";
+import { getAllPremiumFeatureService } from "@/server/services";
+import { PremiumFeaturesResponse } from "@/shared/schemas";
 
 export const GET = async (): Promise<
-  APIRouteResponse<{ features: PremiumFeature[] }>
+  APIRouteResponse<PremiumFeaturesResponse>
 > => {
   try {
     const features = await getAllPremiumFeatureService();
 
-    return apiSuccess({ features: features ?? [] });
+    return routeSuccess({ features: features ?? [] });
   } catch (error) {
-    return handleRouteError(error);
+    return routeError(error);
   }
 };

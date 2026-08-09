@@ -1,18 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { CheckoutForm } from "@/components/organisms/CheckoutForm";
-
+import { CheckoutForm } from "./_components";
+import { verifySession } from "@/server/services";
 import React from "react";
 
-const page = async ({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) => {
-  const { q } = await searchParams;
+const page = async () => {
+  await verifySession();
 
-  if (!q) throw new Error("잘못된 접근 입니다.");
-  return <CheckoutForm query={q} />;
+  return <CheckoutForm />;
 };
 
 export default page;

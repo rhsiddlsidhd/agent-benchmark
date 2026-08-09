@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/organisms/LoginForm";
+import { LoginForm } from "./_components";
 import React from "react";
 
 const LoginPage = () => {

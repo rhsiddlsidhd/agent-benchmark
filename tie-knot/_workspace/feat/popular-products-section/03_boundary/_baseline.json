@@ -1,0 +1,41 @@
+{
+  "note": "검증 기준 baseline — 표준 브랜치 86001e5 시점. 무수정 판정과 '신규 엔드포인트 0개' 판정의 객관적 근거.",
+  "baseAt": "86001e5",
+  "mustNotChange": {
+    "src/server/models/product.model.ts": "5d6e7428e66935c4b4aecbf65654a63b0819c6e6",
+    "src/client/components/organisms/ProductGrid.tsx": "2cfb51a7e6b5226e1e5901537c915fcb960bce20",
+    "src/client/components/organisms/TemplateCarouselGroup.tsx": "d921adf73bdded01ba63eecc1ee7005ce2f7ac7a"
+  },
+  "getAllProductsService": {
+    "signature": "(category?: string, userId?: string): Promise<ProductJSON[]>",
+    "sort": "{ isFeatured: -1, priority: -1, createdAt: -1 }",
+    "rule": "01_db_schema.md §9 — 무수정. 시그니처/정렬/본문 어느 것도 바뀌면 위반."
+  },
+  "apiRouteCount": 12,
+  "apiRoutes": [
+    "src/app/api/auth/me/route.ts",
+    "src/app/api/banks/route.ts",
+    "src/app/api/couple-info/route.ts",
+    "src/app/api/guestbook/route.ts",
+    "src/app/api/kakaomap/route.ts",
+    "src/app/api/order/create/route.ts",
+    "src/app/api/premium-features/route.ts",
+    "src/app/api/products/route.ts",
+    "src/app/api/products/search/route.ts",
+    "src/app/api/subway/[station]/route.ts",
+    "src/app/api/subway/route.ts",
+    "src/app/api/upload/signature/route.ts"
+  ],
+  "aggregateUsagesBefore": 0,
+  "consumerBaseline": {
+    "ProductCard": "props { product } only — rank 없음. 배지 컬럼 div.flex.flex-col.gap-1.5 안에 isPremium/isFeatured 2개.",
+    "ProductGrid.tsx": "<ProductCard key product /> — rank 미전달",
+    "TemplateCarouselGroup.tsx": "<ProductCard product /> — rank 미전달",
+    "HomeTemplate": "props { invitation, product, infoId } — popularProducts 없음",
+    "page.tsx": "Promise.all 2항목 [getProductService, getFeaturedTemplatesService]"
+  },
+  "transformProductSpread": {
+    "destructured": ["deletedAt", "_id", "featureIds", "likes", "createdAt", "updatedAt"],
+    "rest": "...rest 스프레드 — likesCount를 $unset 안 하면 여기로 새어나가 응답 shape 오염 (01_db_schema.md §2-6 확인됨)"
+  }
+}

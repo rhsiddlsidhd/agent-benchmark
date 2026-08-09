@@ -1,18 +1,19 @@
 "use client";
 
-import { Button } from "@/components/atoms/button";
-import { Card } from "@/components/atoms/card";
-import { TypographyH1, TypographyMuted } from "@/components/atoms/typoqraphy";
+import { Button, Card, TypographyH1, TypographyMuted } from "@/client/components/atoms";
+
+
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { routes } from "@/shared/constants";
 
 interface ErrorProps {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 }
 
-export default function ProductError({ error, reset }: ErrorProps) {
+export default function ProductError({ error, unstable_retry }: ErrorProps) {
   const router = useRouter();
 
   useEffect(() => {
@@ -57,10 +58,10 @@ export default function ProductError({ error, reset }: ErrorProps) {
           )}
 
           <div className="flex flex-col gap-3">
-            <Button onClick={reset} variant="default" size="lg">
+            <Button onClick={unstable_retry} variant="default" size="lg">
               다시 시도
             </Button>
-            <Button onClick={() => router.push("/")} variant="outline" size="lg">
+            <Button onClick={() => router.push(routes.home)} variant="outline" size="lg">
               <ArrowLeft className="mr-2 h-4 w-4" />
               홈으로 돌아가기
             </Button>

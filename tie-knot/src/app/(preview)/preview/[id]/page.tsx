@@ -1,25 +1,28 @@
 export const revalidate = 300;
 
-import { mapCoupleInfoToHeroProps } from "@/components/organisms/(preview)/heroSection.mapper";
-import { InvitationMessage } from "@/components/organisms/(preview)/InvitationMessage";
-import { GallerySection } from "@/components/organisms/(preview)/GallerySection";
-import { LocationSection } from "@/components/organisms/(preview)/LocationSection";
-import { Footer } from "@/components/organisms/(preview)/Footer";
-import { getCoupleInfoById } from "@/services/coupleInfo.service";
-import { mapCoupleInfoToAccountProps } from "@/components/organisms/(preview)/accountSection.mapper";
-import { getActiveOrderInfoByCoupleInfoId } from "@/services/order.service";
+import { getCoupleInfoById, getActiveOrderInfoByCoupleInfoId, getProductService } from "@/server/services";
+
 import React from "react";
-import WeddingMonthCalendar from "@/components/organisms/(preview)/WeddingMonthCalendar";
-import { GuestBookClientSection } from "@/components/organisms/(preview)/GuestBookClientSection";
-import AccountSection from "@/components/organisms/(preview)/AccountSection";
-import CloudImage from "@/components/molecules/CloudImage";
-import { mapCoupleInfoToCalendarProps } from "@/components/organisms/(preview)/weddingMonthCalendar.mapper";
-import { mapCoupleInfoToGalleryProps } from "@/components/organisms/(preview)/gallerySection.mapper";
-import { mapCoupleInfoToLocationProps } from "@/components/organisms/(preview)/locationSection.mapper";
-import { mapCoupleInfoToThumbnails } from "@/components/organisms/(preview)/thumbnails.mapper";
-import { HeroSection } from "@/components/organisms/(preview)/HeroSection";
-import { mapCoupleInfoToInvitationProps } from "@/components/organisms/(preview)/invitationMessage.mapper";
-import { getThemeByProductId } from "@/constants/theme";
+import {
+  AccountSection,
+  Footer,
+  GallerySection,
+  GuestbookSection,
+  HeroSection,
+  InvitationMessage,
+  LocationSection,
+  WeddingMonthCalendar,
+} from "./_components";
+import {
+  mapCoupleInfoToAccountProps,
+  mapCoupleInfoToCalendarProps,
+  mapCoupleInfoToGalleryProps,
+  mapCoupleInfoToHeroProps,
+  mapCoupleInfoToInvitationProps,
+  mapCoupleInfoToLocationProps,
+  mapCoupleInfoToThumbnails,
+} from "./_utils";
+import { CloudImage } from "@/client/components/molecules";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
@@ -37,7 +40,8 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   if (!coupleInfoData) notFound();
 
   const { features: activeFeatures, productId } = orderInfo;
-  const theme = getThemeByProductId(productId ?? undefined);
+  const product = productId ? await getProductService(productId) : null;
+  const theme = product?.theme ?? "default";
   const heroProps = mapCoupleInfoToHeroProps(coupleInfoData);
   const calendarProps = mapCoupleInfoToCalendarProps(coupleInfoData);
   const galleryProps = mapCoupleInfoToGalleryProps(
@@ -74,7 +78,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
         />
       </div>
 
-      <GuestBookClientSection id={id} />
+      <GuestbookSection id={id} />
       <AccountSection {...accountSectionProps} />
 
       <Footer>

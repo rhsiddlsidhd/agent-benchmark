@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-const layout = async ({
+const AuthLayout = async ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -38,4 +38,4 @@ const layout = async ({
   );
 };
 
-export default layout;
+export default AuthLayout;
