@@ -88,16 +88,23 @@ function isGuarded(relPath) {
   return true;
 }
 
-// 짝 테스트 파일이 없으면 그 경로를, 있으면(또는 제외 대상이면) null을 준다.
+// 짝 테스트 파일이 없으면 기본 경로를, 있으면(또는 제외 대상이면) null을 준다.
+// 실물 mongod에 붙는 테스트는 `*.integration.test.ts(x)`로 짓기 때문에(vitest
+// `projects` 셀렉터, docs/TESTING_GUIDELINE.md "파일 네이밍 = 실행 묶음") 두 이름을
+// 모두 짝으로 인정한다 — 하나만 보면 services처럼 DB 테스트를 가진 파일이 테스트가
+// 아예 없는 것으로 오판된다.
 function missingTestFor(relPath, globs) {
   if (globs.some((g) => globToRegExp(g).test(relPath))) return null;
 
-  const testPath = relPath.endsWith(".tsx")
-    ? relPath.replace(/\.tsx$/, ".test.tsx")
-    : relPath.replace(/\.ts$/, ".test.ts");
+  const extension = relPath.endsWith(".tsx") ? "tsx" : "ts";
+  const base = relPath.replace(/\.(ts|tsx)$/, "");
+  const candidates = [
+    `${base}.test.${extension}`,
+    `${base}.integration.test.${extension}`,
+  ];
 
-  if (fs.existsSync(path.join(projectDir, testPath))) return null;
-  return testPath;
+  if (candidates.some((c) => fs.existsSync(path.join(projectDir, c)))) return null;
+  return candidates[0];
 }
 
 // ── Bash 우회 탐지 ────────────────────────────────────────────────────────

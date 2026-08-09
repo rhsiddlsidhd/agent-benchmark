@@ -117,51 +117,67 @@ describe("트랜잭션 지원 여부 (replSet)", () => {
   });
 });
 
-describe("모듈 로드 시 URI 검증", () => {
+// 이 검증은 모듈 로드가 아니라 dbConnect() 호출 시점에 걸린다 — DB를 안 쓰는 테스트가
+// 배럴 캐스케이드로 connect.ts를 로드하는 것만으로 던지면 안 되기 때문이다(connect.ts 주석).
+describe("연결 시 URI 검증", () => {
   beforeEach(() => {
-    vi.resetModules();
+    global.mongooseCache.conn = null;
+    global.mongooseCache.promise = null;
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    vi.resetModules();
+    vi.restoreAllMocks();
+    global.mongooseCache.conn = null;
+    global.mongooseCache.promise = null;
   });
 
-  it("VITEST 환경에서 MONGO_TEST_URI 없으면 에러를 던진다", async () => {
-    vi.stubEnv("MONGO_TEST_URI", "");
+  it("모듈을 로드하는 것만으로는 던지지 않는다", async () => {
+    vi.stubEnv("MONGO_TEST_URI", undefined);
+
+    await expect(import("./connect")).resolves.toHaveProperty("dbConnect");
+  });
+
+  it("VITEST 환경에서 MONGO_TEST_URI 없이 연결하면 에러를 던진다", async () => {
+    vi.stubEnv("MONGO_TEST_URI", undefined);
 
     // 두 guard의 에러 메시지가 둘 다 "MONGO_TEST_URI"를 언급해서 이 substring만으로는
     // 어느 guard가 던졌는지 구분이 안 된다 — 첫 번째 guard 고유 문구로 특정한다.
-    await expect(import("./connect")).rejects.toThrow(
-      "테스트 환경에서 MONGO_TEST_URI 없이 실행됨",
-    );
+    await expect(dbConnect()).rejects.toThrow("테스트 환경에서 MONGO_TEST_URI 없이 실행됨");
   });
 
   it("MONGO_TEST_URI도 DB_USER/DB_PASSWORD도 없으면 에러를 던진다", async () => {
-    vi.stubEnv("VITEST", "");
-    vi.stubEnv("MONGO_TEST_URI", "");
-    vi.stubEnv("DB_USER", "");
-    vi.stubEnv("DB_PASSWORD", "");
+    vi.stubEnv("VITEST", undefined);
+    vi.stubEnv("MONGO_TEST_URI", undefined);
+    vi.stubEnv("DB_USER", undefined);
+    vi.stubEnv("DB_PASSWORD", undefined);
 
-    await expect(import("./connect")).rejects.toThrow("MongoDB 연결 정보");
+    await expect(dbConnect()).rejects.toThrow("MongoDB 연결 정보");
   });
 
-  it("MONGO_TEST_URI가 있으면 에러 없이 모듈이 로드된다", async () => {
+  it("MONGO_TEST_URI가 있으면 그 URI로 연결한다", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
     vi.stubEnv("MONGO_TEST_URI", "mongodb://fake-test-uri/db");
+    const spy = vi.spyOn(mongoose, "connect").mockResolvedValueOnce(mongoose);
 
-    const mod = await import("./connect");
+    await dbConnect();
 
-    expect(mod.dbConnect).toBeTypeOf("function");
+    expect(spy).toHaveBeenCalledWith("mongodb://fake-test-uri/db", expect.anything());
   });
 
-  it("VITEST 환경이 아니고 DB_USER/DB_PASSWORD가 있으면 에러 없이 모듈이 로드된다", async () => {
-    vi.stubEnv("VITEST", "");
-    vi.stubEnv("MONGO_TEST_URI", "");
+  it("VITEST 환경이 아니면 DB_USER/DB_PASSWORD로 만든 SRV URI로 연결한다", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.stubEnv("VITEST", undefined);
+    vi.stubEnv("MONGO_TEST_URI", undefined);
     vi.stubEnv("DB_USER", "test-user");
     vi.stubEnv("DB_PASSWORD", "test-password");
+    const spy = vi.spyOn(mongoose, "connect").mockResolvedValueOnce(mongoose);
 
-    const mod = await import("./connect");
+    await dbConnect();
 
-    expect(mod.dbConnect).toBeTypeOf("function");
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("mongodb+srv://test-user:test-password@"),
+      expect.anything(),
+    );
   });
 });

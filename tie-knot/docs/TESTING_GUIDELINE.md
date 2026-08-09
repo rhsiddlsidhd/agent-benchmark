@@ -62,7 +62,8 @@ src/
 | `integration` | `*.integration.test.ts(x)` | 띄움 | 순차 |
 
 - 한쪽만 돌리려면 `npx vitest --project unit` / `--project integration`. 컴포넌트만 고치는 중이라면 `unit`만 돌려 mongod 기동을 건너뛴다.
-- **`unit` 묶음에는 더미 `MONGO_TEST_URI`를 주입한다** — `connect.ts`가 모듈 로드 시점에 이 값의 존재를 요구하는데(프로덕션 DB 오염 방지 가드), 배럴 캐스케이드로 그 모듈이 딸려 들어오는 것만으로 던지기 때문이다. 실제로 연결되지 않는 주소라 "테스트는 프로덕션 DB에 붙지 않는다"는 가드의 불변조건은 그대로 유지된다.
+- **`connect.ts`의 URI 검증은 모듈 로드가 아니라 `dbConnect()` 호출 시점에 건다** — 지키려는 불변조건이 "테스트가 프로덕션 DB에 연결하지 않는다"라 검증도 연결 시점에 있어야 한다. 로드 시점에 두면 `unit` 묶음(mongod 없음)의 테스트가 배럴 캐스케이드로 그 모듈을 로드하는 것만으로 터진다.
+- **`.claude/hooks/tdd-gate.js`는 `*.test.ts(x)`와 `*.integration.test.ts(x)` 둘 다 짝 테스트로 인정한다** — 한쪽만 보면 `services/`처럼 DB 테스트만 가진 파일이 "테스트 없음"으로 오판돼 수정이 막힌다.
 
 ### 범위/순서
 

@@ -36,11 +36,6 @@ export default defineConfig({
           include: ["src/**/*.test.{ts,tsx}"],
           exclude: ["src/**/*.integration.test.{ts,tsx}"],
           // globalSetup 없음 — mongod를 띄우지 않고, fileParallelism 기본값(병렬)을 쓴다.
-          // 대신 connect.ts가 모듈 로드 시점에 MONGO_TEST_URI 존재를 요구하므로(프로덕션 DB
-          // 오염 방지 가드) 더미 값을 넣는다 — 배럴 캐스케이드로 이 모듈이 딸려 들어오는
-          // 것만으로 가드가 던지기 때문이다. 이 묶음엔 DB를 쓰는 테스트가 없어 실제로
-          // 연결되지 않고, 설령 실수로 dbConnect가 호출돼도 프로덕션이 아닌 이 주소로 향한다.
-          env: { MONGO_TEST_URI: "mongodb://127.0.0.1:1/unit-project-never-connects" },
         },
       },
       {
