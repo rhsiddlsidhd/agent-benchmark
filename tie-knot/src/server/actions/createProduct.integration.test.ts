@@ -14,7 +14,7 @@
 import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
+import { clearCollections } from "@/test";
 import { ProductModel } from "@/server/models";
 import { GET as getProductsRoute } from "@/app/api/products/route";
 import { NextRequest } from "next/server";

@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
-import { buildProductInput } from "@/test/factories/product.factory";
+import { buildProductInput, clearCollections } from "@/test";
 import { AppError } from "@/shared/types";
 import { ProductModel, InvitationProductModel } from "@/server/models";
 import {

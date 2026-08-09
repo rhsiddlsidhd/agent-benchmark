@@ -1,7 +1,7 @@
 # docs/TESTING_GUIDELINE.md
 
-> Last updated: 2026-07-27
-> vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup.ts` globalSetup, `src/server/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. `src/test/factories/`에 `coupleInfo`/`product`/`guestbook` 팩토리가 있다(services DB 테스트 착수하며 생성).
+> Last updated: 2026-08-09
+> vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup/mongo-server.ts` globalSetup, `src/server/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. 팩토리는 `src/test/factories/`에 도메인당 1개씩 있다.
 
 ## Overview
 
@@ -28,16 +28,22 @@ src/
 ├── schemas/request/
 │   ├── login.schema.ts
 │   └── login.schema.test.ts
-└── test/                          # 배럴 예외(src/app/과 동일 성격) — 테스트 전용 공용 인프라
-    ├── setup.ts                     # vitest globalSetup — mongodb-memory-server 기동/종료 (구현됨)
-    ├── db.ts                        # beforeEach에서 쓰는 컬렉션 clear 헬퍼 (구현됨)
-    └── factories/                    # 아직 미생성 — services/actions DB 테스트 착수 시 만든다
-        ├── user.factory.ts          # buildUser(overrides?)
+└── test/                          # 테스트 전용 공용 지원 자산 — src/test/CLAUDE.md
+    ├── index.ts                     # 배럴 — 테스트는 `@/test` 하나로만 import한다
+    ├── db.ts                        # beforeEach에서 쓰는 컬렉션 clear 헬퍼
+    ├── setup/                       # vitest.config.ts 전용 진입점(배럴에 넣지 않는다)
+    │   ├── mongo-server.ts          # globalSetup — mongodb-memory-server 기동/종료
+    │   └── jsdom-polyfill.ts        # setupFiles — jsdom 미구현 API 대체 + RTL cleanup
+    └── factories/
+        ├── index.ts
+        ├── user.factory.ts          # buildUserInput(overrides?)
         ├── product.factory.ts
         └── ...                       # 모델당 파일 1개, src/server/models/ 구성과 1:1 대응
 ```
 
-> `services/auth.service.test.ts`, `actions/createOrder.test.ts`, `schemas/request/login.schema.test.ts`는 이 구조를 보여주기 위한 예시이지 실제 존재하는 파일이 아니다. 실제로 작성된 테스트는 현재 `src/shared/utils/price.test.ts`, `src/server/lib/mongodb/connect.test.ts` 둘뿐이다.
+> 위 `services/`/`actions/`/`schemas/` 아래 파일들은 colocate 구조를 보여주기 위한 예시다.
+
+- **`src/test/`에는 테스트 파일을 두지 않는다** — 테스트는 대상 파일 옆에 colocate하고, 이 폴더는 여러 테스트가 공유하는 지원 자산(실행 인프라·헬퍼·팩토리) 전용이다. 폴더 이름만 보고 "테스트 모음"으로 오해하기 쉬운 지점이다.
 
 ## Critical Convention
 
@@ -50,9 +56,11 @@ src/
 ### DB 테스트
 
 - DB가 걸린 로직은 `mongodb-memory-server`로 실제 mongoose 쿼리를 실행해 검증한다 — mongoose model을 `vi.mock`으로 대체하지 않는다. 이유: mock은 쿼리 정확성(필터 조건, `.lean()`/`.toJSON()` 결과 shape)을 검증하지 못하고, 구현 디테일에 묶인 mock은 리팩터마다 재작성해야 한다 — 계약(입출력)만 보는 통합 테스트가 리팩터에 더 강하다.
-- `mongodb-memory-server` 인스턴스는 vitest `globalSetup`(`src/test/setup.ts`)에서 테스트 스위트 전체당 1개만 띄운다 — 테스트 파일마다 새 인스턴스를 만들지 않는다. 이유: 파일마다 기동하면 스위트 전체 시간이 선형으로 늘어난다. 테스트 간 격리는 각 `beforeEach`에서 관련 컬렉션을 `deleteMany`로 비워 확보한다(`src/test/db.ts`).
+- `mongodb-memory-server` 인스턴스는 vitest `globalSetup`(`src/test/setup/mongo-server.ts`)에서 테스트 스위트 전체당 1개만 띄운다 — 테스트 파일마다 새 인스턴스를 만들지 않는다. 이유: 파일마다 기동하면 스위트 전체 시간이 선형으로 늘어난다. 테스트 간 격리는 각 `beforeEach`에서 관련 컬렉션을 `deleteMany`로 비워 확보한다(`clearCollections`, `src/test/db.ts`).
+- **mongod 버전은 `mongo-server.ts`의 `MONGOD_VERSION`으로 고정한다** — 생략하면 `mongodb-memory-server` 패키지가 정한 기본 버전을 쓰므로, 패키지를 올릴 때 테스트가 도는 mongod 버전이 조용히 바뀐다. 운영(Atlas) 클러스터 버전을 올릴 때 이 값도 같이 맞춘다.
 - **이 격리는 테스트 파일들이 순차 실행될 때만 유효하다** — `vitest.config.ts`에 `fileParallelism: false`를 설정해 DB 테스트 파일들이 병렬이 아니라 순차로 돈다. 이유: 인스턴스를 스위트당 1개만 띄우는 설계상 여러 파일이 같은 DB를 공유하는데, vitest 기본값(파일 병렬 실행)에서는 파일 A의 `beforeEach`(`deleteMany`)가 파일 B가 막 써넣은 데이터를 지워버리는 크로스파일 오염이 생긴다 — 실제로 `coupleInfo`/`product`/`guestbook` service 테스트 3개를 처음 같이 추가했을 때 이 레이스로 무더기 실패가 재현됐다(파일 단독 실행은 통과, 전체 스위트 실행은 랜덤 실패).
-- mongoose 테스트 데이터는 `src/test/factories/{도메인}.factory.ts`의 팩토리 함수(`buildUser(overrides?)` 등)로 만든다 — 매 테스트 파일에 객체 리터럴을 인라인으로 반복하지 않는다. 이유: 모델 스키마에 필수 필드가 추가되면 인라인 방식은 테스트 파일 전부 고쳐야 하지만 팩토리는 한 곳만 고치면 된다.
+- mongoose 테스트 데이터는 `src/test/factories/{도메인}.factory.ts`의 팩토리 함수(`buildUserInput(overrides?)` 등)로 만든다 — 매 테스트 파일에 객체 리터럴을 인라인으로 반복하지 않는다. 이유: 모델 스키마에 필수 필드가 추가되면 인라인 방식은 테스트 파일 전부 고쳐야 하지만 팩토리는 한 곳만 고치면 된다.
+- 팩토리와 헬퍼는 배럴 `@/test` 하나로만 import한다 — `@/test/db`나 `@/test/factories/product.factory` 같은 개별 경로로 찌르지 않는다(`src/CLAUDE.md` 배럴 전용 import 원칙).
 
 ### 목킹 정책
 
@@ -79,10 +87,10 @@ src/
 ### 컴포넌트 테스트 인프라 셋업
 
 - `.env`는 vitest가 Next.js처럼 자동으로 읽지 않는다 — `vitest.config.ts`에서 `@next/env`(Next 내장, 별도 설치 불필요)의 `loadEnvConfig(process.cwd())`를 `defineConfig` 호출 이전에 실행해 로드한다. 이거 없으면 배럴 import를 타고 들어온 무관한 모듈(예: 인증 코드)이 환경변수 누락으로 테스트를 깨뜨릴 수 있다.
-- RTL의 자동 `afterEach(cleanup)`은 이 프로젝트의 `globals: false` 설정에서는 안 걸린다 — `src/test/testing-library-setup.ts`에 `afterEach(cleanup)`을 명시적으로 등록해뒀다. 이거 없으면 이전 테스트가 렌더한 DOM이 안 지워진 채 다음 테스트로 넘어가 쿼리가 여러 개 매칭되는 식으로 깨진다.
-- jsdom은 Pointer Events API(`hasPointerCapture`/`setPointerCapture`/`releasePointerCapture`)와 `scrollIntoView`를 구현하지 않는다 — Radix UI(Select/Dialog 등) 컴포넌트가 이 메서드들을 호출해서 폴리필 없으면 상호작용 테스트가 런타임에 터진다. `src/test/testing-library-setup.ts`에 폴리필을 이미 등록해뒀다.
-- jsdom은 `ResizeObserver`도 구현하지 않는다 — `@radix-ui/react-use-size`가 Select 트리거 크기 측정에 쓰는데, Select를 2개 이상 동시에 렌더링하는 폼(`ProductRegistrationForm` 테스트 작성 중 처음 발견)에서 마운트 즉시 던진다. `testing-library-setup.ts`에 mock 등록.
-- jsdom은 `DataTransfer`도 구현하지 않고, `HTMLInputElement.files` setter는 진짜 `FileList` 브랜드 체크를 한다 — `new DataTransfer() → input.files = dataTransfer.files` 패턴(파일 업로드 폼이 hidden input에 프로그래밍적으로 파일을 채울 때 흔한 방식)을 그대로 실행하면 던진다. `testing-library-setup.ts`에서 `DataTransfer`를 mock하고 `HTMLInputElement.prototype.files`의 setter/getter를 테스트 환경 한정으로 느슨하게 재정의해뒀다 — `user-event.upload()`가 쓰는 인스턴스 전용 대입과는 간섭하지 않는다.
+- RTL의 자동 `afterEach(cleanup)`은 이 프로젝트의 `globals: false` 설정에서는 안 걸린다 — `src/test/setup/jsdom-polyfill.ts`에 `afterEach(cleanup)`을 명시적으로 등록해뒀다. 이거 없으면 이전 테스트가 렌더한 DOM이 안 지워진 채 다음 테스트로 넘어가 쿼리가 여러 개 매칭되는 식으로 깨진다.
+- jsdom은 Pointer Events API(`hasPointerCapture`/`setPointerCapture`/`releasePointerCapture`)와 `scrollIntoView`를 구현하지 않는다 — Radix UI(Select/Dialog 등) 컴포넌트가 이 메서드들을 호출해서 폴리필 없으면 상호작용 테스트가 런타임에 터진다. `src/test/setup/jsdom-polyfill.ts`에 폴리필을 이미 등록해뒀다.
+- jsdom은 `ResizeObserver`도 구현하지 않는다 — `@radix-ui/react-use-size`가 Select 트리거 크기 측정에 쓰는데, Select를 2개 이상 동시에 렌더링하는 폼(`ProductRegistrationForm` 테스트 작성 중 처음 발견)에서 마운트 즉시 던진다. `src/test/setup/jsdom-polyfill.ts`에 mock 등록.
+- jsdom은 `DataTransfer`도 구현하지 않고, `HTMLInputElement.files` setter는 진짜 `FileList` 브랜드 체크를 한다 — `new DataTransfer() → input.files = dataTransfer.files` 패턴(파일 업로드 폼이 hidden input에 프로그래밍적으로 파일을 채울 때 흔한 방식)을 그대로 실행하면 던진다. `src/test/setup/jsdom-polyfill.ts`에서 `DataTransfer`를 mock하고 `HTMLInputElement.prototype.files`의 setter/getter를 테스트 환경 한정으로 느슨하게 재정의해뒀다 — `user-event.upload()`가 쓰는 인스턴스 전용 대입과는 간섭하지 않는다.
 
 ### 스타일
 

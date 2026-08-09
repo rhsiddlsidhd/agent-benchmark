@@ -12,8 +12,7 @@ import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/server/lib/mongodb";
-import { clearCollections } from "@/test/db";
-import { buildProductInput } from "@/test/factories/product.factory";
+import { buildProductInput, clearCollections } from "@/test";
 import { createProductService } from "@/server/services";
 import { GET } from "./route";
 
