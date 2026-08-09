@@ -84,3 +84,5 @@
 
 - [ ] (2026-08-08, TODO 운영 규칙 정립 중 발견) `.git/hooks/commit-msg`의 prefix 검사가 전역 `GIT.md` 택소노미와 어긋남 — 정규식이 `^(feat|fix|docs|refactor|chore|test): ` 라서 ① `docs(agents):` 같은 scope 표기가 거부되고(전역 규칙은 `{prefix}({scope}): {message}`를 허용) ② `perf`/`build`/`ci`/`revert` 4개 prefix가 아예 막힌다. 성능 개선 항목을 커밋하려면 규칙과 훅 중 하나를 반드시 어겨야 하는 상태.
 - [ ] (2026-08-08, 위 커밋 진행 중 발견) `node_modules`에 `embla-carousel-wheel-gestures`가 설치돼 있지 않아 pre-commit 훅의 typecheck가 실패, 모든 커밋이 차단됨 — `package.json:46`에는 선언돼 있어 `npm install`로 해소됨(로컬 환경 드리프트). 재발하면 훅이 "설치 누락"과 "타입 에러"를 구분해 안내할 필요 있음.
+- [ ] (2026-08-09, src/test 구조 정리 중 발견) `src/shared/CLAUDE.md` 마지막 줄이 존재하지 않는 파일을 참조 — "server/client/shared 3분할 배경: `docs/ARCHITECTURE.md`"인데 그 파일이 레포에 없다. 문서를 쓰거나 참조를 지우거나 둘 중 하나 필요.
+- [ ] (2026-08-09, #24 수정 후 드러남) 라우트 그룹 경로 컴포넌트 4개가 line coverage 80% 미달 — `ProductEditDialog.tsx`(57.7%), `UpdatePasswordForm.tsx`(61.1%), `CheckoutForm.tsx`(69.0%), `ProductRegistrationForm.tsx`(admin, 72.7%). #24의 tinyglobby 순회 버그가 이 파일들을 커버리지 집계에서 통째로 빼고 있어 그동안 안 보이던 기존 부채다(신규 회귀 아님). CI가 없고 pre-commit은 `test:coverage:diff`(변경 파일 한정)라 당장 막히진 않으며, 해당 파일을 건드리는 커밋에서 걸린다.

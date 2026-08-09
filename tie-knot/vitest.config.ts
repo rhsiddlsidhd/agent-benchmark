@@ -1,26 +1,23 @@
-import { globSync } from "glob";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { loadEnvConfig } from "@next/env";
 import testScopeExclude from "./test-scope-exclude.json";
+import { testedSourceFiles, escapeGlobPath } from "./scripts/tested-source-files.mjs";
 
 loadEnvConfig(process.cwd());
-
-// 커버리지 게이트를 ".test.ts(x)"가 실제로 존재하는 소스 파일로만 한정한다 —
-// 배럴 import 캐스케이드로 우연히 로드된 무관 레거시 파일까지 게이트에 걸리는 걸 막는다.
-const testedSourceFiles = globSync("src/**/*.test.{ts,tsx}").map((testFile) =>
-  testFile.replace(/\.test\.(ts|tsx)$/, ".$1"),
-);
 
 // scripts/test-coverage-diff.js가 설정하는 값 — 있으면 "이번에 바뀐 파일"로만
 // 커버리지 범위를 좁힌다(patch coverage). 기존 파일의 미달 커버리지 때문에
 // 무관한 커밋까지 막히는 걸 방지한다. 없으면(로컬 `npm run test:coverage`) 전체 그대로.
-const coverageInclude = process.env.COVERAGE_DIFF_FILES
+// 좁히기는 원본 경로로 하고, 글롭 이스케이프는 그 뒤에 적용한다.
+const scopedSourceFiles = process.env.COVERAGE_DIFF_FILES
   ? testedSourceFiles.filter((file) =>
       process.env.COVERAGE_DIFF_FILES.split(",").includes(file),
     )
   : testedSourceFiles;
+
+const coverageInclude = scopedSourceFiles.map(escapeGlobPath);
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
