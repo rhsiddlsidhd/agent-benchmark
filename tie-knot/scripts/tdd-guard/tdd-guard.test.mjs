@@ -62,7 +62,13 @@ describe("scope, proof hash and adapters", () => {
     write(path.join(project, "src/value.ts"), "export const value = 2;\n");
     execFileSync("git", ["add", "app/src/value.ts"], { cwd: top });
     execFileSync("git", ["commit", "-qm", "change"], { cwd: top });
-    expect(ciChangedFiles(project)).toEqual(["src/value.ts"]);
+    const githubBaseRef = process.env.GITHUB_BASE_REF;
+    delete process.env.GITHUB_BASE_REF;
+    try {
+      expect(ciChangedFiles(project)).toEqual(["src/value.ts"]);
+    } finally {
+      if (githubBaseRef) process.env.GITHUB_BASE_REF = githubBaseRef;
+    }
   });
   it("unit/integration/e2e를 분류한다", () => { expect(classifyScope("src/a.test.ts")).toBe("unit"); expect(classifyScope("src/a.integration.test.ts")).toBe("integration"); expect(classifyScope("e2e/a.spec.ts")).toBe("e2e"); });
   it("폴더 계층과 무관하게 모든 component 공개 계약은 unit 후보다", () => {
