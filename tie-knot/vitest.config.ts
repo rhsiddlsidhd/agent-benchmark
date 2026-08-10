@@ -7,17 +7,10 @@ import { testedSourceFiles, escapeGlobPath } from "./scripts/tested-source-files
 
 loadEnvConfig(process.cwd());
 
-// scripts/test-coverage-diff.js가 설정하는 값 — 있으면 "이번에 바뀐 파일"로만
-// 커버리지 범위를 좁힌다(patch coverage). 기존 파일의 미달 커버리지 때문에
-// 무관한 커밋까지 막히는 걸 방지한다. 없으면(로컬 `npm run test:coverage`) 전체 그대로.
-// 좁히기는 원본 경로로 하고, 글롭 이스케이프는 그 뒤에 적용한다.
-const scopedSourceFiles = process.env.COVERAGE_DIFF_FILES
-  ? testedSourceFiles.filter((file) =>
-      process.env.COVERAGE_DIFF_FILES.split(",").includes(file),
-    )
-  : testedSourceFiles;
-
-const coverageInclude = scopedSourceFiles.map(escapeGlobPath);
+// 여기는 항상 전체 스코프다. "이번에 바뀐 파일"로만 좁히는 patch coverage는
+// `npm run test:coverage:diff`가 vitest의 `--coverage.changed`로 처리한다 —
+// 기존 파일의 미달 커버리지 때문에 무관한 커밋까지 막히는 걸 방지하는 용도다.
+const coverageInclude = testedSourceFiles.map(escapeGlobPath);
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
