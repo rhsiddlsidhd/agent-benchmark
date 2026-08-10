@@ -48,7 +48,7 @@ export function extractFiles(payload) {
   return [...patch.matchAll(/^\*\*\* (?:Add|Update|Delete) File: (.+)$/gm)].map((match) => normalizePath(match[1])).filter((file) => !file.includes(".."));
 }
 
-async function main() {
+export async function main() {
   const [command, ...args] = process.argv.slice(2);
   if (command === "status") return output(validateProof());
   if (command === "invalidate") { invalidate(root); return output({ state: "CLEAN" }); }

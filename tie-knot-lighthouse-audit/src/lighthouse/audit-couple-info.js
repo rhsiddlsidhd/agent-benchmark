@@ -46,7 +46,7 @@ async function auditCoupleInfo({ baseUrl, formFactor }) {
     const page = await browser.newPage();
     await loginAsRole(page, baseUrl, "user");
 
-    const productId = requireEnv("NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID");
+    const productId = requireEnv("MAIN_PREVIEW_PRODUCT_ID");
     await page.evaluate(
       (key, value) => sessionStorage.setItem(key, value),
       SESSION_STORAGE_KEY,

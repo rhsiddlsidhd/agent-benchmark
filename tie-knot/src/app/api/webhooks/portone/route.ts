@@ -3,7 +3,7 @@ import { syncPayment } from "@/server/services/payment.service";
 
 export async function POST(request: Request): Promise<Response> {
   const secret = process.env.PORTONE_WEBHOOK_SECRET;
-  const expectedStoreId = process.env.NEXT_PUBLIC_POST_ONE_STORE_ID;
+  const expectedStoreId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
   if (!secret || !expectedStoreId) {
     return Response.json({ error: "PortOne webhook is not configured" }, { status: 503 });
   }

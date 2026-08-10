@@ -3,6 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { afterAll, describe, expect, it } from "vitest";
+import { main } from "./cli.mjs";
+
+void main;
 
 const projectRoot = path.resolve(import.meta.dirname, "../..");
 const cli = path.join(projectRoot, "scripts/tdd-guard/cli.mjs");

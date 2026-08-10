@@ -46,6 +46,7 @@ describe("test quality guard", () => {
 
   it("skip/todo를 차단한다", () => { const file = path.join(temp(), "x.test.ts"); write(file, `import { it, expect } from "vitest"; import value from "@/value"; it.skip("x", () => expect(value).toBe(1));`); expect(analyzeTestQuality(file).errors).toContain("skip/todo test"); });
   it("제품 계약 assertion을 인정한다", () => { const file = path.join(temp(), "x.test.ts"); write(file, `import { it, expect } from "vitest"; import { value } from "@/value"; it("x", () => expect(value).toBe(1));`); expect(analyzeTestQuality(file).valid).toBe(true); });
+  it("timeout 인자가 있는 제품 계약 assertion을 인정한다", () => { const file = path.join(temp(), "x.test.ts"); write(file, `import { it, expect } from "vitest"; import { value } from "@/value"; it("x", () => expect(value).toBe(1), 30_000);`); expect(analyzeTestQuality(file).valid).toBe(true); });
 });
 
 describe("scope, proof hash and adapters", () => {

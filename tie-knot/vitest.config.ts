@@ -27,7 +27,7 @@ export default defineConfig({
         test: {
           name: "guard",
           environment: "node",
-          include: ["scripts/tdd-guard/**/*.test.mjs"],
+          include: ["scripts/**/*.test.mjs"],
           setupFiles: [],
           maxWorkers: 2,
         },

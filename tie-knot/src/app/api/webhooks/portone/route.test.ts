@@ -25,7 +25,7 @@ describe("POST /api/webhooks/portone", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("PORTONE_WEBHOOK_SECRET", "webhook-secret");
-    vi.stubEnv("NEXT_PUBLIC_POST_ONE_STORE_ID", "store-1");
+    vi.stubEnv("NEXT_PUBLIC_PORTONE_STORE_ID", "store-1");
     isUnrecognizedWebhook.mockReturnValue(false);
   });
 

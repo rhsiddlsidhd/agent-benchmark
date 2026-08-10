@@ -19,10 +19,10 @@ import { AppError } from "@/shared/types";
 import { dbConnect } from "@/server/lib/mongodb";
 
 // 환경 변수 확인
-const PORTONE_API_SECRET = process.env.POST_ONE_API_KEY;
+const PORTONE_API_SECRET = process.env.PORTONE_API_SECRET;
 
 if (!PORTONE_API_SECRET) {
-  throw new Error("POST_ONE_API_KEY is not defined");
+  throw new Error("PORTONE_API_SECRET is not defined");
 }
 
 // 포트원 클라이언트 설정

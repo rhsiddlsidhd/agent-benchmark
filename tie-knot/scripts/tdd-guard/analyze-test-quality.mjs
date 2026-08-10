@@ -42,7 +42,9 @@ export function analyzeTestQuality(file) {
         tests++;
         const expression = node.expression;
         if (skippedTest || (ts.isPropertyAccessExpression(expression) && ["skip", "todo"].includes(expression.name.text))) errors.push("skip/todo test");
-        const body = node.arguments.at(-1);
+        const body = node.arguments.find((argument) =>
+          ts.isArrowFunction(argument) || ts.isFunctionExpression(argument),
+        );
         if (body && (ts.isArrowFunction(body) || ts.isFunctionExpression(body)) && ts.isBlock(body.body) && body.body.statements.length === 0) errors.push("empty test");
         const contract = body && (ts.isArrowFunction(body) || ts.isFunctionExpression(body)) ? bodyAssertions(body.body) : { count: 0, snapshotCount: 0 };
         if (!skippedTest && contract.count === 0) errors.push("test without assertion");

@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { globSync } from "glob";
 
 export function resolveTests(root, source) {
-  const extension = source.endsWith(".tsx") ? "tsx" : "ts";
+  const extension = source.split(".").pop();
   const base = source.replace(/\.[^.]+$/, "");
   const direct = [`${base}.test.${extension}`, `${base}.unit.test.${extension}`, `${base}.integration.test.${extension}`]
     .filter((file) => fs.existsSync(path.join(root, file)));
@@ -18,7 +18,7 @@ export function resolveTests(root, source) {
 }
 
 function existingSource(root, candidate) {
-  for (const suffix of ["", ".ts", ".tsx", ".mjs", "/index.ts", "/index.tsx", "/index.mjs"]) {
+  for (const suffix of ["", ".js", ".ts", ".tsx", ".mjs", "/index.js", "/index.ts", "/index.tsx", "/index.mjs"]) {
     const file = `${candidate}${suffix}`;
     const absolute = path.join(root, file);
     if (fs.existsSync(absolute) && fs.statSync(absolute).isFile()) return file;

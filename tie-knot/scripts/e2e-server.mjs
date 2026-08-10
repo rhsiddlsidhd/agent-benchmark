@@ -169,19 +169,19 @@ const app = spawn(
       JWT_SECRET: "e2e-jwt-secret-at-least-thirty-two-characters",
       ENTRY_JWT_SECRET: "e2e-entry-secret-at-least-thirty-two-chars",
       NEXT_PUBLIC_CLOUDINARY_BASE_URL: `http://127.0.0.1:${CLOUDINARY_PORT}`,
-      NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: "e2e-preset",
+      CLOUDINARY_UPLOAD_PRESET: "e2e-preset",
       CLOUDINARY_CLOUD_NAME: "e2e-cloud",
       CLOUDINARY_API_KEY: "e2e-key",
       CLOUDINARY_API_SECRET: "e2e-secret",
-      NEXT_PUBLIC_POST_ONE_STORE_ID: realPortOneSmoke
+      NEXT_PUBLIC_PORTONE_STORE_ID: realPortOneSmoke
         ? process.env.PORTONE_STORE_ID
         : "store-e2e",
-      NEXT_PUBLIC_POST_ONE_CHANNEL_KEY: realPortOneSmoke
+      NEXT_PUBLIC_PORTONE_CHANNEL_KEY: realPortOneSmoke
         ? process.env.PORTONE_CHANNEL_KEY
         : "channel-e2e",
       NEXT_PUBLIC_PORTONE_E2E_MOCK: realPortOneSmoke ? "" : "enabled",
       NEXT_PUBLIC_PORTONE_MANUAL_SMOKE: realPortOneSmoke ? "enabled" : "",
-      POST_ONE_API_KEY: realPortOneSmoke
+      PORTONE_API_SECRET: realPortOneSmoke
         ? process.env.PORTONE_API_SECRET
         : "portone-e2e-secret",
       PORTONE_API_BASE_URL: realPortOneSmoke

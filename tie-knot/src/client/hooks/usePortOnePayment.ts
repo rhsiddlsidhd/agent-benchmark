@@ -26,8 +26,8 @@ export function usePortOnePayment({ onSuccess, onError }: UsePortOnePaymentOptio
 
   const triggerPayment = useCallback(
     async (orderData: CreateOrderResult) => {
-      const storeId = process.env.NEXT_PUBLIC_POST_ONE_STORE_ID;
-      const channelKey = process.env.NEXT_PUBLIC_POST_ONE_CHANNEL_KEY;
+      const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
+      const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY;
       if (!storeId || !channelKey) {
         fail("결제 설정이 올바르지 않습니다.");
         return;

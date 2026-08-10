@@ -26,7 +26,7 @@ import { CloudImage } from "@/client/components/molecules";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
-  return [{ id: process.env.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID }];
+  return [{ id: process.env.MAIN_PREVIEW_INFO_ID }];
 }
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
