@@ -94,3 +94,6 @@
 - [ ] (2026-08-10, coverage 전체 스위트 실행 중 발견) WSL 메모리 상한이 Vitest 워커 수를 제한함 — 3.7GB/8코어 환경에서는 `maxWorkers: "50%"`가 필요하며, `.wslconfig` 메모리 상향 시 제한을 되돌리면 스위트 시간을 단축할 수 있음.
 - [ ] (2026-08-10, `--coverage.changed` 동작 확인 중 발견) Vitest가 unstaged/untracked 파일까지 변경 대상으로 포함함(`git ls-files --other --modified`) — 끄는 옵션이 없어 WIP 파일 때문에 CI 커버리지가 막힐 가능성을 관찰해야 함.
 - [ ] (2026-08-10, 짝 테스트 모듈 추출 중 발견) 소스→짝 테스트 매핑이 `.claude/hooks/tdd-gate.js`와 `scripts/paired-test.js`에 중복됨 — `tdd-gate.js`는 fail-closed 게이트라 이번 변경에서 통합하지 않고 후속으로 미룸.
+- [ ] (2026-08-11, 공통 TDD Guard 배포 전 검증 완료 후 보류) 배포 환경에 `.env.example`의 운영 필수 값과 `MAIN_PREVIEW_INFO_ID`, `MAIN_PREVIEW_PRODUCT_ID`, `CLOUDINARY_UPLOAD_PRESET`을 등록하고 실제 배포 URL로 Lighthouse 감사를 실행해야 함 — 현재 미배포 상태라 로컬·PR CI 검증 범위에서 제외함.
+- [ ] (2026-08-11, KG이니시스 `inicis_v2` 테스트 채널 확정 후 보류) 배포된 HTTPS 환경에서 PortOne 실제 결제 manual smoke를 수행해야 함 — GUI self-hosted runner(`self-hosted`, `linux`, `x64`, `portone-smoke`)와 사람의 카드사 인증으로 12,000원 결제, `PAID` 조회, store/TEST channel/payment ID 검증, 전액 취소 및 `CANCELLED` 재조회를 확인하고 실패 시에도 cleanup을 보장해야 함.
+- [ ] (2026-08-11, PortOne webhook 구현 후 배포 검증 보류) 배포 URL을 PortOne webhook으로 등록하고 운영 `PORTONE_WEBHOOK_SECRET`을 설정한 뒤 진위 검증, 멱등 처리 및 주문 상태 반영을 실제 webhook 전달로 확인해야 함 — `src/app/api/webhooks/portone/route.ts` 및 `src/server/services/payment.service.ts`.
