@@ -12,7 +12,9 @@ concurrency:
 env:
   JWT_SECRET: tdd-ci-jwt-secret-at-least-thirty-two-characters
   ENTRY_JWT_SECRET: tdd-ci-entry-secret-at-least-thirty-two-characters
-  POST_ONE_API_KEY: test-secret
+  PORTONE_API_SECRET: test-secret
+  NEXT_PUBLIC_PORTONE_STORE_ID: store-ci
+  NEXT_PUBLIC_PORTONE_CHANNEL_KEY: channel-ci
   BASE_URL: http://127.0.0.1:3100
   DEPLOYMENT_BASE_URL: http://127.0.0.1:3100
 
@@ -29,7 +31,7 @@ jobs:
           cache-dependency-path: tie-knot/package-lock.json
       - run: npm ci
         working-directory: tie-knot
-      - run: npm run lint && npm run typecheck
+      - run: npm run lint && npm run typecheck && npm run build
         working-directory: tie-knot
 
   unit-shard:
@@ -81,7 +83,7 @@ jobs:
     timeout-minutes: 20
     env:
       MONGOMS_DOWNLOAD_DIR: ~/.cache/mongodb-binaries
-      POST_ONE_API_KEY: test-secret
+      PORTONE_API_SECRET: test-secret
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
