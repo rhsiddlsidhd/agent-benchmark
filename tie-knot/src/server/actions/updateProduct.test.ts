@@ -8,6 +8,7 @@ vi.mock("@/server/services", () => ({
 
 vi.mock("@/server/lib/cloudinary", () => ({
   uploadProductImage: vi.fn(),
+  deleteProductAsset: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -15,7 +16,7 @@ vi.mock("next/cache", () => ({
 }));
 
 import { requireAuth, updateProductService } from "@/server/services";
-import { uploadProductImage } from "@/server/lib/cloudinary";
+import { deleteProductAsset, uploadProductImage } from "@/server/lib/cloudinary";
 import { updateProduct } from "./updateProduct";
 
 const PRODUCT_ID = "product-1";
@@ -99,6 +100,20 @@ describe("updateProduct", () => {
         fieldErrors: undefined,
       },
     });
+  });
+
+  it("새 이미지 업로드 후 DB 수정 실패 시 새 asset만 보상 삭제한다", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({ role: "ADMIN", email: "a@b.com", userId: "admin-1" });
+    vi.mocked(uploadProductImage).mockImplementation(async (_file, _type, onUploaded) => {
+      onUploaded?.({ publicId: "products/thumbnails/replacement", url: "https://cdn/replacement.jpg" });
+      return "https://cdn/replacement.jpg";
+    });
+    vi.mocked(updateProductService).mockRejectedValue(new AppError("INTERNAL", "DB 실패"));
+
+    await updateProduct(PRODUCT_ID, undefined, buildValidFormData());
+
+    expect(deleteProductAsset).toHaveBeenCalledWith("products/thumbnails/replacement");
+    expect(deleteProductAsset).not.toHaveBeenCalledWith(expect.stringContaining("current"));
   });
 
   it("정상 경로: 상품 수정 성공 메시지를 리턴하고 관련 경로를 재검증한다", async () => {

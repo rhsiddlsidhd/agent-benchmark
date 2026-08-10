@@ -1,0 +1,22 @@
+{
+  "description": "Run the shared TDD Guard. Review trust with /hooks after every change.",
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Edit|Write|apply_patch|Bash",
+      "hooks": [{
+        "type": "command",
+        "command": "node scripts/tdd-guard/codex-adapter.mjs pre-edit",
+        "timeout": 10,
+        "statusMessage": "Checking shared TDD proof"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "Edit|Write|apply_patch|Bash",
+      "hooks": [{
+        "type": "command",
+        "command": "node scripts/tdd-guard/codex-adapter.mjs post-edit",
+        "timeout": 10
+      }]
+    }]
+  }
+}

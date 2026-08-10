@@ -20,3 +20,8 @@ export type CloudinaryResource = {
   version_id: string;
   width: number;
 };
+
+export type UploadedCloudinaryAsset = {
+  publicId: string;
+  url: string;
+};

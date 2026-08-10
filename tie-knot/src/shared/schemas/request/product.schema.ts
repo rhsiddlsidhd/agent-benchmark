@@ -13,16 +13,27 @@ export const productSchema = z
     featureIds: z.array(z.string()).optional(),
     isFeatured: z.boolean(),
     priority: z.number(),
-    discount: z.object({
-      discountType: z.enum(["rate", "amount"]),
-      value: z.number().min(0),
-    }).optional(),
+    discount: z
+      .discriminatedUnion("discountType", [
+        z.object({
+          discountType: z.literal("rate"),
+          value: z.number().min(0).max(1, "할인율은 100% 이하여야 합니다."),
+        }),
+        z.object({
+          discountType: z.literal("amount"),
+          value: z.number().min(0),
+        }),
+      ])
+      .optional(),
     status: z.enum(["active", "inactive", "soldOut", "deleted"]).optional(),
-    thumbnail: z
-      .instanceof(File, { message: "썸네일 이미지를 등록해주세요." })
-      .refine((file) => file.size > 0, {
+    // 생성은 새 File, 수정은 유지할 기존 Cloudinary URL을 받는다. create/update
+    // action이 각각 FormData를 다시 구성하므로 client 값은 서버에서 재검증된다.
+    thumbnail: z.union([
+      z.instanceof(File).refine((file) => file.size > 0, {
         message: "썸네일 이미지를 등록해주세요.",
       }),
+      z.string().url("유효한 썸네일 URL이어야 합니다."),
+    ], { error: "썸네일 이미지를 등록해주세요." }),
 
     // ── 신규 (REQ-2 / REQ-3) ─────────────────────────────
     // 업로드 이전에 검증하므로 "유지할 기존 URL"과 "신규 파일"을 같이 받는다.

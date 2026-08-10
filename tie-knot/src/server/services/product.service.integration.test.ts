@@ -69,6 +69,17 @@ describe("product.service", () => {
       expect(saved).not.toBeNull();
     });
 
+    it("Mongoose 경계에서도 100%를 초과하는 rate 할인을 거부한다", async () => {
+      const input = buildProductInput({
+        discount: { discountType: "rate", value: 1.01 },
+      });
+
+      await expect(createProductService(input)).rejects.toMatchObject({
+        category: "INTERNAL",
+      });
+      expect(await ProductModel.findOne({ title: input.title })).toBeNull();
+    });
+
     it("필수 필드 누락으로 mongoose 검증 실패 시 AppError(INTERNAL)를 던진다", async () => {
       const input = buildProductInput({ title: undefined as unknown as string });
 

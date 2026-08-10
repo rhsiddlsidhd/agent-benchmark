@@ -1,7 +1,7 @@
 "use server";
 
 import { APIResponse } from "@/shared/types";
-import { uploadProductImage } from "@/server/lib/cloudinary";
+import { deleteProductAsset, uploadProductImage } from "@/server/lib/cloudinary";
 import { requireAuth, updateProductService } from "@/server/services";
 import { actionError } from "@/server/boundary";
 import { validateAndFlatten } from "@/shared/utils";
@@ -22,6 +22,8 @@ export const updateProduct = async (
   prev: unknown,
   formData: FormData,
 ): Promise<APIResponse<{ message: string }>> => {
+  const uploadedPublicIds: string[] = [];
+  const recordUpload = ({ publicId }: { publicId: string }) => uploadedPublicIds.push(publicId);
   const thumbnailFile = formData.get("thumbnail") as File;
   const previewFile = formData.get("previewUrl") as File;
 
@@ -37,7 +39,10 @@ export const updateProduct = async (
     isPremium: formData.get("isPremium") === "true",
     featureIds: formData.getAll("featureIds") as string[],
     priority: Number(formData.get("priority")),
-    thumbnail: thumbnailFile,
+    thumbnail:
+      thumbnailFile && thumbnailFile.size > 0
+        ? thumbnailFile
+        : (formData.get("currentThumbnail") as string),
     images: {
       // 유지할 기존 URL — 폼이 hidden input으로 반복 전송한다.
       existing: formData.getAll("currentImages") as string[],
@@ -67,19 +72,19 @@ export const updateProduct = async (
 
     let thumbnailUrl = formData.get("currentThumbnail") as string;
     if (thumbnailFile && thumbnailFile.size > 0) {
-      thumbnailUrl = await uploadProductImage(thumbnailFile, "thumbnail");
+      thumbnailUrl = await uploadProductImage(thumbnailFile, "thumbnail", recordUpload);
     }
 
     let previewUrl: string | undefined = formData.get(
       "currentPreviewUrl",
     ) as string;
     if (previewFile && previewFile.size > 0) {
-      previewUrl = await uploadProductImage(previewFile, "preview");
+      previewUrl = await uploadProductImage(previewFile, "preview", recordUpload);
     }
 
     const uploadedImageUrls = (
       await Promise.all(
-        parsed.data.images.newFiles.map((file) => uploadProductImage(file, "images")),
+        parsed.data.images.newFiles.map((file) => uploadProductImage(file, "images", recordUpload)),
       )
     ).filter((url): url is string => Boolean(url));
     const images = [...parsed.data.images.existing, ...uploadedImageUrls];
@@ -107,6 +112,7 @@ export const updateProduct = async (
       data: { message: "상품이 성공적으로 수정되었습니다." },
     };
   } catch (e) {
+    await Promise.allSettled(uploadedPublicIds.map((publicId) => deleteProductAsset(publicId)));
     return actionError(e);
   }
 };

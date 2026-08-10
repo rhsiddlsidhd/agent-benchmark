@@ -1,0 +1,5 @@
+/scripts/tdd-guard/ @rhsiddlsidhd
+/.claude/settings.json @rhsiddlsidhd
+/.codex/hooks.json @rhsiddlsidhd
+/tdd-exceptions.json @rhsiddlsidhd
+/.github/workflows/tdd.yml @rhsiddlsidhd

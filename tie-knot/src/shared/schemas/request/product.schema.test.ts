@@ -130,6 +130,29 @@ describe("productSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rate 할인율은 1(100%)이면 통과하고 1을 초과하면 실패한다", () => {
+    expect(
+      productSchema.safeParse(
+        buildValidInput({ discount: { discountType: "rate", value: 1 } }),
+      ).success,
+    ).toBe(true);
+    const overLimit = productSchema.safeParse(
+      buildValidInput({ discount: { discountType: "rate", value: 1.01 } }),
+    );
+    expect(overLimit.success).toBe(false);
+    if (!overLimit.success) {
+      expect(overLimit.error.issues[0].message).toBe("할인율은 100% 이하여야 합니다.");
+    }
+  });
+
+  it("amount 할인은 가격보다 큰 값도 허용한다", () => {
+    const result = productSchema.safeParse(
+      buildValidInput({ discount: { discountType: "amount", value: 100_000 } }),
+    );
+
+    expect(result.success).toBe(true);
+  });
+
   it("discount.discountType이 rate/amount가 아니면 실패한다", () => {
     const result = productSchema.safeParse(
       buildValidInput({ discount: { discountType: "percent", value: 0 } }),
@@ -156,12 +179,12 @@ describe("productSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("thumbnail이 File이 아니면 안내 메시지와 함께 실패한다", () => {
+  it("thumbnail 문자열이 유효한 URL이 아니면 URL 안내 메시지와 함께 실패한다", () => {
     const result = productSchema.safeParse(buildValidInput({ thumbnail: "not-a-file" }));
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("썸네일 이미지를 등록해주세요.");
+      expect(result.error.issues[0].message).toBe("유효한 썸네일 URL이어야 합니다.");
     }
   });
 
@@ -173,6 +196,11 @@ describe("productSchema", () => {
     if (!result.success) {
       expect(result.error.issues[0].message).toBe("썸네일 이미지를 등록해주세요.");
     }
+  });
+
+  it("수정 흐름의 기존 thumbnail URL은 허용하고 잘못된 URL은 거부한다", () => {
+    expect(productSchema.safeParse(buildValidInput({ thumbnail: "https://cdn.example.com/thumb.png" })).success).toBe(true);
+    expect(productSchema.safeParse(buildValidInput({ thumbnail: "not-a-url" })).success).toBe(false);
   });
 
   it("isPremium이고 featureIds를 아예 생략하면 실패한다 (옵션을 선택해주세요)", () => {

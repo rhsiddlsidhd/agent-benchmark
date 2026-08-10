@@ -99,7 +99,7 @@ describe("payment.service", () => {
       expect(updatedOrder!.confirmedAt!.getTime()).toBeLessThanOrEqual(after.getTime());
     });
 
-    it("이미 Payment 문서가 있으면 새로 만들지 않고 갱신한다", async () => {
+    it("동일 PAID 동기화를 재시도해도 salesCount는 한 번만 증가한다", async () => {
       const { savedProduct, order } = await setupProductAndOrder(1);
       getPaymentMock.mockResolvedValue(
         paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
@@ -109,7 +109,8 @@ describe("payment.service", () => {
       await syncPayment(order.merchantUid);
 
       const updatedProduct = await ProductModel.findById(savedProduct._id).lean();
-      expect(updatedProduct?.salesCount).toBe(2);
+      expect(updatedProduct?.salesCount).toBe(1);
+      expect(await PaymentModel.countDocuments({ merchantUid: order.merchantUid })).toBe(1);
     });
 
     it("금액이 불일치하면 AppError(VALIDATION)를 던지고 salesCount를 증가시키지 않는다", async () => {
@@ -394,6 +395,68 @@ describe("payment.service", () => {
       expect(updatedOrder?.orderStatus).toBe("PENDING");
 
       saveSpy.mockRestore();
+    });
+  });
+
+  describe("webhook 취소 상태 처리", () => {
+    it("PAID 이후 CANCELLED 동기화는 Payment/Order를 취소하고 판매 수량을 한 번만 되돌린다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(2);
+      getPaymentMock.mockResolvedValue(
+        paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+      );
+      await syncPayment(order.merchantUid);
+
+      const cancelledAt = new Date().toISOString();
+      getPaymentMock.mockResolvedValue({
+        status: "CANCELLED",
+        id: order.merchantUid,
+        transactionId: "txn_1",
+        cancelledAt,
+        amount: { paid: order.finalPrice, cancelled: order.finalPrice },
+        cancellations: [{ status: "SUCCEEDED", totalAmount: order.finalPrice, reason: "고객 요청", cancelledAt }],
+      });
+
+      await syncPayment(order.merchantUid);
+      await syncPayment(order.merchantUid);
+
+      expect(await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean()).toMatchObject({
+        status: "CANCELLED",
+        cancelAmount: order.finalPrice,
+        cancelReason: "고객 요청",
+      });
+      expect(await OrderModel.findById(order._id).lean()).toMatchObject({
+        orderStatus: "CANCELLED",
+        cancelReason: "고객 요청",
+      });
+      expect((await ProductModel.findById(savedProduct._id).lean())?.salesCount).toBe(0);
+    });
+
+    it("PARTIAL_CANCELLED는 Payment에 취소 합계를 기록하고 Order는 CONFIRMED로 유지한다", async () => {
+      const { savedProduct, order } = await setupProductAndOrder(2);
+      getPaymentMock.mockResolvedValue(
+        paidPayload(order.merchantUid, savedProduct._id.toString(), order.finalPrice),
+      );
+      await syncPayment(order.merchantUid);
+
+      const cancelledAt = new Date().toISOString();
+      getPaymentMock.mockResolvedValue({
+        status: "PARTIAL_CANCELLED",
+        id: order.merchantUid,
+        transactionId: "txn_1",
+        cancelledAt,
+        amount: { paid: order.finalPrice, cancelled: 1000 },
+        cancellations: [{ status: "SUCCEEDED", totalAmount: 1000, reason: "부분 환불", cancelledAt }],
+      });
+
+      await syncPayment(order.merchantUid);
+
+      expect(await PaymentModel.findOne({ merchantUid: order.merchantUid }).lean()).toMatchObject({
+        status: "PARTIAL_CANCELLED",
+        cancelAmount: 1000,
+        cancelReason: "부분 환불",
+      });
+      expect((await OrderModel.findById(order._id).lean())?.orderStatus).toBe("CONFIRMED");
+      expect((await ProductModel.findById(savedProduct._id).lean())?.salesCount).toBe(2);
     });
   });
 
