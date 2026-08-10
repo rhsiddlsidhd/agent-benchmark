@@ -43,6 +43,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/run-test-file.js",
+            "timeout": 120,
+            "statusMessage": "🔴 관련 테스트 실행 중..."
+          }
+        ]
+      }
     ]
   }
 }

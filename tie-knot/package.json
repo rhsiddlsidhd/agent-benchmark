@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:coverage:diff": "node scripts/test-coverage-diff.js",
+    "test:paired": "node scripts/test-paired.js",
     "test:mutation": "stryker run",
     "report:api": "node scripts/api-report/scan.js",
     "verify:api": "node scripts/api-verify/run.js"
