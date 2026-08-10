@@ -16,9 +16,14 @@ export function ciChangedFiles(root, baseRef) {
   const mergeBase = base
     ? git(root, ["merge-base", "HEAD", `origin/${base}`])
     : git(root, ["rev-parse", "HEAD^"]);
+  const repositoryRoot = git(root, ["rev-parse", "--show-toplevel"]);
+  const projectPrefix = path.relative(repositoryRoot, root).split(path.sep).join("/");
   return git(root, ["diff", "--name-only", "--diff-filter=ACMRT", `${mergeBase}...HEAD`, "--", "."])
     .split("\n")
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((file) => projectPrefix && file.startsWith(`${projectPrefix}/`)
+      ? file.slice(projectPrefix.length + 1)
+      : file);
 }
 
 export function verifyCiPolicy(root, baseRef) {

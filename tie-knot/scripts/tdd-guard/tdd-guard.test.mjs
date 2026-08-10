@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { analyzeTestQuality } from "./analyze-test-quality.mjs";
 import { extractFiles } from "./cli.mjs";
 import { classifyScope, requiredScopePolicy, requiredScopes } from "./classify-scope.mjs";
+import { ciChangedFiles } from "./ci-policy.mjs";
 import { configHash, diffHash, head } from "./hash-worktree.mjs";
 import { exceptionAllows, loadExceptions } from "./policy.mjs";
 import { invalidate, readProof, writeProof } from "./proof-store.mjs";
@@ -49,6 +50,20 @@ describe("test quality guard", () => {
 
 describe("scope, proof hash and adapters", () => {
   it("모든 unit test가 정확히 한 CI shard에 속한다", () => expect(verifyUnitShards(process.cwd())).toMatchObject({ valid: true, missing: [], duplicated: [] }));
+  it("monorepo Git diff 경로를 프로젝트 상대 경로로 정규화한다", () => {
+    const top = temp();
+    const project = path.join(top, "app");
+    execFileSync("git", ["init", "-q"], { cwd: top });
+    execFileSync("git", ["config", "user.email", "guard@example.test"], { cwd: top });
+    execFileSync("git", ["config", "user.name", "TDD Guard"], { cwd: top });
+    write(path.join(project, "src/value.ts"), "export const value = 1;\n");
+    execFileSync("git", ["add", "app/src/value.ts"], { cwd: top });
+    execFileSync("git", ["commit", "-qm", "initial"], { cwd: top });
+    write(path.join(project, "src/value.ts"), "export const value = 2;\n");
+    execFileSync("git", ["add", "app/src/value.ts"], { cwd: top });
+    execFileSync("git", ["commit", "-qm", "change"], { cwd: top });
+    expect(ciChangedFiles(project)).toEqual(["src/value.ts"]);
+  });
   it("unit/integration/e2e를 분류한다", () => { expect(classifyScope("src/a.test.ts")).toBe("unit"); expect(classifyScope("src/a.integration.test.ts")).toBe("integration"); expect(classifyScope("e2e/a.spec.ts")).toBe("e2e"); });
   it("폴더 계층과 무관하게 모든 component 공개 계약은 unit 후보다", () => {
     const dir = temp();

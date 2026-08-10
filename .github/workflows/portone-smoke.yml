@@ -15,8 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: npm }
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
       - run: npm ci
+        working-directory: tie-knot
       - name: Verify display and PortOne secrets
         run: |
           test -n "$DISPLAY"
@@ -24,3 +28,4 @@ jobs:
           test -n "$PORTONE_CHANNEL_KEY"
           test -n "$PORTONE_API_SECRET"
       - run: npm run test:e2e:portone
+        working-directory: tie-knot
