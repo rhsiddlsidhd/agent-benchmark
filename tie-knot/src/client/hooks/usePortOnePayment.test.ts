@@ -6,8 +6,8 @@ const { requestPaymentMock } = vi.hoisted(() => ({
   requestPaymentMock: vi.fn(),
 }));
 
-vi.mock("@portone/browser-sdk/v2", () => ({
-  default: { requestPayment: requestPaymentMock },
+vi.mock("@/client/lib/portone/request-payment", () => ({
+  requestPayment: requestPaymentMock,
 }));
 
 vi.mock("@/server/actions", () => ({
@@ -53,8 +53,8 @@ describe("usePortOnePayment", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useOrderStore.setState({ paymentStatus: "IDLE" });
-    process.env.NEXT_PUBLIC_POST_ONE_STORE_ID = "store-1";
-    process.env.NEXT_PUBLIC_POST_ONE_CHANNELKEY = "channel-1";
+    process.env.NEXT_PUBLIC_PORTONE_STORE_ID = "store-1";
+    process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY = "channel-1";
   });
 
   it("정상 경로: 결제/검증 성공 시 onSuccess를 merchantUid로 호출한다", async () => {

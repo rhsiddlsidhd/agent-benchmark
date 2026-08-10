@@ -22,13 +22,13 @@ describe("uploadProductImage", () => {
     expect(result).toBe("https://cdn/a.jpg");
   });
 
-  it("업로드 실패 시 undefined를 리턴한다", async () => {
+  it("업로드 실패를 삼키지 않고 EXTERNAL_SERVICE 오류를 전파한다", async () => {
     const file = new File(["x"], "a.jpg", { type: "image/jpeg" });
     vi.mocked(fetch).mockResolvedValueOnce({ ok: false } as Response);
 
-    const result = await uploadProductImage(file, "preview");
-
-    expect(result).toBeUndefined();
+    await expect(uploadProductImage(file, "preview")).rejects.toMatchObject({
+      category: "EXTERNAL_SERVICE",
+    });
   });
 
   it("type이 'images'면 갤러리 폴더로 업로드하고 secure_url을 리턴한다 (REQ-2)", async () => {

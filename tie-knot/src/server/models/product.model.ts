@@ -22,6 +22,13 @@ const discountSchema = new Schema(
     value: {
       type: Number,
       default: 0,
+      min: 0,
+      validate: {
+        validator(this: { discountType?: string }, value: number) {
+          return this.discountType !== "rate" || value <= 1;
+        },
+        message: "할인율은 100% 이하여야 합니다.",
+      },
     },
   },
   { _id: false },

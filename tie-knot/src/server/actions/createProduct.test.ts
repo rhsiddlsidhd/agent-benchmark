@@ -8,6 +8,7 @@ vi.mock("@/server/services", () => ({
 
 vi.mock("@/server/lib/cloudinary", () => ({
   uploadProductImage: vi.fn(),
+  deleteProductAsset: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -15,7 +16,7 @@ vi.mock("next/cache", () => ({
 }));
 
 import { requireAuth, createProductService } from "@/server/services";
-import { uploadProductImage } from "@/server/lib/cloudinary";
+import { deleteProductAsset, uploadProductImage } from "@/server/lib/cloudinary";
 import { createProduct } from "./createProduct";
 
 const buildValidFormData = (overrides?: Record<string, string>) => {
@@ -97,6 +98,19 @@ describe("createProduct", () => {
         fieldErrors: undefined,
       },
     });
+  });
+
+  it("업로드 성공 후 DB 저장 실패 시 새 Cloudinary asset을 보상 삭제한다", async () => {
+    vi.mocked(requireAuth).mockResolvedValue({ role: "ADMIN", email: "a@b.com", userId: "admin-1" });
+    vi.mocked(uploadProductImage).mockImplementation(async (_file, _type, onUploaded) => {
+      onUploaded?.({ publicId: "products/thumbnails/new", url: "https://cdn/new.jpg" });
+      return "https://cdn/new.jpg";
+    });
+    vi.mocked(createProductService).mockRejectedValue(new AppError("INTERNAL", "DB 실패"));
+
+    await createProduct(undefined, buildValidFormData());
+
+    expect(deleteProductAsset).toHaveBeenCalledWith("products/thumbnails/new");
   });
 
   it("정상 경로: 상품 등록 성공 메시지를 리턴한다", async () => {

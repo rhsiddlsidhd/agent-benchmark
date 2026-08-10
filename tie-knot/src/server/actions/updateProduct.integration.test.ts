@@ -23,6 +23,7 @@ import { ProductModel } from "@/server/models";
 
 vi.mock("@/server/lib/cloudinary", () => ({
   uploadProductImage: vi.fn(),
+  deleteProductAsset: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({

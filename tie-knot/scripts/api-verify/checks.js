@@ -1,6 +1,6 @@
 // GET류 라우트만 대상 — 좋아요 토글/결제 동기화/주문 생성/서명 발급 등 부작용 있는 POST/DELETE는 제외.
 function buildChecks(env) {
-  const infoId = env.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID;
+  const infoId = env.MAIN_PREVIEW_INFO_ID;
 
   return [
     {
@@ -23,7 +23,7 @@ function buildChecks(env) {
       path: `/api/couple-info?q=${infoId}`,
       auth: true,
       schemaKey: "coupleInfo",
-      note: "NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID 사용, requireAuth() 라우트",
+      note: "MAIN_PREVIEW_INFO_ID 사용, requireAuth() 라우트",
     },
     {
       name: "guestbook",
@@ -31,7 +31,7 @@ function buildChecks(env) {
       path: `/api/guestbook?id=${infoId}`,
       auth: false,
       schemaKey: "guestbookList",
-      note: "NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID를 coupleInfoId로 사용, 응답 스키마가 z.strictObject라 password 등 미정의 필드 새면 SCHEMA_MISMATCH로 잡힘",
+      note: "MAIN_PREVIEW_INFO_ID를 coupleInfoId로 사용, 응답 스키마가 z.strictObject라 password 등 미정의 필드 새면 SCHEMA_MISMATCH로 잡힘",
     },
     {
       name: "kakaomap",

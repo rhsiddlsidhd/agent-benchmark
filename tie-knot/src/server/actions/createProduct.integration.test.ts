@@ -21,6 +21,7 @@ import { NextRequest } from "next/server";
 
 vi.mock("@/server/lib/cloudinary", () => ({
   uploadProductImage: vi.fn(),
+  deleteProductAsset: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({

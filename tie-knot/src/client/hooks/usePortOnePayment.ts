@@ -1,13 +1,11 @@
 "use client";
 
 import { useCallback } from "react";
-import PortOne from "@portone/browser-sdk/v2";
+import { requestPayment } from "@/client/lib/portone/request-payment";
 import { PayStatus } from "@/server/models";
 import { completePayment, CreateOrderResult } from "@/server/actions";
 import { useOrderStore } from "@/client/store";
 import { toast } from "sonner";
-const storeId = process.env.NEXT_PUBLIC_POST_ONE_STORE_ID;
-const channelKey = process.env.NEXT_PUBLIC_POST_ONE_CHANNELKEY;
 
 interface UsePortOnePaymentOptions {
   onSuccess: (merchantUid: string) => void;
@@ -28,6 +26,8 @@ export function usePortOnePayment({ onSuccess, onError }: UsePortOnePaymentOptio
 
   const triggerPayment = useCallback(
     async (orderData: CreateOrderResult) => {
+      const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
+      const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY;
       if (!storeId || !channelKey) {
         fail("결제 설정이 올바르지 않습니다.");
         return;
@@ -48,7 +48,7 @@ export function usePortOnePayment({ onSuccess, onError }: UsePortOnePaymentOptio
       setPaymentStatus("PENDING");
 
       try {
-        const payment = await PortOne.requestPayment({
+        const payment = await requestPayment({
           storeId,
           channelKey,
           paymentId: merchantUid,

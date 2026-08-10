@@ -1,0 +1,160 @@
+name: TDD Guard
+
+on:
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: tdd-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JWT_SECRET: tdd-ci-jwt-secret-at-least-thirty-two-characters
+  ENTRY_JWT_SECRET: tdd-ci-entry-secret-at-least-thirty-two-characters
+  PORTONE_API_SECRET: test-secret
+  NEXT_PUBLIC_PORTONE_STORE_ID: store-ci
+  NEXT_PUBLIC_PORTONE_CHANNEL_KEY: channel-ci
+  BASE_URL: http://127.0.0.1:3100
+  DEPLOYMENT_BASE_URL: http://127.0.0.1:3100
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MONGOMS_DOWNLOAD_DIR: ~/.cache/mongodb-binaries
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - run: npm ci
+        working-directory: tie-knot
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-8.2.6-${{ runner.os }}
+      - run: npm run lint && npm run typecheck && node scripts/build-ci.mjs
+        working-directory: tie-knot
+
+  unit-shard:
+    name: unit-${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [server, client-components, client-state, app-admin, app-main, app-api, shared]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - run: npm ci
+        working-directory: tie-knot
+      - run: npm run test:unit:${{ matrix.shard }}
+        working-directory: tie-knot
+
+  unit:
+    if: always()
+    needs: unit-shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every unit shard
+        run: test '${{ needs.unit-shard.result }}' = 'success'
+
+  integration-client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - run: npm ci
+        working-directory: tie-knot
+      - run: npm run test:integration:client
+        working-directory: tie-knot
+
+  integration-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MONGOMS_DOWNLOAD_DIR: ~/.cache/mongodb-binaries
+      PORTONE_API_SECRET: test-secret
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-8.2.6-${{ runner.os }}
+      - run: npm ci
+        working-directory: tie-knot
+      - run: npm run test:integration:server
+        working-directory: tie-knot
+
+  e2e-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - run: npm ci
+        working-directory: tie-knot
+      - run: npx playwright install --with-deps chromium
+        working-directory: tie-knot
+      - run: npm run test:e2e
+        working-directory: tie-knot
+
+  mutation-changed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - run: npm ci
+        working-directory: tie-knot
+      - run: npm run test:mutation
+        working-directory: tie-knot
+
+  tdd-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - run: npm ci
+        working-directory: tie-knot
+      - run: npx vitest run --project guard
+        working-directory: tie-knot
+      - run: node scripts/tdd-guard/unit-shards.mjs
+        working-directory: tie-knot
+      - run: node scripts/tdd-guard/cli.mjs verify --ci
+        working-directory: tie-knot

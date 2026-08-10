@@ -1,8 +1,8 @@
 import { AppError } from "@/shared/types";
-import { CloudinaryResource } from "./type";
+import { CloudinaryResource, UploadedCloudinaryAsset } from "./type";
 
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+const UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
 const BASE_URL = process.env.NEXT_PUBLIC_CLOUDINARY_BASE_URL;
 
 const uploadToCloudinary = async <T>(file: File, folder: string) => {
@@ -33,13 +33,10 @@ const PRODUCT_IMAGE_FOLDERS = {
 export async function uploadProductImage(
   file: File,
   type: "thumbnail" | "preview" | "images" = "thumbnail",
-): Promise<string | undefined> {
-  try {
-    const folder = PRODUCT_IMAGE_FOLDERS[type];
-    const result = await uploadToCloudinary<CloudinaryResource>(file, folder);
-    return result.secure_url;
-  } catch (error) {
-    console.error("uploadProductImage:", error);
-    return undefined;
-  }
+  onUploaded?: (asset: UploadedCloudinaryAsset) => void,
+): Promise<string> {
+  const folder = PRODUCT_IMAGE_FOLDERS[type];
+  const result = await uploadToCloudinary<CloudinaryResource>(file, folder);
+  onUploaded?.({ publicId: result.public_id, url: result.secure_url });
+  return result.secure_url;
 }

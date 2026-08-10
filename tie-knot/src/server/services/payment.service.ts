@@ -19,21 +19,26 @@ import { AppError } from "@/shared/types";
 import { dbConnect } from "@/server/lib/mongodb";
 
 // 환경 변수 확인
-const PORTONE_API_SECRET = process.env.POST_ONE_API_KEY;
+const PORTONE_API_SECRET = process.env.PORTONE_API_SECRET;
 
 if (!PORTONE_API_SECRET) {
-  throw new Error("POST_ONE_API_KEY is not defined");
+  throw new Error("PORTONE_API_SECRET is not defined");
 }
 
 // 포트원 클라이언트 설정
 const portone = PortOne.PortOneClient({
   secret: PORTONE_API_SECRET,
+  baseUrl: process.env.PORTONE_API_BASE_URL,
 });
 
 // 타입 정의: 결제 조회 결과
 type GetPaymentResult = Awaited<ReturnType<typeof portone.payment.getPayment>>;
 type PaidPayment = Extract<GetPaymentResult, { status: "PAID" }>;
 type FailedPayment = Extract<GetPaymentResult, { status: "FAILED" }>;
+type CancelledPayment = Extract<
+  GetPaymentResult,
+  { status: "CANCELLED" | "PARTIAL_CANCELLED" }
+>;
 
 /**
  * PortOne 결제 상태를 시스템 상태로 매핑
@@ -263,6 +268,7 @@ export const syncPayment = async (paymentId: string) => {
 
       await mongoose.connection.transaction(async (session) => {
         const existing = await PaymentModel.findOne({ merchantUid: paymentId }).session(session);
+        const alreadyApplied = existing?.status === "PAID" && order.orderStatus === "CONFIRMED";
 
         const { payMethod, methodDetail } = mapPortOnePaymentMethod(actualPayment.method);
 
@@ -290,6 +296,11 @@ export const syncPayment = async (paymentId: string) => {
           Object.assign(existing, paymentData);
           payment = await existing.save({ session });
         }
+
+        // PortOne webhook은 성공 응답을 받지 못하면 같은 결제를 재전송한다.
+        // 이미 PAID/CONFIRMED로 반영된 결제는 Payment 원문만 최신화하고 주문 시각과
+        // 판매량을 다시 적용하지 않는다.
+        if (alreadyApplied) return;
 
         // 5. Order 상태 업데이트
         order.orderStatus = "CONFIRMED";
@@ -360,6 +371,67 @@ export const syncPayment = async (paymentId: string) => {
         status: payment.status,
         message: failedPayment.failure?.reason || "결제 실패",
       };
+    }
+
+    if (
+      actualPayment.status === "CANCELLED" ||
+      actualPayment.status === "PARTIAL_CANCELLED"
+    ) {
+      const cancelledPayment = actualPayment as CancelledPayment;
+      const succeeded = cancelledPayment.cancellations.filter(
+        (cancellation) => cancellation.status === "SUCCEEDED",
+      );
+      const latest = succeeded.at(-1);
+      const cancelAmount = succeeded.reduce(
+        (total, cancellation) => total + cancellation.totalAmount,
+        0,
+      );
+      const cancelledAt = new Date(
+        latest?.cancelledAt ?? cancelledPayment.cancelledAt,
+      );
+
+      let payment!: mongoose.HydratedDocument<IPayment>;
+      await mongoose.connection.transaction(async (session) => {
+        const existing = await PaymentModel.findOne({ merchantUid: paymentId }).session(session);
+        const wasFullyApplied = existing?.status === "PAID" && order.orderStatus === "CONFIRMED";
+        const paymentData = {
+          merchantUid: paymentId,
+          impUid: cancelledPayment.transactionId,
+          orderId: order._id,
+          buyerName: order.buyerName,
+          buyerEmail: order.buyerEmail,
+          buyerTel: order.buyerPhone,
+          requestAmount: order.finalPrice,
+          paidAmount: cancelledPayment.amount.paid,
+          status: mapPortOneStatus(cancelledPayment.status),
+          cancelledAt,
+          cancelAmount,
+          cancelReason: latest?.reason,
+        };
+
+        if (!existing) {
+          [payment] = await PaymentModel.create([paymentData], { session });
+        } else {
+          Object.assign(existing, paymentData);
+          payment = await existing.save({ session });
+        }
+
+        if (cancelledPayment.status === "CANCELLED") {
+          order.orderStatus = "CANCELLED";
+          order.cancelledAt = cancelledAt;
+          order.cancelReason = latest?.reason;
+          await order.save({ session });
+          if (wasFullyApplied) {
+            await ProductModel.findByIdAndUpdate(
+              order.product.productId,
+              { $inc: { salesCount: -order.product.quantity } },
+              { session, runValidators: true },
+            );
+          }
+        }
+      });
+
+      return { success: false, status: payment.status, payment: payment.toObject() };
     }
 
     // 결제 대기 중

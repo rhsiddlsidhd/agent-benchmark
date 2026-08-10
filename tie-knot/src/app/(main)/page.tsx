@@ -10,8 +10,8 @@ import {
 import { POPULAR_PRODUCTS_LIMIT } from "@/shared/constants";
 
 const page = async () => {
-  const previewProductId = process.env.NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID;
-  const infoId = process.env.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID;
+  const previewProductId = process.env.MAIN_PREVIEW_PRODUCT_ID;
+  const infoId = process.env.MAIN_PREVIEW_INFO_ID;
 
   const [product, invitation, popularProducts] = await Promise.all([
     previewProductId ? getProductService(previewProductId) : null,

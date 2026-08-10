@@ -23,12 +23,12 @@ const routes = [
   { key: "products-list", path: "/products?category=invitation", auth: "none" },
   {
     key: "product-detail",
-    path: () => `/products/${requireEnv("NEXT_PUBLIC_MAIN_PREVIEW_PRODUCT_ID")}`,
+    path: () => `/products/${requireEnv("MAIN_PREVIEW_PRODUCT_ID")}`,
     auth: "none",
   },
   {
     key: "preview",
-    path: () => `/preview/${requireEnv("NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID")}`,
+    path: () => `/preview/${requireEnv("MAIN_PREVIEW_INFO_ID")}`,
     auth: "none",
   },
   { key: "signup", path: "/signup", auth: "none" },

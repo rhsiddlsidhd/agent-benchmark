@@ -1,7 +1,7 @@
 "use server";
 
 import { APIResponse } from "@/shared/types";
-import { uploadProductImage } from "@/server/lib/cloudinary";
+import { deleteProductAsset, uploadProductImage } from "@/server/lib/cloudinary";
 import { requireAuth, createProductService } from "@/server/services";
 import { actionError } from "@/server/boundary";
 import { productSchema } from "@/shared/schemas";
@@ -19,6 +19,8 @@ export const createProduct = async (
   _prev: unknown,
   formData: FormData,
 ): Promise<APIResponse<{ message: string }>> => {
+  const uploadedPublicIds: string[] = [];
+  const recordUpload = ({ publicId }: { publicId: string }) => uploadedPublicIds.push(publicId);
   const thumbnailFile = formData.get("thumbnail") as File;
   const previewFile = formData.get("previewUrl") as File;
 
@@ -65,16 +67,16 @@ export const createProduct = async (
       };
     }
 
-    const thumbnailUrl = await uploadProductImage(thumbnailFile, "thumbnail");
+    const thumbnailUrl = await uploadProductImage(thumbnailFile, "thumbnail", recordUpload);
 
     let previewUrl: string | undefined;
     if (previewFile && previewFile.size > 0) {
-      previewUrl = await uploadProductImage(previewFile, "preview");
+      previewUrl = await uploadProductImage(previewFile, "preview", recordUpload);
     }
 
     const uploadedImageUrls = (
       await Promise.all(
-        parsed.data.images.newFiles.map((file) => uploadProductImage(file, "images")),
+        parsed.data.images.newFiles.map((file) => uploadProductImage(file, "images", recordUpload)),
       )
     ).filter((url): url is string => Boolean(url));
     const images = [...parsed.data.images.existing, ...uploadedImageUrls];
@@ -95,6 +97,7 @@ export const createProduct = async (
       data: { message: "상품이 성공적으로 등록되었습니다." },
     };
   } catch (e) {
+    await Promise.allSettled(uploadedPublicIds.map((publicId) => deleteProductAsset(publicId)));
     return actionError(e);
   }
 };

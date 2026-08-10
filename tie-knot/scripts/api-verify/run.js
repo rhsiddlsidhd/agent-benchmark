@@ -11,6 +11,14 @@ const { envelopeFor, loadDataSchemas } = require("./schemas");
 const OUTPUT_DIR = path.join(__dirname, "output");
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 
+function warnForMissingPreviewInfo(env, warn = console.warn) {
+  if (env.MAIN_PREVIEW_INFO_ID) return false;
+  warn(
+    "[warn] MAIN_PREVIEW_INFO_ID 없음 — couple-info/guestbook 체크는 실패할 가능성 높음",
+  );
+  return true;
+}
+
 async function getCookieHeaderSafe() {
   try {
     const { getCookieHeader } = require("./auth");
@@ -130,11 +138,7 @@ async function main() {
 
   try {
     const env = process.env;
-    if (!env.NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID) {
-      console.warn(
-        "[warn] NEXT_PUBLIC_MAIN_PREVIEW_INFO_ID 없음 — couple-info/guestbook 체크는 실패할 가능성 높음",
-      );
-    }
+    warnForMissingPreviewInfo(env);
 
     console.log("[login] 테스트 유저로 로그인 중...");
     const cookieHeader = await getCookieHeaderSafe();
@@ -183,7 +187,11 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((e) => {
+    console.error(e);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { warnForMissingPreviewInfo };
