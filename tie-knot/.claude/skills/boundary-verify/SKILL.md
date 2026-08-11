@@ -7,16 +7,12 @@ description: "API↔프론트 훅, 라우팅, 상태 전이, DB↔API↔UI 필�
 
 경계면 불일치는 양쪽을 각각 봐서는 안 잡힌다 — 반드시 생산자(API route/action)와 소비자(hook/컴포넌트)를 **동시에 Read**해서 교차 비교해야 한다. TypeScript 제네릭 캐스팅이나 `npm run build` 통과는 이 결함을 못 잡는다(런타임 shape 불일치는 컴파일러가 안 봄).
 
-## 0. 자동 검사 먼저
+## 0. 생산자와 소비자 교차 검증
 
-이 프로젝트엔 이미 검증 스크립트가 있다 — 수작업 grep 전에 먼저 돌린다:
-
-```bash
-npm run report:api   # src/app/api/**/route.ts 스캔, 라우트 목록/shape 추출 → scripts/api-contract/report/output/
-npm run verify:api    # 실제 개발서버에 요청 보내 응답을 스키마와 대조 → scripts/api-contract/verify/output/
-```
-
-이 결과를 1차 신호로 삼고, 아래 7기준 중 스크립트가 커버 못 하는 부분(라우팅 매핑, 상태 전이, Server Action/채널 A, 옵셔널 필드 처리 등)을 수동으로 마저 채운다.
+대상 API route/action과 이를 호출하는 hook/component를 함께 읽고 route, method,
+request/response schema를 직접 대조한다. 정적 검색 결과만으로 연결 여부를 판정하지 않고,
+아래 7기준에 따라 라우팅 매핑, 상태 전이, Server Action/채널 A, 옵셔널 필드 처리를
+끝까지 확인한다.
 
 ## 1. 7가지 판정 기준
 
