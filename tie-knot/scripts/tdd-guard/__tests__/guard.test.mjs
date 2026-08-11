@@ -14,7 +14,7 @@ import { greenProof, implementingProof, mutationProof, proofValidity, redProof, 
 import { newRedFailures } from "../core/result-policy.mjs";
 import { resolveSources, resolveTests } from "../core/resolve-tests.mjs";
 import { mutationStatus } from "../core/mutation.mjs";
-import { verifyUnitShards } from "../core/unit-shards.mjs";
+import * as unitShards from "../../test-scope/unit-shards.mjs";
 import { projectFor } from "../core/run-vitest.mjs";
 
 const dirs = [];
@@ -50,7 +50,19 @@ describe("test quality guard", () => {
 });
 
 describe("scope, proof hash and adapters", () => {
-  it("모든 unit test가 정확히 한 CI shard에 속한다", () => expect(verifyUnitShards(process.cwd())).toMatchObject({ valid: true, missing: [], duplicated: [] }));
+  it("모든 unit test가 정확히 한 CI shard에 속한다", () => expect(unitShards.verifyUnitShards(process.cwd())).toMatchObject({ valid: true, missing: [], duplicated: [] }));
+
+  it("CI shard 이름을 Vitest unit 실행 인자로 변환한다", () => {
+    expect(unitShards.argsForUnitShard("client-state")).toEqual([
+      "run", "--project", "unit",
+      "src/client/hooks", "src/client/store", "src/client/lib", "src/client/context", "src/client/utils",
+    ]);
+    expect(unitShards.argsForUnitShard("app-api")).toContain("src/app/global-error.test.tsx");
+  });
+
+  it("알 수 없는 CI shard는 거부한다", () => {
+    expect(() => unitShards.argsForUnitShard("unknown")).toThrow("unknown unit shard: unknown");
+  });
   it("monorepo Git diff 경로를 프로젝트 상대 경로로 정규화한다", () => {
     const top = temp();
     const project = path.join(top, "app");

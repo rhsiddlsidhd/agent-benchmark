@@ -7,7 +7,7 @@ Hook과 CI는 공통 Guard 진입점을 호출한다.
 | --- | --- | --- |
 | `ci/` | CI 전용 운영 도구 | `node scripts/ci/build.mjs` |
 | `e2e/` | Playwright 애플리케이션 실행 환경 | `node scripts/e2e/server.mjs` |
-| `test-scope/` | coverage와 전체 mutation의 소스 범위 계산 | import 전용 |
+| `test-scope/` | 테스트 소스 범위 계산과 CI unit shard 실행 | `node scripts/test-scope/unit-shards.mjs` |
 | `tdd-guard/bin/` | npm·Hook·CI 공통 Guard 진입점 | `node scripts/tdd-guard/bin/guard.mjs` |
 | `tdd-guard/adapters/` | Claude·Codex schema 변환 | Hook 전용 |
 | `tdd-guard/core/` | 도구 독립적인 분류·proof·mutation 정책 | bin에서 호출 |
