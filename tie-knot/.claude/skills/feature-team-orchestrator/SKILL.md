@@ -11,7 +11,7 @@ description: "이 프로젝트(tie-knot)에서 TODO.md '새 피처' 섹션급 �
 
 **진행 방식:** 기본은 순차 — 한 번의 실행은 피처 하나(`{domain}/{name}`)를 Phase 0부터 Phase 5(또는 사람 개입이 필요한 블로킹 지점)까지 완주하고 종료한다. 완료 후 다음 피처로 자동 이어가지 않는다.
 
-**선행 조건(별도 작업, 이 스킬 밖):** 이 프로젝트의 pre-commit 훅(`npm run test:coverage`, 파일당 line coverage 80% 강제)이 기존 9개 파일(예: `src/server/actions/signupUser.ts` 등)에서 이미 미달 상태다. 하네스가 새로 건드리지 않는 파일이라도 훅이 전체 스코프로 돌면 커밋이 막힐 수 있다 — 이 부채 해소(또는 pre-commit을 diff-scope로 바꾸는 툴링)는 이 하네스의 책임이 아니라 별도 선행 작업이다. 실행 전 확인할 것.
+**선행 조건:** 제품 코드 편집 전에 공통 TDD Guard로 Red proof를 만들고, 구현 뒤 필요한 scope의 Green proof와 changed mutation을 확인한다. 과거 coverage pre-commit gate는 제거됐으며 현재 계약으로 취급하지 않는다.
 
 ## 실행 모드: 하이브리드
 
@@ -90,8 +90,8 @@ Phase2("구현")와 Phase3("검증 루프")는 별도 팀 재구성 없이 **하
    - 종료조건: 모든 유닛이 PASS(또는 강제 PASS) 되면 각자 리더에게 완료 알림
 4. **로컬 merge는 리더만 수행한다.** 구현자로부터 "유닛 X PASS, 병합 요청" SendMessage를 받으면, 리더가 표준 브랜치에서 `git merge feat/{name}--backend`(또는 `--frontend`)를 그 즉시 실행 — 몰아두지 않는다.
    - 병합 충돌 시 강제 해결 금지. 리더가 양쪽 diff 확인 후 자명하면 직접 resolve+재검증 요청, 애매하면 사용자 에스컬레이션
-   - **pre-commit 훅과 boundary-verifier 판정은 별개 축이다.** FIX/REDO 반영 재커밋도 pre-commit(lint+coverage80%+typecheck)을 다시 통과해야 한다 — 이건 구현자가 원인 해결 후 재시도하는 정상 루프. **같은 유닛에서 pre-commit이 연속 3회 막히면** 구현자가 리더에게 에스컬레이션(이 카운트는 파일 저장 없이 구현자 세션 내 계산으로 충분 — REDO 카운터와는 별개)
-   - `[MANUAL_INTERVENTION_REQUIRED]`로 강제 PASS된 유닛도 pre-commit은 그대로 통과해야 커밋된다 — 커밋 메시지에 `[MANUAL_INTERVENTION_REQUIRED]` 표기를 남겨 이력에서 식별되게 한다
+   - **TDD Guard와 boundary-verifier 판정은 별개 축이다.** FIX/REDO 반영도 필요한 Red/Green proof와 관련 테스트를 다시 확인한다. 동일 실패가 반복되면 구현자가 리더에게 원인과 증거를 에스컬레이션한다.
+   - `[MANUAL_INTERVENTION_REQUIRED]`로 강제 PASS된 유닛도 CI required checks는 그대로 통과해야 한다 — 커밋 메시지에 표기를 남겨 이력에서 식별되게 한다.
 5. 진행 중 리더 역할:
    - `[MANUAL_INTERVENTION_REQUIRED]` 에스컬레이션(2회 REDO 초과) 수신 시, 설계 재검토가 필요하면 api-designer를 단독 재스폰해 해당 부분만 재설계. **재설계 결과는 리더가 backend-impl/frontend-impl 양쪽에 직접 SendMessage로 재전달한다**(재스폰된 api-designer는 이미 종료된 frontend-impl의 id를 모르므로 직접 통신 불가 — 반드시 리더 경유)
    - 완료 알림에서 예상 밖으로 왕복이 길어지는 팀원이 보이면 SendMessage로 개입
