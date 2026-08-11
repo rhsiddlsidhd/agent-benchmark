@@ -1,0 +1,65 @@
+name: Weekly Full Mutation
+
+on:
+  schedule:
+    # Saturday 06:00 Asia/Seoul (Friday 21:00 UTC)
+    - cron: "0 21 * * 5"
+  workflow_dispatch:
+
+concurrency:
+  group: full-mutation-dev
+  cancel-in-progress: false
+
+jobs:
+  full-mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      JWT_SECRET: mutation-ci-jwt-secret-at-least-thirty-two-characters
+      ENTRY_JWT_SECRET: mutation-ci-entry-secret-at-least-thirty-two-characters
+      PORTONE_API_SECRET: test-secret
+      NEXT_PUBLIC_PORTONE_STORE_ID: store-ci
+      NEXT_PUBLIC_PORTONE_CHANNEL_KEY: channel-ci
+      MONGOMS_DOWNLOAD_DIR: ~/.cache/mongodb-binaries
+      STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+      STRYKER_REPORT_DIR: reports/mutation/full
+      STRYKER_INCREMENTAL_FILE: .mutation-state/incremental.json
+      STRYKER_DASHBOARD_VERSION: dev
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: dev
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tie-knot/package-lock.json
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-8.2.6-${{ runner.os }}
+      - uses: actions/cache/restore@v4
+        with:
+          path: tie-knot/.mutation-state/incremental.json
+          key: full-mutation-${{ runner.os }}-${{ hashFiles('tie-knot/package-lock.json', 'tie-knot/stryker.config.mjs') }}-${{ github.run_id }}
+          restore-keys: |
+            full-mutation-${{ runner.os }}-${{ hashFiles('tie-knot/package-lock.json', 'tie-knot/stryker.config.mjs') }}-
+      - run: npm ci
+        working-directory: tie-knot
+      - name: Run full mutation
+        run: npm run test:mutation:full
+        working-directory: tie-knot
+      - name: Save incremental baseline
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: tie-knot/.mutation-state/incremental.json
+          key: full-mutation-${{ runner.os }}-${{ hashFiles('tie-knot/package-lock.json', 'tie-knot/stryker.config.mjs') }}-${{ github.run_id }}
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-mutation-${{ github.run_id }}
+          path: tie-knot/reports/mutation/full
+          if-no-files-found: warn
+          retention-days: 30
