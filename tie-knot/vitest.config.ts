@@ -7,9 +7,7 @@ import { testedSourceFiles, escapeGlobPath } from "./scripts/tested-source-files
 
 loadEnvConfig(process.cwd());
 
-// 여기는 항상 전체 스코프다. "이번에 바뀐 파일"로만 좁히는 patch coverage는
-// `npm run test:coverage:diff`가 vitest의 `--coverage.changed`로 처리한다 —
-// 기존 파일의 미달 커버리지 때문에 무관한 커밋까지 막히는 걸 방지하는 용도다.
+// `npm run test:coverage`는 테스트가 연결된 소스 전체를 측정한다.
 const coverageInclude = testedSourceFiles.map(escapeGlobPath);
 
 export default defineConfig({
