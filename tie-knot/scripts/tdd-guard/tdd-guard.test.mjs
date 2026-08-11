@@ -105,7 +105,7 @@ describe("scope, proof hash and adapters", () => {
   it("설정 변경 시 hash가 바뀐다", () => { const dir = repo(); const before = configHash(dir); write(path.join(dir, "vitest.config.ts"), "changed"); expect(configHash(dir)).not.toBe(before); });
   it("proof를 OS 상태 경로에 쓰고 무효화한다", () => { const dir = repo(); writeProof(dir, { state: "RED_PROVEN[unit]" }); expect(readProof(dir).state).toContain("RED"); invalidate(dir); expect(readProof(dir)).toBeNull(); });
   it("Claude Write schema에서 파일을 읽는다", () => expect(extractFiles({ tool_input: { file_path: "src/a.ts" } })).toEqual(["src/a.ts"]));
-  it("Codex apply_patch 대상만 안전하게 읽는다", () => expect(extractFiles({ toolInput: { patch: "*** Update File: src/a.ts\n*** Add File: ../escape.ts" } })).toEqual(["src/a.ts"]));
+  it("Codex apply_patch 공식 command 대상만 안전하게 읽는다", () => expect(extractFiles({ tool_input: { command: "*** Update File: src/a.ts\n*** Add File: ../escape.ts" } })).toEqual(["src/a.ts"]));
 });
 
 describe("필수 Guard 상태 전이", () => {

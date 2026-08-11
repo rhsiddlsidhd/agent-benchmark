@@ -44,7 +44,7 @@ export function extractFiles(payload) {
   const input = payload.tool_input ?? payload.toolInput ?? payload;
   const direct = input.file_path ?? input.filePath ?? input.path;
   if (direct) return [normalizePath(direct.startsWith(root) ? path.relative(root, direct) : direct)];
-  const patch = input.patch ?? input.input ?? "";
+  const patch = input.command ?? input.patch ?? input.input ?? "";
   return [...patch.matchAll(/^\*\*\* (?:Add|Update|Delete) File: (.+)$/gm)].map((match) => normalizePath(match[1])).filter((file) => !file.includes(".."));
 }
 

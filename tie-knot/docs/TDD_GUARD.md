@@ -5,8 +5,9 @@
 scope·proof·mutation·CI 정책 기준으로 사용하지 않는다.
 
 공통 CLI `scripts/tdd-guard/cli.mjs`가 Claude Code와 Codex adapter, 로컬 명령,
-CI의 단일 정책 구현이다. Hook은 편의용 조기 피드백이며 보안 경계가 아니다. 최종
-경계는 branch protection의 `tdd-policy`와 각 테스트 job이다.
+CI의 단일 정책 구현이다. 로컬 가드레일은 빠른 실수 방지 장치이고, GitHub Actions와
+branch protection이 절대 통과해야 하는 최종 관문이다. 최종 경계는 branch protection의
+`tdd-policy`와 각 테스트 job이다.
 
 CI에서는 OS-local proof를 신뢰하거나 전달하지 않는다. `guard verify --ci`가 PR merge
 base 이후 변경된 guarded 제품 파일마다 관련 테스트 존재와 AST 품질, 예외 만료를
@@ -66,8 +67,10 @@ CLI의 탐색·실행 기록은 proof가 아니며, 저장소 `e2e/**/*.spec.ts`
 glob을 기록한다. 만료 또는 잘못된 schema는 fail-closed다.
 
 Codex는 `.codex/hooks.json` 변경 뒤 `/hooks`에서 hash와 명령을 신뢰 검토해야 한다.
-현재 설치된 Codex 런타임은 Pre/PostToolUse를 shell 명령에만 호출하므로 `apply_patch`
-matcher는 미래/adapter 호환용이며 실제 apply_patch 차단 경계로 신뢰하면 안 된다.
+Codex의 파일 편집 도구는 canonical 이름 `apply_patch`로 Pre/PostToolUse를 호출하므로
+matcher는 `^apply_patch$`만 사용한다. `Edit`과 `Write`는 같은 도구의 matcher alias라
+중복 등록하지 않으며, 이 Guard가 명령 내용을 판정하지 않는 `Bash`는 지원 대상으로
+표시하지 않는다.
 
 Branch protection required checks:
 

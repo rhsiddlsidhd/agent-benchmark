@@ -9,6 +9,7 @@ void main;
 
 const projectRoot = path.resolve(import.meta.dirname, "../..");
 const cli = path.join(projectRoot, "scripts/tdd-guard/cli.mjs");
+const codexAdapter = path.join(projectRoot, "scripts/tdd-guard/codex-adapter.mjs");
 const roots = [];
 
 function write(file, value) {
@@ -47,9 +48,36 @@ function run(root, state, args, input) {
   });
 }
 
+function runCodexAdapter(root, state, input) {
+  return spawnSync(process.execPath, [codexAdapter, "pre-edit"], {
+    cwd: root,
+    input: JSON.stringify(input),
+    encoding: "utf8",
+    env: { ...process.env, TDD_GUARD_ROOT: root, TDD_GUARD_SESSION_ID: "fixture-session", XDG_STATE_HOME: state },
+  });
+}
+
 afterAll(() => roots.forEach((root) => fs.rmSync(root, { recursive: true, force: true })));
 
 describe("공통 Guard CLI 전체 상태 전이", () => {
+  it("Codex apply_patch를 수정 전에 차단하고 사용자용 사유를 출력한다", () => {
+    const { root, state } = fixture();
+    const result = runCodexAdapter(root, state, {
+      session_id: "fixture-session",
+      tool_name: "apply_patch",
+      tool_input: { command: "*** Begin Patch\n*** Update File: src/value.ts\n*** End Patch" },
+    });
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(JSON.parse(result.stdout)).toEqual({
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+        permissionDecisionReason: "TDD Guard: src/value.ts 편집 전 테스트를 변경하고 npm run test:red -- --scope <scope>를 실행하세요.",
+      },
+    });
+  });
+
   it("Red, 구현 허용, Green, mutation, VERIFIED와 테스트 변경 무효화를 증명한다", () => {
     const { root, state } = fixture();
     write(path.join(root, "src/value.test.ts"), `

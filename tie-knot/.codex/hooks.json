@@ -2,7 +2,7 @@
   "description": "Run the shared TDD Guard. Review trust with /hooks after every change.",
   "hooks": {
     "PreToolUse": [{
-      "matcher": "Edit|Write|apply_patch|Bash",
+      "matcher": "^apply_patch$",
       "hooks": [{
         "type": "command",
         "command": "node scripts/tdd-guard/codex-adapter.mjs pre-edit",
@@ -11,7 +11,7 @@
       }]
     }],
     "PostToolUse": [{
-      "matcher": "Edit|Write|apply_patch|Bash",
+      "matcher": "^apply_patch$",
       "hooks": [{
         "type": "command",
         "command": "node scripts/tdd-guard/codex-adapter.mjs post-edit",
