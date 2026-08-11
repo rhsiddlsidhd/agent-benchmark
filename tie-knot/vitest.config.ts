@@ -2,13 +2,8 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { loadEnvConfig } from "@next/env";
-import testScopeExclude from "./test-scope-exclude.json";
-import { testedSourceFiles, escapeGlobPath } from "./scripts/test-scope/tested-source-files.mjs";
 
 loadEnvConfig(process.cwd());
-
-// `npm run test:coverage`는 테스트가 연결된 소스 전체를 측정한다.
-const coverageInclude = testedSourceFiles.map(escapeGlobPath);
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
@@ -37,11 +32,8 @@ export default defineConfig({
           include: ["src/**/*.test.{ts,tsx}"],
           exclude: ["src/**/*.integration.test.{ts,tsx}"],
           // globalSetup 없음 — mongod를 띄우지 않고, fileParallelism 기본값(병렬)을 쓴다.
-          // 다만 워커 수는 CPU 개수가 아니라 메모리가 정한다 — jsdom 환경에 v8 커버리지
-          // 계측까지 얹히면 워커 하나가 수백 MB를 쓴다. 기본값(코어 수만큼)으로 두면
-          // `test:coverage`에서 "Failed to start forks worker / Timeout waiting for worker"로
-          // 무더기 실패한다(8코어·4GB 로컬에서 재현). 계측 없는 `npm test`는 통과하므로
-          // 커버리지를 돌릴 때만 드러난다.
+          // 워커 수는 CPU 개수가 아니라 메모리가 정한다. jsdom worker 하나가 수백 MB를
+          // 쓸 수 있어 8코어·4GB 로컬에서도 안정적으로 실행되는 상한을 둔다.
           maxWorkers: 2,
         },
       },
@@ -88,14 +80,5 @@ export default defineConfig({
         },
       },
     ],
-    coverage: {
-      provider: "v8",
-      include: coverageInclude,
-      exclude: testScopeExclude,
-      thresholds: {
-        perFile: true,
-        lines: 80,
-      },
-    },
   },
 });

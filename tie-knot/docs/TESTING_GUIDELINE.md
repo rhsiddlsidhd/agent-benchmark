@@ -1,7 +1,7 @@
 # docs/TESTING_GUIDELINE.md
 
-> Last updated: 2026-08-10
-> vitest 설치 완료 — `vitest.config.ts`(루트), `test`/`test:watch`/`test:coverage`/`test:coverage:diff` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup/mongo-server.ts` globalSetup, `src/server/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. 팩토리는 `src/test/factories/`에 도메인당 1개씩 있다.
+> Last updated: 2026-08-11
+> vitest 설치 완료 — `vitest.config.ts`(루트), 공개 `test`/`test:unit`/`test:integration:*` 스크립트, `vite-tsconfig-paths`로 alias 해석. `mongodb-memory-server`도 설치·연동 완료(`src/test/setup/mongo-server.ts` globalSetup, `src/server/lib/mongodb/connect.ts`의 `MONGO_TEST_URI` 오버라이드) — 아래 Tooling/DB 테스트 섹션 참고. 팩토리는 `src/test/factories/`에 도메인당 1개씩 있다.
 
 ## Overview
 
@@ -13,7 +13,7 @@
 - DB: `mongodb-memory-server` — 인메모리 mongod를 띄워 mongoose 쿼리를 실제로 실행한다. mongoose model을 `vi.mock`으로 대체하지 않는다. `dbConnect()`(`src/server/lib/mongodb/connect.ts`)는 `process.env.MONGO_TEST_URI`가 설정돼 있으면 그 URI로, 없으면 기존 Atlas SRV URI로 연결한다 — 운영 코드 경로는 그대로 두고 테스트에서만 memory server로 리다이렉트하는 오버라이드다.
 - path alias 해석: `vite-tsconfig-paths`
 - 컴포넌트 상호작용 시뮬레이션: `@testing-library/user-event`
-- 커버리지 대상 파일 스캔: `scripts/tested-source-files.mjs`(`.test.ts(x)` 목록 → 대상 소스 경로 역산 → `vitest.config.ts`의 `coverage.include`와 `stryker.config.mjs`의 `mutate`가 공유)
+- 테스트-제품 소스 관계 분석: `scripts/test-scope/test-graph.mjs`가 TypeScript AST와 모듈 해석을 사용해 런타임 import의 전이 관계를 계산한다. TDD Guard와 mutation 범위가 이 그래프를 공유한다.
 
 ## Structure
 
@@ -77,7 +77,7 @@ src/
 
 - 1차 커버 범위는 순수 로직(`schemas/`의 zod 스키마, `utils/`)부터 시작한다 — DB 셋업 없이 vitest 자체(config, alias 해석)부터 검증할 수 있어서다. 그 다음 `services/`+`actions/`(결제 금액 검증, 소유권 재검증 등 리스크가 큰 로직)로 확장한다.
 - `app/api/`의 `route.ts`는 후순위로 둔다 — `services/`+`actions/`가 이미 커버되면 그 위 얇은 wrapper라 테스트 내용이 중복된다.
-- **`src/server/models/`는 독립된 테스트 대상이 아니다**(`test-scope-exclude.json`에 등록) — 대부분 선언적 스키마 코드(`required`/`type`/`default`)라, `services/` 통합 테스트가 실제 DB(mongodb-memory-server)로 이미 간접 검증한다(예: `createCoupleInfoService` 테스트가 `CoupleInfoModel.create()`를 실제로 태우면서 필수 필드 검증도 같이 확인됨). 모델에 커스텀 validator처럼 진짜 로직이 있으면(예: `product.model.ts`의 `subCategory` validator) 그 로직을 호출하는 `services/` 테스트(예: `updateProductService`)에서 검증한다 — 모델 파일에 별도 `.model.test.ts`를 만들지 않는다. 이유: 별도 테스트 파일이 생기면 그 모델 파일 전체가 mutation testing 대상(`stryker.config.mjs`)에 끌려들어가는데, 스키마 필드 선언 위주 코드는 mutate 가능한 지점만 많고 실제로 의미 있게 죽일 로직은 적어서 mutation score만 깎아먹는다(실제로 겪음 — PR #48에서 `.model.test.ts` 4개 추가했다가 mutation score가 threshold 밑으로 떨어짐).
+- **`src/server/models/`는 선언적 스키마만 검증하려는 별도 테스트를 만들지 않는다.** `services/` 통합 테스트가 실제 DB로 스키마 계약을 간접 검증한다. 커스텀 validator처럼 제품 로직이 있으면 그 로직을 사용하는 서비스 테스트에서 검증한다. mutation 대상은 수동 제외 목록이 아니라 실제 테스트의 런타임 import 그래프로 결정된다.
 
 ### DB 테스트
 
@@ -127,7 +127,7 @@ src/
 ## Mutation Testing
 
 - Stryker Mutator(`@stryker-mutator/core` + `@stryker-mutator/vitest-runner`) 사용. coverage(실행 여부)만으로 못 잡는 부실 assertion(예: 값 검증 없이 `toBeDefined()`/`toBeTruthy()`만 쓰는 경우)을 survived mutant로 검출한다.
-- mutate 대상은 `stryker.config.mjs`의 `testedSourceFiles`(`.test.ts(x)`가 실제로 존재하는 소스만) — `vitest.config.ts`의 `coverage.include` 스캔 원칙과 동일하게 맞춘다. 이유: 테스트 없는 파일까지 mutate하면 전부 survived로 나와 신호가 죽는다.
+- mutate 대상은 `scripts/test-scope/test-graph.mjs`가 찾은 제품 소스다. 테스트의 직접·간접 런타임 import를 포함하고 `import type`은 제외한다. 로컬 import를 해석하지 못하면 범위를 조용히 누락하지 않고 실패한다.
 - threshold(`stryker.config.mjs` `thresholds`): high 80 / low 60 / break 60 — score가 60 미만이면 CI 실패.
 - diff-scoped 실행은 `--incremental`로 한다(`--since`는 stryker-js 현재 버전에 없는 옵션, Stryker 6.2+부터 incremental mode로 대체됐다). `dev` push마다(`save-test-score.yml`) baseline report(`reports/stryker-incremental.json`)를 캐시 저장하고, PR workflow(`comment-test-score.yml`)가 그 캐시를 복원해 재사용한다 — killed mutant는 관련 test가 안 바뀌면 skip, survived mutant는 새 test가 커버하지 않으면 skip. 전체 repo가 아니라 baseline 대비 변경분만 재실행된다.
 - **mutation testing은 CI 전담이다 — 로컬에서 예방 목적으로 돌리지 않는다.** 이유: incremental mode는 baseline 파일이 실행 간 지속돼야 이득이 있는데(Stryker 공식 문서), 이 프로젝트는 작업 1개당 새 worktree를 파고(`docs/GIT.md`) `reports*`가 `.gitignore` 대상이라 로컬에 baseline이 지속되지 않는다 — 즉 로컬 실행은 매번 baseline 없는 전체 스캔이라 항상 최대 소요시간(수십 분)을 낸다. 업계 통설도 같다: mutation testing은 비싸서 매 커밋 로컬 실행은 team 전체를 지치게 만들고, "로컬은 빠른 피드백(lint/test/coverage), CI가 diff-scoped/스케줄 mutation"으로 나누는 게 표준이다.
@@ -142,10 +142,8 @@ src/
 ## Gotchas
 
 - `mongodb-memory-server`는 설치·연동 완료됐고 `connect.integration.test.ts`로 실제 연결까지 검증했다. `coupleInfo`/`product`/`guestbook` service 테스트를 실제로 추가하며 `beforeEach`의 `clearCollections` 격리와 팩토리 패턴을 검증했는데, 이 과정에서 크로스파일 오염 문제가 드러나 `fileParallelism: false`로 고쳤다(위 "DB 테스트" 섹션 참고) — 파일 단독 실행은 통과하는데 전체 스위트 실행에서만 랜덤 실패하는 증상이었다.
-- `.claude/hooks/pre-commit-check.sh`는 lint → `test:paired` → `typecheck`(`next typegen && tsc --noEmit`) 순서로 커밋을 검사한다. `test:paired`는 `dev` 대비 변경된 소스를 import 그래프가 아니라 파일명 규약으로 매핑해, 존재하는 `*.test.ts(x)` 또는 `*.integration.test.ts(x)`만 실행한다. 따라서 배럴 import 연쇄와 무관하게 빠르지만 다른 파일의 회귀는 놓칠 수 있다. 또한 이 스크립트는 실제 Git hook이 아니라 Claude의 PreToolUse 훅이라 터미널에서 직접 실행한 `git commit`에는 적용되지 않는다.
-- **`test:coverage`(전체)와 `test:coverage:diff`(게이트)는 실행되는 테스트가 같고 임계값을 들이대는 대상만 다르다** — 전자는 `coverage.include` 전체, 후자는 `dev` 대비 변경된 파일만. 게이트가 전체를 못 보는 이유는 기존 미달 파일 때문에 무관한 커밋까지 막히기 때문이고, 그 부채가 해소되면 `test:coverage` 하나로 합칠 수 있다(전체 모드는 변경 안 한 파일의 커버리지 하락까지 잡으므로 그쪽이 더 강하다). 좁히기는 vitest 내장 `--coverage.changed`가 하고, `scripts/test-coverage-diff.js`는 "변경된 소스가 0개면 스위트 전체를 건너뛴다"는 조기 종료만 담당한다 — `--coverage.changed`는 측정 범위만 좁히고 테스트는 전부 실행하기 때문이다. **주의: 이 좁히기는 파일 단위지 줄 단위가 아니다** — 이미 100% 커버된 100줄 파일에 미커버 25줄을 추가해도 100/125=80%로 통과한다.
-- **테스트 배치는 3층이다** — ①`tdd-gate.js`(PreToolUse, 짝 테스트 파일 **존재** 강제)와 `run-test-file.js`(PostToolUse, 편집 직후 짝 테스트 하나를 **실행**해 결과 반환, 차단 안 함) ②`pre-commit-check.sh`(Claude 커밋 시 lint+짝 테스트+typecheck) ③`.github/workflows/test-coverage.yml`(PR에서 전체 스위트를 실행하면서 변경 파일의 커버리지 임계값 검사). `run-test-file.js`만 fail-open이다 — 게이트가 아니라 정보 전달이라 고장 나도 잘못 허용되는 게 없고, 닫으면 작업만 막힌다. 커버리지 임계값은 짝 테스트만으로 계산하면 실제보다 낮아질 수 있으므로 커밋 층에 두지 않는다.
-- `coverage.include`는 `.test.ts(x)`가 실제로 존재하는 소스 파일 목록으로 `vitest.config.ts`가 매번 자동 스캔해서 채운다(`glob` 패키지, `src/**/*.test.{ts,tsx}` → `.test` 뗀 경로). 이유: `src/CLAUDE.md`의 배럴 전용 import 컨벤션 때문에 컴포넌트 하나만 import해도 배럴 연쇄(예: `@/components/atoms` → `sidebar.tsx` → `@/hooks` → `useAuth.ts`)로 무관한 파일이 대량으로 로드된다 — vitest 커버리지는 "직접 테스트한 파일"이 아니라 "테스트 실행 중 로드된 파일"을 리포트에 잡으므로, `include`로 명시하지 않으면 테스트 하나 추가할 때마다 무관한 레거시 파일들이 커버리지 미달로 같이 실패한다(`coverage.all: false`로는 못 막는다 — 그 파일들은 실제로 로드되므로 `all` 설정과 무관하게 리포트에 잡힌다).
+- TDD Guard와 mutation 설정은 같은 테스트-소스 그래프를 사용한다. 배럴과 동적 import를 포함한 전이 의존성을 추적하므로 파일명만 역산할 때 생기던 범위 누락을 피한다.
+- 제거된 `test:coverage`와 과거 `test:coverage:diff`는 현재 공개 검증 계약이 아니다. 빠른 피드백은 관련 Vitest 실행과 TDD Guard가, assertion 강도 검증은 mutation testing이 담당한다.
 - 컴포넌트 테스트 컨벤션(위 "컴포넌트 테스트"/"컴포넌트 테스트 인프라 셋업" 섹션)은 `src/client/components/molecules/BaseSelect.tsx`(Radix Select 조합, 이 프로젝트 molecule 대표 사례)로 렌더링+상호작용 테스트를 실제로 작성해보며 검증했다 — `.env` 미로딩/cleanup 누락/jsdom Pointer Events 미구현 3가지를 실제로 겪고 고쳤다. 다만 `organisms`(여러 상호작용의 로컬 상태 오케스트레이션) 쪽은 아직 실제 작성된 테스트가 없어 그 부분 컨벤션은 미검증이다.
 - `services/` 함수의 조회형/확인형 에러 처리 이분법은 프로젝트 자체 규칙이 아니라 Next.js 공식 문서 두 곳(`node_modules/next/dist/docs/01-app/02-guides/authentication.md`의 `dal.ts` 예제, `data-security.md`의 `deletePost` 예제)에 각각 근거가 있다 — `AppError` 클래스와 분류 taxonomy(`UNAUTHENTICATED`/`NOT_FOUND` 등)만 공식 문서에 없는 프로젝트 고유 확장이다(`src/server/services/CLAUDE.md` 참고). 이 구분을 무시하고 모든 services 함수를 한 가지 패턴으로 테스트하지 않는다.
 
