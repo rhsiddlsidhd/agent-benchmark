@@ -106,7 +106,7 @@ workflow `timeout-minutes`는 비정상 정지와 무한 대기를 끊는 안전
 dependency/cache miss, 대규모 변경을 수용하도록 static/tdd-policy 10분, unit shard와
 client integration 15분, server integration과 E2E 20분, changed mutation 30분으로 둔다.
 시간 초과는 제품 품질 실패가 아니라 CI 비정상 종료로 분류해 원인을 조사한다. 전체
-전체 mutation은 nightly/manual로, PortOne 실제 테스트 결제는 manual로 분리한다.
+전체 mutation은 weekly/manual로, PortOne 실제 테스트 결제는 manual로 분리한다.
 
 로컬 `test:mutation:full`은 저장소 안에 report를 누적하지 않는다. 기본 출력은
 `$XDG_STATE_HOME/tie-knot/mutation/full/latest`(미설정 시

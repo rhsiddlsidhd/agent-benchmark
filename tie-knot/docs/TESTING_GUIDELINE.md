@@ -49,7 +49,7 @@ src/
 
 ### 작성 순서 — Red 확인
 
-- **소스를 쓰기 전에 짝 테스트를 먼저 쓰고, 그 테스트가 실패하는 걸 확인한 뒤 소스에 들어간다.** `.claude/hooks/run-test-file.js`(PostToolUse)가 `src/` 파일 편집 직후 관련 테스트 하나만 자동으로 돌려 결과를 돌려준다 — 손으로 돌릴 필요는 없지만 결과는 읽어야 한다.
+- **소스를 쓰기 전에 관련 테스트를 먼저 쓰고 `npm run test:red -- --scope <scope>`로 새 실패를 증명한 뒤 소스에 들어간다.** Claude와 Codex의 편집 hook은 공통 TDD Guard proof를 확인하며, 편집 후 proof 상태를 갱신한다.
 - 테스트 파일을 쓴 직후 **통과**가 나왔으면 소스가 아니라 테스트를 고친다 — 아직 없는 동작을 검사하고 있다면 통과할 수 없기 때문이다. assertion을 빠뜨렸거나 엉뚱한 걸 보고 있다는 신호다. 단 Refactor 단계에서 기존 테스트를 정리한 경우는 통과가 정상이다 — 훅은 두 단계를 구분하지 못하므로 판정은 사람/에이전트 몫이다.
 - 실패했다고 바로 넘어가지 않는다 — `expected ... to be ...`(assertion 불일치)면 진짜 Red지만, `Cannot find module`/`Failed to resolve import`은 미구현이 아니라 경로 오류다.
 - **이미 존재하는 동작에 뒤늦게 테스트를 붙일 땐 Red를 만들 수 없다** — 대신 소스를 일부러 깨뜨려 그 테스트가 빨개지는지 확인하고 되돌린다. 빨개지지 않으면 그 테스트는 아무것도 검증하지 않는다. 아래 Mutation Testing이 이 절차를 CI에서 기계적으로 하는 것이다.
@@ -59,19 +59,21 @@ src/
 
 - **테스트 파일명은 `*.test.ts(x)`가 기본이고, 실물 mongod(`mongodb-memory-server`)에 붙는 테스트만 `*.integration.test.ts(x)`로 짓는다.** 판정 기준은 이것 하나다 — mock을 얼마나 썼는지, RTL을 썼는지, 모듈 여러 개가 얽혔는지는 기준이 아니다. `grep -lE "dbConnect|clearCollections"`로 기계적으로 판정된다.
 - **파일 안에 DB 테스트가 하나라도 있으면 그 파일 전체가 integration이다** — vitest의 실행 단위는 `it`이 아니라 파일이라, 파일 하나가 통째로 한 묶음에 들어간다.
-- **실행을 가르지 않는 접미사는 붙이지 않는다.** `vitest.config.ts`의 `projects`가 이 접미사로 두 묶음을 나누므로 접미사가 곧 실행 셀렉터다 — 분류를 사람에게 설명하려는 라벨(`*.regression.test.ts` 등)을 새로 만들지 않는다. 설명은 파일 안 `describe`와 주석이 한다.
+- **실행을 가르지 않는 접미사는 붙이지 않는다.** `vitest.config.ts`의 projects가 접미사와 경로로 실행 환경을 나누므로 접미사가 곧 실행 셀렉터다 — 분류 설명용 라벨(`*.regression.test.ts` 등)을 새로 만들지 않는다.
 - MSW나 `vi.mock`으로 네트워크만 가로챈 컴포넌트 테스트는 **unit 쪽**이다 — 테스트 분류 taxonomy가 아니라 "프로세스 밖 공유 자원을 쓰는가"가 기준이기 때문이다.
 
-### 두 실행 묶음
+### 공개 실행 묶음
 
 | 묶음 | 대상 | mongod | 파일 병렬 |
 | --- | --- | --- | --- |
 | `unit` | `*.test.ts(x)` (integration 제외) | 안 띄움 | 병렬 |
-| `integration` | `*.integration.test.ts(x)` | 띄움 | 순차 |
+| `integration-client` | `tests/integration/client`, `src/client/**/*.integration.test.*` | 안 띄움 | 병렬 |
+| `integration-server` | `src/server`, `src/app/api`, `tests/integration/server`의 integration | 띄움 | 순차 |
+| `integration-rsc` | `src/app`의 API 외 integration | 띄움 | 순차 |
 
-- 한쪽만 돌리려면 `npx vitest --project unit` / `--project integration`. 컴포넌트만 고치는 중이라면 `unit`만 돌려 mongod 기동을 건너뛴다.
+- 공개 명령은 `npm run test:unit`, `npm run test:integration:client`, `npm run test:integration:server`다. server 명령은 `integration-server`와 `integration-rsc` project를 함께 실행한다.
 - **`connect.ts`의 URI 검증은 모듈 로드가 아니라 `dbConnect()` 호출 시점에 건다** — 지키려는 불변조건이 "테스트가 프로덕션 DB에 연결하지 않는다"라 검증도 연결 시점에 있어야 한다. 로드 시점에 두면 `unit` 묶음(mongod 없음)의 테스트가 배럴 캐스케이드로 그 모듈을 로드하는 것만으로 터진다.
-- **`.claude/hooks/tdd-gate.js`는 `*.test.ts(x)`와 `*.integration.test.ts(x)` 둘 다 짝 테스트로 인정한다** — 한쪽만 보면 `services/`처럼 DB 테스트만 가진 파일이 "테스트 없음"으로 오판돼 수정이 막힌다.
+- 공통 TDD Guard 그래프는 `*.test.ts(x)`와 `*.integration.test.ts(x)`를 모두 제품 코드에 연결한다. 파일명 역산이 아니라 런타임 import 전이 관계로 관련 테스트를 찾는다.
 
 ### 범위/순서
 
@@ -84,7 +86,7 @@ src/
 - DB가 걸린 로직은 `mongodb-memory-server`로 실제 mongoose 쿼리를 실행해 검증한다 — mongoose model을 `vi.mock`으로 대체하지 않는다. 이유: mock은 쿼리 정확성(필터 조건, `.lean()`/`.toJSON()` 결과 shape)을 검증하지 못하고, 구현 디테일에 묶인 mock은 리팩터마다 재작성해야 한다 — 계약(입출력)만 보는 통합 테스트가 리팩터에 더 강하다.
 - `mongodb-memory-server` 인스턴스는 vitest `globalSetup`(`src/test/setup/mongo-server.ts`)에서 테스트 스위트 전체당 1개만 띄운다 — 테스트 파일마다 새 인스턴스를 만들지 않는다. 이유: 파일마다 기동하면 스위트 전체 시간이 선형으로 늘어난다. 테스트 간 격리는 각 `beforeEach`에서 관련 컬렉션을 `deleteMany`로 비워 확보한다(`clearCollections`, `src/test/db.ts`).
 - **mongod 버전은 `mongo-server.ts`의 `MONGOD_VERSION`으로 고정한다** — 생략하면 `mongodb-memory-server` 패키지가 정한 기본 버전을 쓰므로, 패키지를 올릴 때 테스트가 도는 mongod 버전이 조용히 바뀐다. 운영(Atlas) 클러스터 버전을 올릴 때 이 값도 같이 맞춘다.
-- **이 격리는 테스트 파일들이 순차 실행될 때만 유효하다** — `integration` 프로젝트에 `fileParallelism: false`를 설정해 DB 테스트 파일들이 병렬이 아니라 순차로 돈다. 이유: 인스턴스를 스위트당 1개만 띄우는 설계상 여러 파일이 같은 DB를 공유하는데, vitest 기본값(파일 병렬 실행)에서는 파일 A의 `beforeEach`(`deleteMany`)가 파일 B가 막 써넣은 데이터를 지워버리는 크로스파일 오염이 생긴다 — 실제로 `coupleInfo`/`product`/`guestbook` service 테스트 3개를 처음 같이 추가했을 때 이 레이스로 무더기 실패가 재현됐다(파일 단독 실행은 통과, 전체 스위트 실행은 랜덤 실패). **이 제약은 `integration` 묶음에만 걸린다** — 예전엔 설정이 하나뿐이라 DB를 안 쓰는 120개까지 같이 직렬로 묶여 있었고, 묶음을 나눈 뒤 전체 스위트가 616초에서 296초로 줄었다.
+- **이 격리는 테스트 파일들이 순차 실행될 때만 유효하다.** `integration-server`와 `integration-rsc`에 `fileParallelism: false`를 설정한다. 여러 파일이 같은 DB를 공유하므로 한 파일의 `beforeEach`가 다른 파일의 데이터를 지우는 레이스를 막기 위한 제약이며, DB를 쓰지 않는 unit/client에는 적용하지 않는다.
 - mongoose 테스트 데이터는 `src/test/factories/{도메인}.factory.ts`의 팩토리 함수(`buildUserInput(overrides?)` 등)로 만든다 — 매 테스트 파일에 객체 리터럴을 인라인으로 반복하지 않는다. 이유: 모델 스키마에 필수 필드가 추가되면 인라인 방식은 테스트 파일 전부 고쳐야 하지만 팩토리는 한 곳만 고치면 된다.
 - 팩토리와 헬퍼는 배럴 `@/test` 하나로만 import한다 — `@/test/db`나 `@/test/factories/product.factory` 같은 개별 경로로 찌르지 않는다(`src/CLAUDE.md` 배럴 전용 import 원칙).
 
@@ -129,15 +131,15 @@ src/
 - Stryker Mutator(`@stryker-mutator/core` + `@stryker-mutator/vitest-runner`) 사용. coverage(실행 여부)만으로 못 잡는 부실 assertion(예: 값 검증 없이 `toBeDefined()`/`toBeTruthy()`만 쓰는 경우)을 survived mutant로 검출한다.
 - mutate 대상은 `scripts/test-scope/test-graph.mjs`가 찾은 제품 소스다. 테스트의 직접·간접 런타임 import를 포함하고 `import type`은 제외한다. 로컬 import를 해석하지 못하면 범위를 조용히 누락하지 않고 실패한다.
 - threshold(`stryker.config.mjs` `thresholds`): high 80 / low 60 / break 60 — score가 60 미만이면 CI 실패.
-- diff-scoped 실행은 `--incremental`로 한다(`--since`는 stryker-js 현재 버전에 없는 옵션, Stryker 6.2+부터 incremental mode로 대체됐다). `dev` push마다(`save-test-score.yml`) baseline report(`reports/stryker-incremental.json`)를 캐시 저장하고, PR workflow(`comment-test-score.yml`)가 그 캐시를 복원해 재사용한다 — killed mutant는 관련 test가 안 바뀌면 skip, survived mutant는 새 test가 커버하지 않으면 skip. 전체 repo가 아니라 baseline 대비 변경분만 재실행된다.
-- **mutation testing은 CI 전담이다 — 로컬에서 예방 목적으로 돌리지 않는다.** 이유: incremental mode는 baseline 파일이 실행 간 지속돼야 이득이 있는데(Stryker 공식 문서), 이 프로젝트는 작업 1개당 새 worktree를 파고(`docs/GIT.md`) `reports*`가 `.gitignore` 대상이라 로컬에 baseline이 지속되지 않는다 — 즉 로컬 실행은 매번 baseline 없는 전체 스캔이라 항상 최대 소요시간(수십 분)을 낸다. 업계 통설도 같다: mutation testing은 비싸서 매 커밋 로컬 실행은 team 전체를 지치게 만들고, "로컬은 빠른 피드백(lint/test/coverage), CI가 diff-scoped/스케줄 mutation"으로 나누는 게 표준이다.
-- 로컬 훅(1차 `tdd-gate.js`/2차 `pre-commit-check.sh`)은 mutation을 막지 않는다 — 그게 설계다. mutation의 최종 관문은 `dev` branch protection의 required status check(`comment-test-score.yml`) 하나뿐이다.
+- `npm run test:mutation`은 `dev` merge-base 이후 변경된 제품 줄과 공통 그래프의 관련 테스트만 실행하는 PR/로컬 명령이다. static mutant를 포함하며 mutant가 없으면 N/A다.
+- `npm run test:mutation:full`은 전체 제품 범위를 incremental mode로 실행한다. 로컬 baseline/report는 XDG state에 유지하고, CI는 매주 토요일 최신 `dev` 결과를 cache·artifact·Dashboard에 남긴다.
+- mutation은 편집 hook이 아니라 CI의 required `mutation-changed`가 최종 차단한다. 전체 mutation은 장기 추세 관측용이며 PR required check가 아니다.
 
 ### survived mutant 대응 흐름
 
-1. PR 코멘트의 mutation score 확인 → score 미달이거나 survived mutant가 있으면 `mutation-report` artifact(HTML)를 받아 어떤 mutant가 survived인지 확인한다.
+1. `mutation-changed` 로그에서 survived mutant를 확인한다. 주간 전체 결과는 `full-mutation-<run-id>` artifact 또는 Stryker Dashboard에서 확인한다.
 2. survived mutant가 가리키는 라인의 assertion을 보강한다 — 값 자체를 검증하지 않고 존재만 확인하는 패턴(`toBeDefined`/`toBeTruthy`)이 대표적이다, `toBe`/`toEqual`/`toMatchObject`로 구체화한다.
-3. 고친 게 실제로 killed로 바뀌는지는 `npm run test:mutation -- --mutate <고친 파일 경로>`로 그 파일만 좁혀 **로컬에서 디버깅 용도로만** 재실행한다 — 사전 게이트가 아니라 "이 assertion이 맞게 고쳐졌는지" 확인 목적이라 스코프를 좁혀도 충분하다. 스코프 없이 전체(`npm run test:mutation`)를 다시 돌리지 않는다.
+3. 고친 제품 줄이 killed로 바뀌는지는 `npm run test:mutation`으로 확인한다. 범위는 명령이 merge-base와 변경 줄에서 자동 계산하므로 `--mutate` 수동 범위를 받지 않는다.
 
 ## Gotchas
 
@@ -155,5 +157,5 @@ src/
 - 배럴/import 원칙: `src/CLAUDE.md`
 - `.lean()`/`.toJSON()` 트레이드오프: `src/server/services/doc.md`
 - 컴포넌트 계층(atoms/molecules/organisms/templates) 분류 기준, 순수성 원칙: `src/client/components/CLAUDE.md`
-- mutation testing 설정: `stryker.config.mjs`, CI workflow: `.github/workflows/comment-test-score.yml`, `save-test-score.yml`
+- mutation testing 설정: `stryker.config.mjs`, `stryker.changed.config.mjs`; CI workflow: `.github/workflows/tdd.yml`, `.github/workflows/full-mutation.yml`
 - molecules 세부 정의/예시: `src/client/components/molecules/CLAUDE.md`
