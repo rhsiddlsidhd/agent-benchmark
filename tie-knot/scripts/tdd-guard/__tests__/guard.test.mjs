@@ -7,7 +7,7 @@ import { analyzeTestQuality } from "../core/analyze-test-quality.mjs";
 import { extractFiles } from "../bin/guard.mjs";
 import { classifyScope, requiredScopePolicy, requiredScopes } from "../core/classify-scope.mjs";
 import { ciChangedFiles } from "../core/ci-policy.mjs";
-import { configHash, diffHash, head } from "../core/hash-worktree.mjs";
+import { configHash, diffHash, head, sha256 } from "../core/hash-worktree.mjs";
 import { exceptionAllows, loadExceptions } from "../core/policy.mjs";
 import { invalidate, readProof, writeProof } from "../core/proof-store.mjs";
 import { greenProof, implementingProof, mutationProof, proofValidity, redProof, verifiedProof } from "../core/proof-state.mjs";
@@ -223,7 +223,11 @@ describe("필수 Guard 상태 전이", () => {
   });
   it("실제 Stryker JSON에서 killed/survived를 구분한다", () => {
     const dir = temp();
-    write(path.join(dir, "reports/mutation/mutation.json"), JSON.stringify({ files: { "src/value.ts": { mutants: [{ status: "Killed" }] } } }));
+    write(path.join(dir, "src/value.ts"), "export const value = 1;\n");
+    const report = JSON.stringify({ files: { "src/value.ts": { mutants: [{ status: "Killed" }] } } });
+    write(path.join(dir, "reports/mutation/mutation.json"), report);
+    const sourceHash = sha256(`src/value.ts:1-1\0${fs.readFileSync(path.join(dir, "src/value.ts"))}`);
+    write(path.join(dir, "reports/mutation/changed-proof.json"), JSON.stringify({ status: "PASSED", targets: ["src/value.ts:1-1"], sourceHash, reportHash: sha256(report) }));
     expect(mutationStatus(dir)).toMatchObject({ proven: true, killed: 1, survived: 0 });
   });
 });

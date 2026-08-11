@@ -130,16 +130,24 @@ jobs:
   mutation-changed:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      MONGOMS_DOWNLOAD_DIR: ~/.cache/mongodb-binaries
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: tie-knot/package-lock.json
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-8.2.6-${{ runner.os }}
       - run: npm ci
         working-directory: tie-knot
-      - run: npm run test:mutation
+      - run: npm run test:mutation -- --base origin/dev
         working-directory: tie-knot
 
   tdd-policy:

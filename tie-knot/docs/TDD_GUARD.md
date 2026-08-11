@@ -35,6 +35,17 @@ AST 검사는 빈/0개/assertion 없는/상수 assertion/skip·todo/제품 미�
 테스트를 막는다. 하지만 정적 분석은 assertion의 비즈니스 의미나 equivalent mutant를
 완전히 판정할 수 없다. Vitest 결과와 mutation 결과, 사람의 리뷰가 함께 필요하다.
 
+`test:mutation`은 `dev`와 현재 HEAD의 merge-base를 구한 뒤 변경된 제품 코드의 줄 범위만
+mutation 대상으로 넘기고, 공통 테스트-소스 그래프에서 그 소스와 연결된 테스트만
+실행한다. 변경된 테스트 연결 제품 줄이 없거나 생성된 mutant가 없으면 성공적인 `N/A`로
+기록한다. 결과 proof에는 merge-base, HEAD, 대상 줄, 대상 소스 내용 hash와 report hash를
+저장해 이후 코드나 report가 달라진 결과를 재사용하지 못하게 한다. static mutant도
+`ignoreStatic: false`로 포함한다.
+
+실제로 동등한 mutant만 `mutation-equivalents.json`에 `id`, `file`, `mutant`
+(`line:mutatorName`), `owner`, `reason`, `expiresAt`을 기록해 한시적으로 허용한다. 만료되거나
+필수 필드가 없는 예외는 전체 mutation 판정을 실패시킨다.
+
 ## 테스트 scope
 
 - `unit`: Zod, 가격·할인·수량, Zustand, hook, component 공개 계약
