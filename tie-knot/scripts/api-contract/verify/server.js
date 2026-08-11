@@ -2,7 +2,7 @@ const { spawn } = require("child_process");
 const path = require("path");
 const http = require("http");
 
-const REPO_ROOT = path.join(__dirname, "../..");
+const REPO_ROOT = path.join(__dirname, "../../..");
 
 function ping(baseUrl) {
   return new Promise((resolve) => {
@@ -69,4 +69,4 @@ async function ensureDevServer(baseUrl) {
   };
 }
 
-module.exports = { ensureDevServer };
+module.exports = { ensureDevServer, repoRoot: REPO_ROOT };

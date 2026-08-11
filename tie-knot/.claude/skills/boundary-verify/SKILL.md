@@ -12,8 +12,8 @@ description: "API↔프론트 훅, 라우팅, 상태 전이, DB↔API↔UI 필�
 이 프로젝트엔 이미 검증 스크립트가 있다 — 수작업 grep 전에 먼저 돌린다:
 
 ```bash
-npm run report:api   # src/app/api/**/route.ts 스캔, 라우트 목록/shape 추출 → scripts/api-report/output/
-npm run verify:api    # 실제 개발서버에 요청 보내 응답을 스키마와 대조 → scripts/api-verify/output/
+npm run report:api   # src/app/api/**/route.ts 스캔, 라우트 목록/shape 추출 → scripts/api-contract/report/output/
+npm run verify:api    # 실제 개발서버에 요청 보내 응답을 스키마와 대조 → scripts/api-contract/verify/output/
 ```
 
 이 결과를 1차 신호로 삼고, 아래 7기준 중 스크립트가 커버 못 하는 부분(라우팅 매핑, 상태 전이, Server Action/채널 A, 옵셔널 필드 처리 등)을 수동으로 마저 채운다.

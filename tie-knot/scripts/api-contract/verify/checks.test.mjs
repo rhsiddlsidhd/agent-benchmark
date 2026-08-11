@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import checksModule from "./checks.js";
-import runModule from "./run.js";
+import runModule from "./cli.js";
 
 const { buildChecks } = checksModule;
 const { warnForMissingPreviewInfo } = runModule;

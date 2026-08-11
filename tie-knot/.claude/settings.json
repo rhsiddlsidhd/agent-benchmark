@@ -4,7 +4,7 @@
       "matcher": "Write|Edit",
       "hooks": [{
         "type": "command",
-        "command": "node ${CLAUDE_PROJECT_DIR}/scripts/tdd-guard/claude-adapter.mjs pre-edit",
+        "command": "node ${CLAUDE_PROJECT_DIR}/scripts/tdd-guard/adapters/claude.mjs pre-edit",
         "timeout": 10,
         "statusMessage": "공통 TDD proof 확인 중"
       }]
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PROJECT_DIR}/scripts/tdd-guard/claude-adapter.mjs post-edit",
+            "command": "node ${CLAUDE_PROJECT_DIR}/scripts/tdd-guard/adapters/claude.mjs post-edit",
             "timeout": 10
           }
         ]

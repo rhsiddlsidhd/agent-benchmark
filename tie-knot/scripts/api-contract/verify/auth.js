@@ -30,10 +30,10 @@ async function getCookieHeader(role) {
   if (!jwtSecret) throw new Error("JWT_SECRET 환경변수가 필요합니다.");
 
   const { dbConnect } = await import(
-    path.join(__dirname, "../../src/server/lib/mongodb/connect.ts")
+    path.join(__dirname, "../../../src/server/lib/mongodb/connect.ts")
   );
   const { UserModel } = await import(
-    path.join(__dirname, "../../src/server/models/user.model.ts")
+    path.join(__dirname, "../../../src/server/models/user.model.ts")
   );
 
   await dbConnect();

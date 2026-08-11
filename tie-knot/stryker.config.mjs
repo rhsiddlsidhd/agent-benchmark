@@ -1,8 +1,8 @@
 // mutation 대상도 커버리지 게이트(vitest.config.ts)와 동일 스코프를 쓴다 —
-// 산출 규칙은 scripts/tested-source-files.mjs 한 곳에만 둔다.
+// 산출 규칙은 scripts/test-scope/tested-source-files.mjs 한 곳에만 둔다.
 // 여기서는 글롭 이스케이프를 하지 않는다 — stryker는 파일 목록을 직접 순회한 뒤
 // minimatch로 대조하므로 괄호 든 경로가 그대로 매칭된다(vitest의 tinyglobby 순회와 다름).
-import { testedSourceFiles } from "./scripts/tested-source-files.mjs";
+import { testedSourceFiles } from "./scripts/test-scope/tested-source-files.mjs";
 
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 export default {

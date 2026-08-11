@@ -13,7 +13,7 @@ export function resolveTests(root, source) {
   const candidates = [...new Set([
     ...tracked,
     ...globSync("**/*.test.{ts,tsx,mjs}", { cwd: root, nodir: true, ignore: ["node_modules/**", ".next/**"] }),
-  ])];
+  ])].filter((file) => fs.existsSync(path.join(root, file)));
   return candidates.filter((file) => reachesSource(root, file, source));
 }
 

@@ -3,13 +3,13 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { afterAll, describe, expect, it } from "vitest";
-import { main } from "./cli.mjs";
+import { main } from "../bin/guard.mjs";
 
 void main;
 
-const projectRoot = path.resolve(import.meta.dirname, "../..");
-const cli = path.join(projectRoot, "scripts/tdd-guard/cli.mjs");
-const codexAdapter = path.join(projectRoot, "scripts/tdd-guard/codex-adapter.mjs");
+const projectRoot = path.resolve(import.meta.dirname, "../../..");
+const cli = path.join(projectRoot, "scripts/tdd-guard/bin/guard.mjs");
+const codexAdapter = path.join(projectRoot, "scripts/tdd-guard/adapters/codex.mjs");
 const roots = [];
 
 function write(file, value) {

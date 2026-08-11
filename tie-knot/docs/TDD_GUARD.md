@@ -4,10 +4,10 @@
 `docs/TESTING_GUIDELINE.md`는 기존 체계를 파악하기 위한 감사 증거일 뿐, 이 Guard의
 scope·proof·mutation·CI 정책 기준으로 사용하지 않는다.
 
-공통 CLI `scripts/tdd-guard/cli.mjs`가 Claude Code와 Codex adapter, 로컬 명령,
-CI의 단일 정책 구현이다. 로컬 가드레일은 빠른 실수 방지 장치이고, GitHub Actions와
-branch protection이 절대 통과해야 하는 최종 관문이다. 최종 경계는 branch protection의
-`tdd-policy`와 각 테스트 job이다.
+공통 CLI `scripts/tdd-guard/bin/guard.mjs`가 Claude Code와 Codex adapter, 로컬 명령,
+CI의 단일 정책 구현이다. 로컬 가드레일은 빠른 실수 방지 장치이고, Hook 자체는 보안
+경계가 아니다. GitHub Actions와 branch protection이 절대 통과해야 하는 최종 관문이며,
+최종 경계는 branch protection의 `tdd-policy`와 각 테스트 job이다.
 
 CI에서는 OS-local proof를 신뢰하거나 전달하지 않는다. `guard verify --ci`가 PR merge
 base 이후 변경된 guarded 제품 파일마다 관련 테스트 존재와 AST 품질, 예외 만료를

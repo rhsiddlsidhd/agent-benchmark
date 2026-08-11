@@ -2,21 +2,21 @@
 import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { analyzeTestQuality } from "./analyze-test-quality.mjs";
-import { classifyFile, isTestFile, normalizePath } from "./classify-file.mjs";
-import { classifyScope, requiredScopePolicy } from "./classify-scope.mjs";
-import { changedFiles, configHash, diffHash, head } from "./hash-worktree.mjs";
-import { mutationStatus } from "./mutation.mjs";
-import { shouldGuard } from "./policy.mjs";
-import { invalidate, readProof, writeProof } from "./proof-store.mjs";
-import { implementingProof, greenProof, mutationProof, proofValidity, redProof, verifiedProof } from "./proof-state.mjs";
-import { resolveSources, resolveTests } from "./resolve-tests.mjs";
-import { runBaseline } from "./run-baseline.mjs";
-import { runVitest } from "./run-vitest.mjs";
-import { assertGreen, newRedFailures } from "./result-policy.mjs";
-import { verifyCiPolicy } from "./ci-policy.mjs";
+import { analyzeTestQuality } from "../core/analyze-test-quality.mjs";
+import { classifyFile, isTestFile, normalizePath } from "../core/classify-file.mjs";
+import { classifyScope, requiredScopePolicy } from "../core/classify-scope.mjs";
+import { changedFiles, configHash, diffHash, head } from "../core/hash-worktree.mjs";
+import { mutationStatus } from "../core/mutation.mjs";
+import { shouldGuard } from "../core/policy.mjs";
+import { invalidate, readProof, writeProof } from "../core/proof-store.mjs";
+import { implementingProof, greenProof, mutationProof, proofValidity, redProof, verifiedProof } from "../core/proof-state.mjs";
+import { resolveSources, resolveTests } from "../core/resolve-tests.mjs";
+import { runBaseline } from "../core/run-baseline.mjs";
+import { runVitest } from "../core/run-vitest.mjs";
+import { assertGreen, newRedFailures } from "../core/result-policy.mjs";
+import { verifyCiPolicy } from "../core/ci-policy.mjs";
 
-export const root = path.resolve(process.env.TDD_GUARD_ROOT || path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.."));
+export const root = path.resolve(process.env.TDD_GUARD_ROOT || path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.."));
 
 function snapshot(repo = root) {
   const changed = changedFiles(repo);

@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 // ERR_MODULE_NOT_FOUND로 깨졌다. tsconfig.json의 `"@/*": ["./src/*"]`와 동일한 규칙만
 // 최소로 재현한다.
 const SRC_ROOT = pathToFileURL(
-  new URL("../../src/", import.meta.url).pathname,
+  new URL("../../../src/", import.meta.url).pathname,
 ).href;
 
 const CANDIDATE_SUFFIXES = ["", ".ts", ".tsx", "/index.ts", "/index.tsx"];
