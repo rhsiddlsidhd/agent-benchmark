@@ -29,9 +29,7 @@
     "test:green": "node scripts/tdd-guard/bin/guard.mjs prove-green",
     "tdd:status": "node scripts/tdd-guard/bin/guard.mjs status",
     "tdd:verify": "node scripts/tdd-guard/bin/guard.mjs verify",
-    "check": "npm run lint && npm run typecheck && npm run test:unit && npm run test:integration:client && npm run test:integration:server",
-    "report:api": "node scripts/api-contract/report/scan.js",
-    "verify:api": "node scripts/api-contract/verify/cli.js"
+    "check": "npm run lint && npm run typecheck && npm run test:unit && npm run test:integration:client && npm run test:integration:server"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
