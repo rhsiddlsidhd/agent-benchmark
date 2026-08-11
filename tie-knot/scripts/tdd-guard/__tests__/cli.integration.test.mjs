@@ -4,6 +4,7 @@ import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { afterAll, describe, expect, it } from "vitest";
 import { main } from "../bin/guard.mjs";
+import { sha256 } from "../core/hash-worktree.mjs";
 
 void main;
 
@@ -107,7 +108,10 @@ describe("공통 Guard CLI 전체 상태 전이", () => {
     expect(green.status, green.stderr || green.stdout).toBe(0);
     expect(JSON.parse(green.stdout)).toMatchObject({ state: "GREEN_PROVEN[unit]", greenScopes: ["unit"] });
 
-    write(path.join(root, "reports/mutation/mutation.json"), JSON.stringify({ files: { "src/value.ts": { mutants: [{ status: "Killed" }] } } }));
+    const report = JSON.stringify({ files: { "src/value.ts": { mutants: [{ status: "Killed" }] } } });
+    write(path.join(root, "reports/mutation/mutation.json"), report);
+    const sourceHash = sha256(`src/value.ts:1-1\0${fs.readFileSync(path.join(root, "src/value.ts"))}`);
+    write(path.join(root, "reports/mutation/changed-proof.json"), JSON.stringify({ status: "PASSED", targets: ["src/value.ts:1-1"], sourceHash, reportHash: sha256(report), surviving: [] }));
     const verified = run(root, state, ["verify"]);
     expect(verified.status, verified.stderr || verified.stdout).toBe(0);
     expect(JSON.parse(verified.stdout)).toMatchObject({ state: "VERIFIED", mutation: { killed: 1, survived: 0 } });
