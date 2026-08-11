@@ -108,6 +108,13 @@ client integration 15분, server integration과 E2E 20분, changed mutation 30�
 시간 초과는 제품 품질 실패가 아니라 CI 비정상 종료로 분류해 원인을 조사한다. 전체
 전체 mutation은 nightly/manual로, PortOne 실제 테스트 결제는 manual로 분리한다.
 
+로컬 `test:mutation:full`은 저장소 안에 report를 누적하지 않는다. 기본 출력은
+`$XDG_STATE_HOME/tie-knot/mutation/full/latest`(미설정 시
+`~/.local/state/tie-knot/mutation/full/latest`) 하나만 교체하고, 다음 실행에서 재사용할
+incremental baseline은 같은 상위 디렉터리의 `incremental.json`에 별도로 유지한다.
+`latest/benchmark.json`에는 그래프 탐색 시간, 전체 실행 시간, 테스트·제품 소스·mutant
+수를 기록한다. 대상과 테스트 관계는 changed mutation과 같은 공통 그래프를 사용한다.
+
 ## PortOne KG이니시스 smoke
 
 결제 채널은 KG이니시스 `inicis_v2` 테스트 채널로 확정한다. PR의 `e2e-core`는 외부

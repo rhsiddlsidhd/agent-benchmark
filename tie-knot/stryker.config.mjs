@@ -1,6 +1,8 @@
 import { buildTestGraph } from "./scripts/test-scope/test-graph.mjs";
 
-const mutationSources = buildTestGraph().sources;
+const mutationSources = buildTestGraph().sources.filter((file) => file.startsWith("src/"));
+const reportDir = process.env.STRYKER_REPORT_DIR;
+const incrementalFile = process.env.STRYKER_INCREMENTAL_FILE;
 
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 const config = {
@@ -8,6 +10,10 @@ const config = {
   mutate: mutationSources,
   testRunner: "vitest",
   reporters: ["html", "clear-text", "progress", "json"],
+  htmlReporter: { fileName: reportDir ? `${reportDir}/index.html` : "reports/mutation/full/index.html" },
+  jsonReporter: { fileName: reportDir ? `${reportDir}/mutation.json` : "reports/mutation/full/mutation.json" },
+  incremental: true,
+  incrementalFile: incrementalFile || "reports/mutation/full-incremental.json",
   coverageAnalysis: "perTest",
   // 최상위 상수와 기본 파라미터도 제품 동작이므로 기본 정책(false)대로 검사한다.
   ignoreStatic: false,
