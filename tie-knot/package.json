@@ -23,7 +23,6 @@
     "test:e2e:portone": "playwright test --config=playwright.portone.config.ts --headed",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:coverage:diff": "node scripts/test-coverage-diff.js",
     "test:mutation": "stryker run stryker.changed.config.mjs",
     "test:mutation:full": "stryker run",
     "test:red": "node scripts/tdd-guard/cli.mjs prove-red",
