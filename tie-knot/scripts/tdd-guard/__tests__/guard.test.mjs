@@ -170,6 +170,25 @@ describe("필수 Guard 상태 전이", () => {
     write(path.join(dir, "src/value.test.ts"), `import { value } from "./value";`);
     expect(resolveSources(dir, ["src/value.test.ts"])).toEqual(["src/value.ts"]);
   });
+  it("타입 전용 import는 테스트와 제품 실행 관계에서 제외한다", () => {
+    const dir = repo();
+    write(path.join(dir, "src/types.ts"), "export interface Shape { value: number }\n");
+    write(path.join(dir, "src/value.test.ts"), `import type { Shape } from "./types"; import { value } from "./value"; export const shape: Shape = { value };`);
+    expect(resolveTests(dir, "src/types.ts")).toEqual([]);
+    expect(resolveSources(dir, ["src/value.test.ts"])).toEqual(["src/value.ts"]);
+  });
+  it("문자열 동적 import의 간접 제품 의존성을 연결한다", () => {
+    const dir = repo();
+    write(path.join(dir, "src/feature.ts"), `export async function feature() { return import("./value"); }`);
+    write(path.join(dir, "src/feature.test.ts"), `import { feature } from "./feature"; void feature();`);
+    expect(resolveTests(dir, "src/value.ts")).toEqual(["src/feature.test.ts"]);
+    expect(resolveSources(dir, ["src/feature.test.ts"])).toEqual(["src/feature.ts", "src/value.ts"]);
+  });
+  it("해석할 수 없는 로컬 import를 조용히 무시하지 않는다", () => {
+    const dir = repo();
+    write(path.join(dir, "src/value.test.ts"), `import { missing } from "./missing"; void missing;`);
+    expect(() => resolveSources(dir, ["src/value.test.ts"])).toThrow(/unresolved local import/);
+  });
   it("Red 이후 허용 제품 변경은 IMPLEMENTING으로 전이한다", () => {
     expect(implementingProof(red(), state({ product: ["src/value.ts"], productHash: "product-2" }))).toMatchObject({ state: "IMPLEMENTING", productHash: "product-2" });
   });
