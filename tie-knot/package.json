@@ -15,7 +15,7 @@
     "test:e2e": "playwright test --project=core",
     "test:e2e:portone": "playwright test --config=playwright.portone.config.ts --headed",
     "test:mutation": "node scripts/test-scope/changed-mutation.mjs",
-    "test:mutation:full": "stryker run",
+    "test:mutation:full": "node scripts/test-scope/full-mutation.mjs",
     "test:red": "node scripts/tdd-guard/bin/guard.mjs prove-red",
     "test:green": "node scripts/tdd-guard/bin/guard.mjs prove-green",
     "tdd:status": "node scripts/tdd-guard/bin/guard.mjs status",
