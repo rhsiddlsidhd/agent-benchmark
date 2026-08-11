@@ -115,6 +115,12 @@ incremental baseline은 같은 상위 디렉터리의 `incremental.json`에 별�
 `latest/benchmark.json`에는 그래프 탐색 시간, 전체 실행 시간, 테스트·제품 소스·mutant
 수를 기록한다. 대상과 테스트 관계는 changed mutation과 같은 공통 그래프를 사용한다.
 
+`.github/workflows/full-mutation.yml`은 매주 토요일 06:00 KST와 수동 요청에서 항상 최신
+`dev`를 검사한다. 성공한 incremental baseline은 다음 실행 cache로 넘기고, HTML·JSON·
+benchmark report는 30일 artifact와 Job Summary로 남긴다. 전체 결과는
+`STRYKER_DASHBOARD_API_KEY` repository secret을 사용해 Stryker Dashboard의 `dev` 버전에도
+전송한다. 이 workflow는 PR required check가 아니라 장기 추세와 회귀 조사용이다.
+
 ## PortOne KG이니시스 smoke
 
 결제 채널은 KG이니시스 `inicis_v2` 테스트 채널로 확정한다. PR의 `e2e-core`는 외부
