@@ -3,19 +3,19 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { afterEach, describe, expect, it } from "vitest";
-import { analyzeTestQuality } from "./analyze-test-quality.mjs";
-import { extractFiles } from "./cli.mjs";
-import { classifyScope, requiredScopePolicy, requiredScopes } from "./classify-scope.mjs";
-import { ciChangedFiles } from "./ci-policy.mjs";
-import { configHash, diffHash, head } from "./hash-worktree.mjs";
-import { exceptionAllows, loadExceptions } from "./policy.mjs";
-import { invalidate, readProof, writeProof } from "./proof-store.mjs";
-import { greenProof, implementingProof, mutationProof, proofValidity, redProof, verifiedProof } from "./proof-state.mjs";
-import { newRedFailures } from "./result-policy.mjs";
-import { resolveSources, resolveTests } from "./resolve-tests.mjs";
-import { mutationStatus } from "./mutation.mjs";
-import { verifyUnitShards } from "./unit-shards.mjs";
-import { projectFor } from "./run-vitest.mjs";
+import { analyzeTestQuality } from "../core/analyze-test-quality.mjs";
+import { extractFiles } from "../bin/guard.mjs";
+import { classifyScope, requiredScopePolicy, requiredScopes } from "../core/classify-scope.mjs";
+import { ciChangedFiles } from "../core/ci-policy.mjs";
+import { configHash, diffHash, head } from "../core/hash-worktree.mjs";
+import { exceptionAllows, loadExceptions } from "../core/policy.mjs";
+import { invalidate, readProof, writeProof } from "../core/proof-store.mjs";
+import { greenProof, implementingProof, mutationProof, proofValidity, redProof, verifiedProof } from "../core/proof-state.mjs";
+import { newRedFailures } from "../core/result-policy.mjs";
+import { resolveSources, resolveTests } from "../core/resolve-tests.mjs";
+import { mutationStatus } from "../core/mutation.mjs";
+import { verifyUnitShards } from "../core/unit-shards.mjs";
+import { projectFor } from "../core/run-vitest.mjs";
 
 const dirs = [];
 afterEach(() => { for (const dir of dirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
@@ -122,6 +122,18 @@ describe("필수 Guard 상태 전이", () => {
   it("대응 테스트가 없으면 resolver가 빈 배열을 반환한다", () => {
     const dir = repo();
     expect(resolveTests(dir, "src/value.ts")).toEqual([]);
+  });
+  it("이동으로 삭제된 tracked 테스트는 건너뛰고 새 경로를 연결한다", () => {
+    const dir = repo();
+    write(path.join(dir, "scripts/old.mjs"), "export const value = 1;\n");
+    write(path.join(dir, "scripts/old.test.mjs"), `import { value } from "./old.mjs";\n`);
+    execFileSync("git", ["add", "scripts/old.mjs", "scripts/old.test.mjs"], { cwd: dir });
+    execFileSync("git", ["commit", "-qm", "add scripts"], { cwd: dir });
+    fs.renameSync(path.join(dir, "scripts/old.mjs"), path.join(dir, "scripts/new.mjs"));
+    fs.renameSync(path.join(dir, "scripts/old.test.mjs"), path.join(dir, "scripts/new.test.mjs"));
+    write(path.join(dir, "scripts/new.test.mjs"), `import { value } from "./new.mjs";\n`);
+
+    expect(resolveTests(dir, "scripts/new.mjs")).toEqual(["scripts/new.test.mjs"]);
   });
   it("신규 assertion 실패만 Red로 인정한다", () => {
     expect(newRedFailures(

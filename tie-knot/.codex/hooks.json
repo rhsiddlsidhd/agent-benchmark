@@ -5,7 +5,7 @@
       "matcher": "^apply_patch$",
       "hooks": [{
         "type": "command",
-        "command": "node scripts/tdd-guard/codex-adapter.mjs pre-edit",
+        "command": "node scripts/tdd-guard/adapters/codex.mjs pre-edit",
         "timeout": 10,
         "statusMessage": "Checking shared TDD proof"
       }]
@@ -14,7 +14,7 @@
       "matcher": "^apply_patch$",
       "hooks": [{
         "type": "command",
-        "command": "node scripts/tdd-guard/codex-adapter.mjs post-edit",
+        "command": "node scripts/tdd-guard/adapters/codex.mjs post-edit",
         "timeout": 10
       }]
     }]

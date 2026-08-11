@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { runBuildWithMemoryMongo } from "./build-ci.mjs";
+import { runBuildWithMemoryMongo } from "./build.mjs";
 
 describe("CI production build MongoDB 격리", () => {
   it("memory MongoDB URI로 build를 실행하고 성공해도 서버를 정리한다", async () => {

@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { loadEnvConfig } from "@next/env";
 import testScopeExclude from "./test-scope-exclude.json";
-import { testedSourceFiles, escapeGlobPath } from "./scripts/tested-source-files.mjs";
+import { testedSourceFiles, escapeGlobPath } from "./scripts/test-scope/tested-source-files.mjs";
 
 loadEnvConfig(process.cwd());
 

@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const SRC_DIR = path.join(__dirname, "../../src");
+const SRC_DIR = path.join(__dirname, "../../../src");
 const API_DIR = path.join(SRC_DIR, "app/api");
 const OUTPUT_DIR = path.join(__dirname, "output");
 const OWN_HOSTS = ["tie-knot-pi.vercel.app", "localhost"];
@@ -49,7 +49,7 @@ function collectRouteDefinitions() {
     ].map((m) => m[1]);
     const routePath = routePathFromFile(file);
     return {
-      file: path.relative(path.join(__dirname, "../.."), file),
+      file: path.relative(path.join(__dirname, "../../.."), file),
       routePath,
       normalizedPath: normalizeRoutePath(routePath),
       methods,
@@ -138,7 +138,7 @@ function collectCallSites() {
         const type = settled ? classify(value) : "dynamic";
         calls.push({
           kind,
-          file: path.relative(path.join(__dirname, "../.."), file),
+          file: path.relative(path.join(__dirname, "../../.."), file),
           line: lineOf(content, match.index),
           raw: value,
           resolvedFrom,
@@ -162,7 +162,7 @@ function collectOtherIntegrations() {
   ];
   const result = [];
   for (const { dir, desc } of targets) {
-    const abs = path.join(__dirname, "../..", dir);
+    const abs = path.join(__dirname, "../../..", dir);
     if (!fs.existsSync(abs)) continue;
     const files = walk(abs, [".ts", ".tsx"]).filter(
       (f) => !f.endsWith("index.ts") && !f.endsWith("type.ts"),
@@ -170,7 +170,7 @@ function collectOtherIntegrations() {
     result.push({
       dir,
       desc,
-      files: files.map((f) => path.relative(path.join(__dirname, "../.."), f)),
+      files: files.map((f) => path.relative(path.join(__dirname, "../../.."), f)),
     });
   }
   return result;
@@ -297,4 +297,6 @@ function main() {
   console.log(`최신본: ${path.relative(process.cwd(), latestPath)}`);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { buildReport, main };

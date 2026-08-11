@@ -8,7 +8,7 @@ require("./register-loader");
 // side-effect나 request/ 스키마까지 끌려올 수 있어서 response/ 파일만 대상). response/
 // 파일들이 `@/shared/utils` 같은 alias를 참조하는 경우(예: product.schema.ts)가 있어
 // register-loader가 등록하는 alias-loader.mjs로 `@/` 별칭을 풀어준다.
-const RESPONSE_SCHEMAS_DIR = path.join(__dirname, "../../src/shared/schemas/response");
+const RESPONSE_SCHEMAS_DIR = path.join(__dirname, "../../../src/shared/schemas/response");
 
 async function loadDataSchemas() {
   const [auth, banks, coupleInfo, guestbook, kakaomap, premiumFeature, product, subway] =
@@ -48,7 +48,7 @@ let errorEnvelopePromise;
 function getErrorEnvelope() {
   if (!errorEnvelopePromise) {
     errorEnvelopePromise = import(
-      path.join(__dirname, "../../src/shared/types/error.ts")
+      path.join(__dirname, "../../../src/shared/types/error.ts")
     ).then(({ ERROR_CATEGORIES }) =>
       z.object({
         success: z.literal(false),

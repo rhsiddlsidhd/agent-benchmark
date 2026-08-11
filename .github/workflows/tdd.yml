@@ -37,7 +37,7 @@ jobs:
         with:
           path: ~/.cache/mongodb-binaries
           key: mongodb-8.2.6-${{ runner.os }}
-      - run: npm run lint && npm run typecheck && node scripts/build-ci.mjs
+      - run: npm run lint && npm run typecheck && node scripts/ci/build.mjs
         working-directory: tie-knot
 
   unit-shard:
@@ -154,7 +154,7 @@ jobs:
         working-directory: tie-knot
       - run: npx vitest run --project guard
         working-directory: tie-knot
-      - run: node scripts/tdd-guard/unit-shards.mjs
+      - run: node scripts/tdd-guard/core/unit-shards.mjs
         working-directory: tie-knot
-      - run: node scripts/tdd-guard/cli.mjs verify --ci
+      - run: node scripts/tdd-guard/bin/guard.mjs verify --ci
         working-directory: tie-knot

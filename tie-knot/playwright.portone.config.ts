@@ -14,7 +14,7 @@ export default defineConfig({
     trace: "off",
   },
   webServer: {
-    command: "PORTONE_SMOKE=1 node scripts/e2e-server.mjs",
+    command: "PORTONE_SMOKE=1 node scripts/e2e/server.mjs",
     url: "http://127.0.0.1:3100/login",
     reuseExistingServer: false,
     timeout: 120_000,
