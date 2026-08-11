@@ -57,7 +57,11 @@ jobs:
           cache-dependency-path: tie-knot/package-lock.json
       - run: npm ci
         working-directory: tie-knot
-      - run: npm run test:unit:${{ matrix.shard }}
+      - name: Run unit shard
+        run: |
+          echo '| Shard | Files | Tests | Duration |' >> "$GITHUB_STEP_SUMMARY"
+          echo '| --- | ---: | ---: | ---: |' >> "$GITHUB_STEP_SUMMARY"
+          node scripts/test-scope/unit-shards.mjs run '${{ matrix.shard }}'
         working-directory: tie-knot
 
   unit:
@@ -154,7 +158,7 @@ jobs:
         working-directory: tie-knot
       - run: npx vitest run --project guard
         working-directory: tie-knot
-      - run: node scripts/tdd-guard/core/unit-shards.mjs
+      - run: node scripts/test-scope/unit-shards.mjs verify
         working-directory: tie-knot
       - run: node scripts/tdd-guard/bin/guard.mjs verify --ci
         working-directory: tie-knot
