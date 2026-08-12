@@ -1,1 +1,0 @@
-export { CoupleInfoForm } from "./CoupleInfoForm";
