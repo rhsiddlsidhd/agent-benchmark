@@ -67,8 +67,8 @@ src/
 | 묶음 | 대상 | mongod | 파일 병렬 |
 | --- | --- | --- | --- |
 | `unit` | `*.test.ts(x)` (integration 제외) | 안 띄움 | 병렬 |
-| `integration-client` | `tests/integration/client`, `src/client/**/*.integration.test.*` | 안 띄움 | 병렬 |
-| `integration-server` | `src/server`, `src/app/api`, `tests/integration/server`의 integration | 띄움 | 순차 |
+| `integration-client` | `src/client`, `src/app/**/_hooks`의 integration | 안 띄움 | 병렬 |
+| `integration-server` | `src/server`, `src/app/api`의 integration | 띄움 | 순차 |
 | `integration-rsc` | `src/app`의 API 외 integration | 띄움 | 순차 |
 
 - 공개 명령은 `npm run test:unit`, `npm run test:integration:client`, `npm run test:integration:server`다. server 명령은 `integration-server`와 `integration-rsc` project를 함께 실행한다.
