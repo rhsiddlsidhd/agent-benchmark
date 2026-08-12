@@ -40,13 +40,21 @@ jobs:
       TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
       TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
       AUDIT_BASE_URL: http://localhost:3000
-      LIGHTHOUSE_HISTORY_PATH: ${{ github.workspace }}/tie-knot/lighthouse-history.ndjson
+      LIGHTHOUSE_HISTORY_PATH: ${{ github.workspace }}/tie-knot-lighthouse-audit/lighthouse-history.ndjson
       PUPPETEER_SKIP_DOWNLOAD: "true"
       PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout agent-benchmark
+        uses: actions/checkout@v7
         with:
           ref: dev
+
+      - name: Checkout tie-knot
+        uses: actions/checkout@v7
+        with:
+          repository: rhsiddlsidhd/tie-knot
+          ref: dev
+          path: tie-knot
 
       - uses: actions/setup-node@v7
         with:
@@ -81,7 +89,7 @@ jobs:
         run: node src/run-audit.js
 
       - name: Commit history
-        working-directory: tie-knot
+        working-directory: tie-knot-lighthouse-audit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

@@ -1,1 +1,0 @@
-export { PaymentSuccessTemplate } from "./PaymentSuccessTemplate";

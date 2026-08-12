@@ -1,1 +1,0 @@
-export { AdminModal } from "./AdminModal";

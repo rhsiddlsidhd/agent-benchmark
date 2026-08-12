@@ -1,1 +1,0 @@
-export { subCategoryIcons } from "./subCategoryIcons";
