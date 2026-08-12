@@ -43,8 +43,8 @@ export default defineConfig({
           name: "integration-client",
           environment: "jsdom",
           include: [
-            "tests/integration/client/**/*.{test,spec}.{ts,tsx}",
             "src/client/**/*.integration.test.{ts,tsx}",
+            "src/app/**/_hooks/**/*.integration.test.{ts,tsx}",
           ],
           setupFiles: ["./src/test/setup/jsdom-polyfill.ts"],
         },
@@ -57,7 +57,6 @@ export default defineConfig({
           include: [
             "src/server/**/*.integration.test.{ts,tsx}",
             "src/app/api/**/*.integration.test.{ts,tsx}",
-            "tests/integration/server/**/*.{test,spec}.{ts,tsx}",
           ],
           globalSetup: ["./src/test/setup/mongo-server.ts"],
           // 파일을 병렬로 돌리면 한 파일의 beforeEach(clearCollections)가 다른 파일이
@@ -73,7 +72,10 @@ export default defineConfig({
           name: "integration-rsc",
           environment: "jsdom",
           include: ["src/app/**/*.integration.test.{ts,tsx}"],
-          exclude: ["src/app/api/**/*.integration.test.{ts,tsx}"],
+          exclude: [
+            "src/app/api/**/*.integration.test.{ts,tsx}",
+            "src/app/**/_hooks/**/*.integration.test.{ts,tsx}",
+          ],
           globalSetup: ["./src/test/setup/mongo-server.ts"],
           fileParallelism: false,
           maxWorkers: 1,

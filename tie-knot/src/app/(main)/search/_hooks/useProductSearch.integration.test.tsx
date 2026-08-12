@@ -4,8 +4,8 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { useProductSearch } from "../../../src/app/(main)/search/_hooks/useProductSearch";
-import type { Product } from "../../../src/server/services/product.service";
+import type { Product } from "@/server/services/product.service";
+import { useProductSearch } from "./useProductSearch";
 
 const product: Product = {
   _id: "product-1",
